@@ -20,11 +20,16 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  hardenedRuntime: true
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder for database files and exports.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder for saving exports.
-  notarize: false
+  target:
+    - target: default
+      arch:
+        - universal
+  notarize: true
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:

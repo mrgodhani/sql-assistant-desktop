@@ -44,6 +44,22 @@ npm run build:mac
 npm run build:linux
 ```
 
+### Building for macOS (universal + notarized)
+
+The Mac build produces a universal DMG (Intel + Apple Silicon) and notarizes it.
+
+**Prerequisites:**
+- Xcode Command Line Tools: `xcode-select --install`
+- Apple Developer account
+- App-specific password: [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords
+
+**Setup:**
+1. Copy `.env.example` to `.env`
+2. Set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Team ID from [developer.apple.com](https://developer.apple.com/account))
+3. Run `npm run build:mac`
+
+Output: `dist/sql-assist-desktop-1.0.0.dmg`
+
 ### Test
 
 ```bash
