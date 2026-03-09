@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "meetgodhani",
+  "homepage": "https://github.com/meetgodhani/sql-assist-desktop",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meetgodhani/sql-assist-desktop.git"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
