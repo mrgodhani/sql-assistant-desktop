@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import type { ChatMessage as ChatMessageType } from '../../../../shared/types'
 import { renderMarkdown } from '@/lib/markdown'
 import SqlCodeBlock from './SqlCodeBlock.vue'
 import ResultsPanel from './ResultsPanel.vue'
 import { useChatStore } from '@renderer/stores/useChatStore'
 import { useResultsStore } from '@renderer/stores/useResultsStore'
+import { useValidationStore } from '@renderer/stores/useValidationStore'
 
 const props = defineProps<{
   message: ChatMessageType
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 
 const chatStore = useChatStore()
 const resultsStore = useResultsStore()
+const validationStore = useValidationStore()
 
 const connectionId = computed(
   () => chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
@@ -55,6 +57,25 @@ const segments = computed(() => {
   return result
 })
 
+watch(
+  () => props.isStreaming,
+  (isStreaming, wasStreaming) => {
+    if (wasStreaming === true && isStreaming === false && connectionId.value) {
+      for (let i = 0; i < segments.value.length; i++) {
+        const seg = segments.value[i]
+        if (seg.type === 'sql') {
+          validationStore.validateSqlBlock(
+            connectionId.value!,
+            props.messageIndex,
+            i,
+            seg.content
+          )
+        }
+      }
+    }
+  }
+)
+
 const isUser = computed(() => props.message.role === 'user')
 
 function onRun(code: string, blockIndex: number): void {
@@ -76,7 +97,13 @@ function onRun(code: string, blockIndex: number): void {
         />
         <template v-else>
           <div class="mt-4">
-            <SqlCodeBlock :code="seg.content" :block-index="i" @run="(code) => onRun(code, i)" />
+            <SqlCodeBlock
+              :code="seg.content"
+              :block-index="i"
+              :has-connection="Boolean(connectionId)"
+              :validation-result="validationStore.getValidation(messageIndex, i)"
+              @run="(code) => onRun(code, i)"
+            />
           </div>
           <ResultsPanel
             v-if="resultsStore.getResult(messageIndex, i)"

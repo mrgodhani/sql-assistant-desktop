@@ -6,6 +6,7 @@ import MessageContent from './MessageContent.vue'
 import MessageHeader from './MessageHeader.vue'
 import { useChatStore } from '@renderer/stores/useChatStore'
 import { useResultsStore } from '@renderer/stores/useResultsStore'
+import { useValidationStore } from '@renderer/stores/useValidationStore'
 
 const props = defineProps<{
   message: ChatMessageType
@@ -15,6 +16,7 @@ const props = defineProps<{
 
 const chatStore = useChatStore()
 const resultsStore = useResultsStore()
+const validationStore = useValidationStore()
 
 const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant'))
 const copied = ref(false)
@@ -34,6 +36,20 @@ async function onCopy(): Promise<void> {
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
   const connectionId =
     chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
+  if (!connectionId) return
+  const validation = await validationStore.validateSqlBlock(
+    connectionId,
+    props.messageIndex,
+    blockIndex,
+    code
+  )
+  if (!validation.valid) {
+    resultsStore.setResult(props.messageIndex, blockIndex, {
+      success: false,
+      error: validation.error
+    })
+    return
+  }
   const result = await resultsStore.executeQuery(
     connectionId,
     code,

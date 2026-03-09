@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { Conversation, ConversationSummary, StreamingState } from '../../../shared/types'
 import { useSettingsStore } from './useSettingsStore'
 import { useConnectionStore } from './useConnectionStore'
+import { useValidationStore } from './useValidationStore'
 
 const MAX_MESSAGE_LENGTH = 65_536
 
@@ -29,6 +30,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function startNewConversation(): Promise<void> {
+    useValidationStore().clearAll()
     try {
       const created = await window.conversationApi.create(activeConnectionId.value)
       currentConversation.value = {
@@ -49,6 +51,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function loadConversation(id: string): Promise<void> {
+    useValidationStore().clearAll()
     try {
       const conv = await window.conversationApi.get(id)
       if (conv) {

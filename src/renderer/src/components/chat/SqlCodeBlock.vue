@@ -4,12 +4,14 @@ import Prism from 'prismjs'
 import 'prismjs/components/prism-sql'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Copy, Play } from 'lucide-vue-next'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Check, AlertCircle, Copy, Play } from 'lucide-vue-next'
 
 const props = defineProps<{
   code: string
   blockIndex?: number
   hasConnection?: boolean
+  validationResult?: { valid: boolean; error?: string } | null
 }>()
 
 const emit = defineEmits<{
@@ -48,7 +50,32 @@ function run(): void {
     <div
       class="relative z-10 flex items-center justify-between border-b border-border px-2 py-1 transition-colors duration-150"
     >
-      <span class="text-xs text-muted-foreground">SQL</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-muted-foreground">SQL</span>
+        <TooltipProvider v-if="validationResult">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span
+                v-if="validationResult.valid"
+                class="flex items-center text-xs text-green-600 dark:text-green-500"
+                aria-label="Valid syntax"
+              >
+                <Check class="size-3.5" />
+              </span>
+              <span
+                v-else
+                class="flex items-center text-xs text-amber-600 dark:text-amber-500"
+                aria-label="Invalid syntax"
+              >
+                <AlertCircle class="size-3.5" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ validationResult.valid ? 'Valid syntax' : (validationResult.error ?? 'Invalid syntax') }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       <div class="flex gap-1">
         <Button
           variant="ghost"
