@@ -1,3 +1,6 @@
+import log from 'electron-log/main'
+log.initialize()
+
 import { app, shell, BrowserWindow, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -10,8 +13,8 @@ import { schemaService } from './services/schema.service'
 import { aiService } from './services/ai.service'
 
 process.on('uncaughtException', (error) => {
-  console.error('[Main] Uncaught Exception:', error.message)
-  if (is.dev) console.error(error.stack)
+  log.error('[Main] Uncaught Exception:', error.message)
+  if (is.dev) log.error(error.stack)
   dialog.showErrorBox(
     'Unexpected Error',
     'An unexpected error occurred. The application may need to restart.'
@@ -19,7 +22,7 @@ process.on('uncaughtException', (error) => {
 })
 
 process.on('unhandledRejection', (reason) => {
-  console.error('[Main] Unhandled Rejection:', reason)
+  log.error('[Main] Unhandled Rejection:', reason)
 })
 
 function createWindow(): void {
@@ -65,9 +68,9 @@ app.whenReady().then(async () => {
   try {
     initializeDatabase()
     createMigrationTables()
-    console.log('[Main] Database initialized at', app.getPath('userData'))
+    log.info('[Main] Database initialized at', app.getPath('userData'))
   } catch (error) {
-    console.error('[Main] Database initialization failed:', error)
+    log.error('[Main] Database initialization failed:', error)
     dialog.showErrorBox(
       'Database Error',
       'Failed to initialize the local database. The application may not function correctly.'
