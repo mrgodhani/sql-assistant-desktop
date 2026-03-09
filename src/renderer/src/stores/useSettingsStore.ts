@@ -123,11 +123,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const baseUrl = config.baseUrl || 'http://localhost:11434'
     try {
       const models = await window.api.settings.fetchOllamaModels(baseUrl)
-      if (models.length > 0) {
-        const merged = [...new Set([...models, ...config.models])]
-        providerConfigs.value.ollama.models = merged
-        await window.api.settings.setProviderConfig('ollama', { models: merged })
-      }
+      providerConfigs.value.ollama.models = models
+      await window.api.settings.setProviderConfig('ollama', { models })
       return models
     } catch (error) {
       log.error('[Settings] Failed to fetch Ollama models:', error)
