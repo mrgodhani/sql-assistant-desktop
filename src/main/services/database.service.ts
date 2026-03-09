@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { dialog } from 'electron'
+import log from 'electron-log/main'
 import { eq } from 'drizzle-orm'
 import pg from 'pg'
 import mysql2 from 'mysql2/promise'
@@ -194,7 +195,7 @@ class DatabaseService {
       this.pools.set(id, handle)
       return { success: true }
     } catch (error) {
-      console.error(
+      log.error(
         `[Database] Connection failed for "${row.name}":`,
         sanitizeConnectionError(error)
       )
@@ -209,7 +210,7 @@ class DatabaseService {
     try {
       await this.closePool(handle)
     } catch (error) {
-      console.error(
+      log.error(
         '[Database] Error closing pool:',
         error instanceof Error ? error.message : error
       )

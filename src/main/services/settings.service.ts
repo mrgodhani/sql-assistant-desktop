@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm'
+import log from 'electron-log/main'
 import { getDatabase, schema } from '../db'
 import { encryptionService } from './encryption.service'
 import type { AIProvider, ProviderConfig, ValidationResult, AppSettings } from '../../shared/types'
@@ -137,7 +138,7 @@ export class SettingsService {
       }
 
       if (response.ok) {
-        console.log(`[Settings] API key validated for ${provider}: ${maskKey(apiKey)}`)
+        log.info(`[Settings] API key validated for ${provider}: ${maskKey(apiKey)}`)
         return { valid: true, message: 'API key is valid' }
       }
       if (response.status === 401 || response.status === 403) {

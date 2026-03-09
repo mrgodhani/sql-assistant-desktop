@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import log from 'electron-log/main'
 import { databaseService } from '../services/database.service'
 import { schemaService } from '../services/schema.service'
 import type { ConnectionConfig } from '../../shared/types'
@@ -28,7 +29,7 @@ export function registerConnectionsIpc(): void {
     const result = await databaseService.connect(id)
     if (result.success) {
       schemaService.introspect(id).catch((err) => {
-        console.error('[Schema] Background introspection failed:', err instanceof Error ? err.message : err)
+        log.error('[Schema] Background introspection failed:', err instanceof Error ? err.message : err)
       })
     }
     return result

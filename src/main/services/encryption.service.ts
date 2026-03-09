@@ -1,4 +1,5 @@
 import { safeStorage } from 'electron'
+import log from 'electron-log/main'
 
 class EncryptionService {
   private available: boolean | null = null
@@ -7,7 +8,7 @@ class EncryptionService {
     if (this.available === null) {
       this.available = safeStorage.isEncryptionAvailable()
       if (!this.available) {
-        console.warn('[Encryption] safeStorage is not available — API keys will be stored in plaintext')
+        log.warn('[Encryption] safeStorage is not available — API keys will be stored in plaintext')
       }
     }
     return this.available

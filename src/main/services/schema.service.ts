@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import { databaseService } from './database.service'
 import type {
   DatabaseType,
@@ -70,7 +71,7 @@ class SchemaService {
         introspectedAt: now
       }
     } catch (error) {
-      console.error('[Schema] Introspection failed:', sanitizeSchemaError(error))
+      log.error('[Schema] Introspection failed:', sanitizeSchemaError(error))
       return {
         success: false,
         error: sanitizeSchemaError(error),
