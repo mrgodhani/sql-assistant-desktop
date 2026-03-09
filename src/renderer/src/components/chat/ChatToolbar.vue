@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useSettingsStore } from '@renderer/stores/useSettingsStore'
 import { useConnectionStore } from '@renderer/stores/useConnectionStore'
 import { useChatStore } from '@renderer/stores/useChatStore'
@@ -19,20 +19,15 @@ const settingsStore = useSettingsStore()
 const connectionStore = useConnectionStore()
 const chatStore = useChatStore()
 
-const models = ref<string[]>([])
+const models = computed(() => settingsStore.providerConfigs[settingsStore.activeProvider].models)
 
-async function loadModels(): Promise<void> {
-  try {
-    models.value = await window.aiApi.listModels(settingsStore.activeProvider)
-    if (models.value.length === 0) {
-      models.value = settingsStore.providerConfigs[settingsStore.activeProvider].models
-    }
-  } catch {
-    models.value = settingsStore.providerConfigs[settingsStore.activeProvider].models
-  }
-}
-
-watch(() => settingsStore.activeProvider, loadModels, { immediate: true })
+watch(
+  () => settingsStore.activeProvider,
+  (provider) => {
+    settingsStore.refreshModels(provider)
+  },
+  { immediate: true }
+)
 
 function onProviderChange(value: unknown): void {
   const provider = String(value ?? '')

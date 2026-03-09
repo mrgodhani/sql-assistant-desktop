@@ -62,8 +62,6 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
-  await ensureMoveToApplicationsPrompt()
-
   electronApp.setAppUserModelId('com.sql-assist')
 
   app.on('browser-window-created', (_, window) => {
@@ -81,6 +79,8 @@ app.whenReady().then(async () => {
       'Failed to initialize the local database. The application may not function correctly.'
     )
   }
+
+  await ensureMoveToApplicationsPrompt()
 
   registerAllIpc()
 

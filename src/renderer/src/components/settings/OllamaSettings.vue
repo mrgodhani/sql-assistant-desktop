@@ -47,7 +47,7 @@ async function testConnection(): Promise<void> {
 async function refreshModels(): Promise<void> {
   isRefreshing.value = true
   try {
-    const models = await settingsStore.refreshOllamaModels()
+    const models = await settingsStore.refreshModels('ollama')
     if (models.length === 0) {
       connectionResult.value = { valid: false, message: 'No models found — is Ollama running?' }
     } else {

@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import { settingsService } from './settings.service'
 import { buildSystemPrompt } from './ai/prompt'
 import { classifyError } from './ai/types'
@@ -70,6 +71,7 @@ class AIService {
       watchdog.clear()
       sendChunk({ requestId, chunk: '', done: true })
     } catch (error) {
+      log.error(`[AI] chatStream error for ${provider}/${model}:`, error)
       const classified = classifyError(error, provider)
       sendChunk({ requestId, chunk: '', done: true, error: classified.message })
     } finally {

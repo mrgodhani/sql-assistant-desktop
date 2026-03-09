@@ -172,7 +172,7 @@ export interface StreamChunk {
   error?: string
 }
 
-export type AIErrorType = 'auth' | 'rate_limit' | 'network' | 'token_limit' | 'cancelled' | 'unknown'
+export type AIErrorType = 'auth' | 'rate_limit' | 'network' | 'token_limit' | 'model_not_found' | 'cancelled' | 'unknown'
 
 export interface Conversation {
   id: string

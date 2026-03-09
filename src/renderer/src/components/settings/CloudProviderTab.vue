@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { CheckCircle, XCircle, Loader2 } from 'lucide-vue-next'
+import { CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-vue-next'
 
 const props = defineProps<{
   provider: AIProvider
@@ -76,6 +76,17 @@ function onBaseUrlChange(event: Event): void {
 function setAsActive(): void {
   settingsStore.setProvider(props.provider)
 }
+
+const isRefreshing = ref(false)
+
+async function refreshModels(): Promise<void> {
+  isRefreshing.value = true
+  try {
+    await settingsStore.refreshModels(props.provider)
+  } finally {
+    isRefreshing.value = false
+  }
+}
 </script>
 
 <template>
@@ -115,16 +126,27 @@ function setAsActive(): void {
 
     <div class="space-y-2">
       <Label>Model</Label>
-      <Select :model-value="config.selectedModel" @update:model-value="onModelChange">
-        <SelectTrigger :data-testid="`${provider}-model-select`">
-          <SelectValue placeholder="Select a model" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="model in config.models" :key="model" :value="model">
-            {{ model }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <div class="flex gap-2">
+        <Select :model-value="config.selectedModel" @update:model-value="onModelChange">
+          <SelectTrigger :data-testid="`${provider}-model-select`">
+            <SelectValue placeholder="Select a model" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="model in config.models" :key="model" :value="model">
+              {{ model }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          :disabled="isRefreshing"
+          :data-testid="`${provider}-refresh-models-button`"
+          @click="refreshModels"
+        >
+          <RefreshCw :class="['size-4', { 'animate-spin': isRefreshing }]" />
+        </Button>
+      </div>
     </div>
 
     <div v-if="hasBaseUrl" class="space-y-2">

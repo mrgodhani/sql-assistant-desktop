@@ -118,17 +118,20 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  async function refreshOllamaModels(): Promise<string[]> {
-    const config = providerConfigs.value.ollama
-    const baseUrl = config.baseUrl || 'http://localhost:11434'
+  async function refreshModels(provider: AIProvider): Promise<string[]> {
     try {
-      const models = await window.api.settings.fetchOllamaModels(baseUrl)
-      providerConfigs.value.ollama.models = models
-      await window.api.settings.setProviderConfig('ollama', { models })
+      const models = await window.aiApi.listModels(provider)
+      if (models.length > 0) {
+        providerConfigs.value[provider] = {
+          ...providerConfigs.value[provider],
+          models
+        }
+        await window.api.settings.setProviderConfig(provider, { models })
+      }
       return models
     } catch (error) {
-      log.error('[Settings] Failed to fetch Ollama models:', error)
-      return []
+      log.error('[Settings] Failed to refresh models for', provider, error)
+      return providerConfigs.value[provider].models
     }
   }
 
@@ -145,6 +148,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setModel,
     updateProviderConfig,
     validateApiKey,
-    refreshOllamaModels
+    refreshModels
   }
 })
