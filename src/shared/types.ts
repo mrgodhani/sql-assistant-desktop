@@ -211,8 +211,10 @@ export interface ValidationResult {
   message: string
 }
 
+export type ThemeMode = 'system' | 'dark' | 'light'
+
 export interface AppSettings {
-  theme: 'dark' | 'light'
+  theme: ThemeMode
   activeProvider: AIProvider
   activeModel: string
   providerConfigs: Record<AIProvider, ProviderConfig>
