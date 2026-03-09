@@ -12,6 +12,7 @@ import { databaseService } from './services/database.service'
 import { settingsService } from './services/settings.service'
 import { schemaService } from './services/schema.service'
 import { aiService } from './services/ai.service'
+import { ensureMoveToApplicationsPrompt } from './move-to-applications'
 
 process.on('uncaughtException', (error) => {
   log.error('[Main] Uncaught Exception:', error.message)
@@ -60,6 +61,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  await ensureMoveToApplicationsPrompt()
+
   electronApp.setAppUserModelId('com.sql-assist')
 
   app.on('browser-window-created', (_, window) => {

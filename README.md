@@ -60,6 +60,8 @@ The Mac build produces a universal DMG (Intel + Apple Silicon) and notarizes it.
 
 Output: `dist/sql-assist-desktop-1.0.0.dmg`
 
+On first launch from outside the Applications folder (e.g., Downloads or DMG), the app will prompt to move to Applications.
+
 ### Test
 
 ```bash

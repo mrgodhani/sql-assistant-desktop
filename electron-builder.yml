@@ -1,5 +1,5 @@
 appId: com.sql-assist.desktop
-productName: sql-assist-desktop
+productName: SQL Assist
 directories:
   buildResources: build
 files:
@@ -12,13 +12,6 @@ files:
 asarUnpack:
   - resources/**
   - node_modules/better-sqlite3/**
-win:
-  executableName: sql-assist-desktop
-nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
 mac:
   hardenedRuntime: true
   entitlementsInherit: build/entitlements.mac.plist
@@ -31,15 +24,6 @@ mac:
         - universal
   notarize: true
 dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
 # Update publish.url when auto-update server is ready
