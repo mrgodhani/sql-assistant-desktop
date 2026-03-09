@@ -1,14 +1,12 @@
 import { ipcRenderer } from 'electron'
 
 export const exportApi = {
-  showSaveDialog: (options?: {
-    defaultPath?: string
-    filters?: { name: string; extensions: string[] }[]
-  }): Promise<string | null> => ipcRenderer.invoke('export:showSaveDialog', options ?? {}),
+  showSaveDialog: (optionsJson: string): Promise<string | null> =>
+    ipcRenderer.invoke('export:showSaveDialog', optionsJson),
 
-  exportCsv: (filePath: string, columns: string[], jsonRows: string): Promise<void> =>
-    ipcRenderer.invoke('export:csv', filePath, columns, jsonRows),
+  exportCsv: (payload: string): Promise<void> =>
+    ipcRenderer.invoke('export:csv', payload),
 
-  exportExcel: (filePath: string, columns: string[], jsonRows: string): Promise<void> =>
-    ipcRenderer.invoke('export:excel', filePath, columns, jsonRows)
+  exportExcel: (payload: string): Promise<void> =>
+    ipcRenderer.invoke('export:excel', payload)
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, toRaw } from 'vue'
 import { Download } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
@@ -31,19 +31,26 @@ async function exportCsv(): Promise<void> {
   exporting.value = true
   errorMessage.value = null
   try {
-    const path = await window.exportApi.showSaveDialog({
+    const dialogOptions = JSON.stringify({
       defaultPath: defaultFilename('csv'),
       filters: [{ name: 'CSV', extensions: ['csv'] }]
     })
+    const path = await window.exportApi.showSaveDialog(dialogOptions)
     if (path) {
-      let jsonRows: string
+      let payload: string
       try {
-        jsonRows = toExportPayload(props.rows)
+        const rawRows = toRaw(props.rows) ?? props.rows
+        const rawColumns = toRaw(props.columns) ?? props.columns
+        payload = JSON.stringify({
+          path,
+          columns: Array.isArray(rawColumns) ? [...rawColumns] : rawColumns,
+          jsonRows: toExportPayload(rawRows)
+        })
       } catch {
         errorMessage.value = 'Export data could not be serialized'
         return
       }
-      await window.exportApi.exportCsv(path, props.columns, jsonRows)
+      await window.exportApi.exportCsv(payload)
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Export failed'
@@ -57,19 +64,26 @@ async function exportExcel(): Promise<void> {
   exporting.value = true
   errorMessage.value = null
   try {
-    const path = await window.exportApi.showSaveDialog({
+    const dialogOptions = JSON.stringify({
       defaultPath: defaultFilename('xlsx'),
       filters: [{ name: 'Excel', extensions: ['xlsx'] }]
     })
+    const path = await window.exportApi.showSaveDialog(dialogOptions)
     if (path) {
-      let jsonRows: string
+      let payload: string
       try {
-        jsonRows = toExportPayload(props.rows)
+        const rawRows = toRaw(props.rows) ?? props.rows
+        const rawColumns = toRaw(props.columns) ?? props.columns
+        payload = JSON.stringify({
+          path,
+          columns: Array.isArray(rawColumns) ? [...rawColumns] : rawColumns,
+          jsonRows: toExportPayload(rawRows)
+        })
       } catch {
         errorMessage.value = 'Export data could not be serialized'
         return
       }
-      await window.exportApi.exportExcel(path, props.columns, jsonRows)
+      await window.exportApi.exportExcel(payload)
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Export failed'

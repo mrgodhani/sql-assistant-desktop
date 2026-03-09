@@ -84,12 +84,9 @@ interface LogsApi {
 }
 
 interface ExportApi {
-  showSaveDialog: (options?: {
-    defaultPath?: string
-    filters?: { name: string; extensions: string[] }[]
-  }) => Promise<string | null>
-  exportCsv: (filePath: string, columns: string[], jsonRows: string) => Promise<void>
-  exportExcel: (filePath: string, columns: string[], jsonRows: string) => Promise<void>
+  showSaveDialog: (optionsJson: string) => Promise<string | null>
+  exportCsv: (payload: string) => Promise<void>
+  exportExcel: (payload: string) => Promise<void>
 }
 
 interface AppApi {

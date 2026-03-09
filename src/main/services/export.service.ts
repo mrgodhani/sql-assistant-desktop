@@ -11,12 +11,23 @@ function escapeCsvCell(value: unknown): string {
   return str
 }
 
+/** Converts any value to Excel-safe primitive (string, number, boolean, null, Date) */
+function toExcelCellValue(value: unknown): string | number | boolean | null | Date {
+  if (value == null) return null
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  if (value instanceof Date) return value
+  if (typeof value === 'object') return String(value)
+  return String(value)
+}
+
 function sanitizeExportError(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error)
   if (/EACCES|permission denied/i.test(msg)) return 'Export failed. Check file permissions.'
   if (/ENOSPC|disk full/i.test(msg)) return 'Export failed. Disk is full.'
   if (/ENOENT|not found/i.test(msg)) return 'Export failed. Invalid file path.'
-  return 'Export failed. Please try again.'
+  if (/Invalid export data|Invalid file path/i.test(msg)) return msg
+  if (/JSON|parse|Unexpected/i.test(msg)) return 'Export failed. Invalid data format.'
+  return `Export failed: ${msg}`
 }
 
 function validatePath(filePath: unknown): string | null {
@@ -73,7 +84,7 @@ export class ExportService {
     headerRow.font = { bold: true }
 
     for (const row of rws) {
-      const rowData = cols.map((col) => row[col])
+      const rowData = cols.map((col) => toExcelCellValue(row[col]))
       sheet.addRow(rowData)
     }
 
