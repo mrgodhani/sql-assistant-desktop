@@ -1,3 +1,3 @@
 provider: generic
-url: https://example.com/auto-updates
+url: https://github.com/meetgodhani/sql-assist-desktop/releases
 updaterCacheDirName: sql-assist-desktop-updater

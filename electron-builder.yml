@@ -26,7 +26,7 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
-# Update publish.url when auto-update server is ready
+# Update when auto-update server is ready
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: https://github.com/meetgodhani/sql-assist-desktop/releases

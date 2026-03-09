@@ -10,3 +10,14 @@ aidlc-docs/
 docs/
 .worktrees/
 .env
+
+# Test coverage
+coverage/
+
+# OS / IDE
+Thumbs.db
+.idea/
+
+# Local overrides
+*.local
+.env.*.local
