@@ -124,6 +124,13 @@ watch(
   () => renderChart(),
   { deep: true }
 )
+
+function getChartImage(): string | null {
+  if (!chartRef.value) return null
+  return chartRef.value.toDataURL('image/png')
+}
+
+defineExpose({ getChartImage })
 </script>
 
 <template>
@@ -178,7 +185,7 @@ watch(
     <div v-if="getNumericColumns().length === 0" class="rounded border border-dashed p-6 text-center text-sm text-muted-foreground">
       No numeric columns to visualize
     </div>
-    <div v-else class="h-[280px]">
+    <div v-else class="h-[280px] rounded-md border border-border bg-muted/5 p-2">
       <canvas ref="chartRef" />
     </div>
   </div>

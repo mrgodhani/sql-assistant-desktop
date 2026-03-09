@@ -43,7 +43,7 @@ function formatTime(ms: number): string {
           :rows="result.result.rows"
         />
       </div>
-      <Tabs default-value="table" class="w-full min-w-0">
+      <Tabs default-value="table" class="results-tabs w-full min-w-0">
         <TabsList class="mb-2">
           <TabsTrigger value="table">Table</TabsTrigger>
           <TabsTrigger value="chart">Chart</TabsTrigger>
@@ -55,7 +55,7 @@ function formatTime(ms: number): string {
             :row-count="result.result.rowCount"
           />
         </TabsContent>
-        <TabsContent value="chart">
+        <TabsContent value="chart" :force-mount="true">
           <ChartPanel
             :columns="result.result.columns"
             :rows="result.result.rows"
@@ -71,3 +71,9 @@ function formatTime(ms: number): string {
     </template>
   </div>
 </template>
+
+<style scoped>
+.results-tabs [data-state="inactive"] {
+  display: none;
+}
+</style>
