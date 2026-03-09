@@ -7,3 +7,5 @@ out
 aidlc-docs/
 .aidlc-rule-details/
 .cursor/
+docs/
+.worktrees/
