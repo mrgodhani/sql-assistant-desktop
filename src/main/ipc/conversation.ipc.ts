@@ -16,18 +16,26 @@ export function registerConversationIpc(): void {
     return conversationService.create(conn)
   })
 
-  ipcMain.handle(
-    'conversation:updateTitle',
-    async (_event, id: string, title: string) => {
-      if (!id || typeof id !== 'string') return
-      conversationService.updateTitle(id, title ?? 'New Chat')
-    }
-  )
+  ipcMain.handle('conversation:updateTitle', async (_event, id: string, title: string) => {
+    if (!id || typeof id !== 'string') return
+    conversationService.updateTitle(id, title ?? 'New Chat')
+  })
 
   ipcMain.handle('conversation:delete', async (_event, id: string) => {
     if (!id || typeof id !== 'string') return
     conversationService.delete(id)
   })
+
+  ipcMain.handle(
+    'conversation:truncate',
+    async (_event, conversationId: string, fromIndex: number) => {
+      if (!conversationId || typeof conversationId !== 'string') {
+        throw new Error('conversationId is required')
+      }
+      const idx = typeof fromIndex === 'number' && fromIndex >= 0 ? fromIndex : 0
+      conversationService.truncate(conversationId, idx)
+    }
+  )
 
   ipcMain.handle(
     'conversation:addMessage',
@@ -39,7 +47,11 @@ export function registerConversationIpc(): void {
       if (!content || typeof content !== 'string') {
         throw new Error('content is required')
       }
-      return conversationService.addMessage(conversationId, validRole as 'user' | 'assistant' | 'system', content)
+      return conversationService.addMessage(
+        conversationId,
+        validRole as 'user' | 'assistant' | 'system',
+        content
+      )
     }
   )
 

@@ -1,11 +1,7 @@
 import { randomUUID } from 'crypto'
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, inArray } from 'drizzle-orm'
 import { getDatabase, schema } from '../db'
-import type {
-  Conversation,
-  ConversationSummary,
-  ChatMessage
-} from '../../shared/types'
+import type { Conversation, ConversationSummary, ChatMessage } from '../../shared/types'
 
 const MAX_CONTENT_LENGTH = 65_536
 
@@ -108,7 +104,11 @@ export class ConversationService {
     db.delete(schema.conversations).where(eq(schema.conversations.id, id)).run()
   }
 
-  addMessage(conversationId: string, role: 'user' | 'assistant' | 'system', content: string): string {
+  addMessage(
+    conversationId: string,
+    role: 'user' | 'assistant' | 'system',
+    content: string
+  ): string {
     if (!content || content.length > MAX_CONTENT_LENGTH) {
       throw new Error('Invalid message content')
     }
@@ -133,6 +133,29 @@ export class ConversationService {
       .run()
 
     return messageId
+  }
+
+  truncate(conversationId: string, fromIndex: number): void {
+    const db = getDatabase()
+    const msgRows = db
+      .select({ id: schema.messages.id })
+      .from(schema.messages)
+      .where(eq(schema.messages.conversationId, conversationId))
+      .orderBy(schema.messages.createdAt)
+      .all()
+
+    const toDelete = msgRows.slice(fromIndex).map((r) => r.id)
+    if (toDelete.length === 0) return
+
+    for (const msgId of toDelete) {
+      db.delete(schema.generatedQueries).where(eq(schema.generatedQueries.messageId, msgId)).run()
+    }
+    db.delete(schema.messages).where(inArray(schema.messages.id, toDelete)).run()
+
+    db.update(schema.conversations)
+      .set({ updatedAt: new Date().toISOString() })
+      .where(eq(schema.conversations.id, conversationId))
+      .run()
   }
 
   addGeneratedQuery(

@@ -65,6 +65,7 @@ interface ConversationApi {
   create: (connectionId?: string | null) => Promise<import('../shared/types').Conversation>
   updateTitle: (id: string, title: string) => Promise<void>
   delete: (id: string) => Promise<void>
+  truncate: (conversationId: string, fromIndex: number) => Promise<void>
   addMessage: (
     conversationId: string,
     role: 'user' | 'assistant' | 'system',

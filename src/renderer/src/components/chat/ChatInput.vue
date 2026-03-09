@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Send, Square } from 'lucide-vue-next'
@@ -8,6 +8,17 @@ import { useChatStore } from '@renderer/stores/useChatStore'
 const chatStore = useChatStore()
 const input = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
+
+watch(
+  () => chatStore.inputContentForEdit,
+  (content) => {
+    if (content != null) {
+      input.value = content
+      chatStore.clearInputContentForEdit()
+      nextTick(() => textareaRef.value?.focus())
+    }
+  }
+)
 
 const SUGGESTED_PROMPTS = [
   { text: 'Show me all tables in this database', icon: 'Table' },
@@ -31,6 +42,7 @@ function send(): void {
   if (!validated || validated === 'Message too long') return
   chatStore.sendMessage(validated)
   input.value = ''
+  chatStore.clearInputContentForEdit()
 }
 
 function onKeydown(e: KeyboardEvent): void {
@@ -43,10 +55,7 @@ function onKeydown(e: KeyboardEvent): void {
 
 <template>
   <div class="border-t border-border bg-background p-3">
-    <div
-      v-if="!chatStore.currentConversation?.messages.length"
-      class="mb-3 flex flex-wrap gap-2"
-    >
+    <div v-if="!chatStore.currentConversation?.messages.length" class="mb-3 flex flex-wrap gap-2">
       <Button
         v-for="(prompt, i) in SUGGESTED_PROMPTS"
         :key="i"

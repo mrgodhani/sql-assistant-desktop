@@ -14,6 +14,7 @@ export const useChatStore = defineStore('chat', () => {
   const streamingState = ref<StreamingState | null>(null)
   const activeConnectionId = ref<string | null>(null)
   const conversations = ref<ConversationSummary[]>([])
+  const inputContentForEdit = ref<string | null>(null)
 
   function validateMessage(text: string): string | null {
     const trimmed = text.trim()
@@ -65,12 +66,13 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  function setupStreamListener(
-    requestId: string,
-    messageIndex: number,
-    onDone: () => void
-  ): void {
-    const handler = (chunk: { requestId: string; chunk: string; done: boolean; error?: string }) => {
+  function setupStreamListener(requestId: string, messageIndex: number, onDone: () => void): void {
+    const handler = (chunk: {
+      requestId: string
+      chunk: string
+      done: boolean
+      error?: string
+    }) => {
       if (chunk.requestId !== requestId) return
 
       const conv = currentConversation.value
@@ -185,11 +187,26 @@ export const useChatStore = defineStore('chat', () => {
         requestId
       })
     } catch (err) {
-      conv.messages[messageIndex].content = `**Error:** ${err instanceof Error ? err.message : 'Request failed'}`
+      conv.messages[messageIndex].content =
+        `**Error:** ${err instanceof Error ? err.message : 'Request failed'}`
       streamingState.value = null
       window.aiApi.offStreamChunk()
       onStreamDone()
     }
+  }
+
+  function clearInputContentForEdit(): void {
+    inputContentForEdit.value = null
+  }
+
+  function editAndResend(messageIndex: number): void {
+    const conv = currentConversation.value
+    if (!conv || streamingState.value) return
+    const msg = conv.messages[messageIndex]
+    if (!msg || msg.role !== 'user') return
+    inputContentForEdit.value = msg.content
+    conv.messages.splice(messageIndex)
+    window.conversationApi.truncate(conv.id, messageIndex)
   }
 
   function cancelRequest(): void {
@@ -206,7 +223,10 @@ export const useChatStore = defineStore('chat', () => {
     streamingState,
     activeConnectionId,
     conversations,
+    inputContentForEdit,
     sendMessage,
+    editAndResend,
+    clearInputContentForEdit,
     cancelRequest,
     startNewConversation,
     loadConversation,

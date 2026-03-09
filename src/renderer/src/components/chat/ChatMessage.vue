@@ -19,18 +19,13 @@ const resultsStore = useResultsStore()
 const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant'))
 
 function noop(): void {
-  /* placeholder for Copy, Regenerate, Edit - implemented in later tasks */
+  /* placeholder for Copy, Regenerate - implemented in later tasks */
 }
 
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
   const connectionId =
     chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
-  const result = await resultsStore.executeQuery(
-    connectionId,
-    code,
-    props.messageIndex,
-    blockIndex
-  )
+  const result = await resultsStore.executeQuery(connectionId, code, props.messageIndex, blockIndex)
   const messageId = props.message.id
   if (messageId && result.success && result.result) {
     try {
@@ -58,9 +53,7 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
 </script>
 
 <template>
-  <div
-    :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']"
-  >
+  <div :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']">
     <div class="flex max-w-[85%] flex-col items-start gap-1">
       <div class="flex items-center gap-2">
         <MessageHeader :role="role" />
@@ -69,7 +62,7 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
           :is-streaming="isStreaming ?? false"
           @copy="noop"
           @regenerate="noop"
-          @edit="noop"
+          @edit="() => chatStore.editAndResend(messageIndex)"
         />
       </div>
       <div
