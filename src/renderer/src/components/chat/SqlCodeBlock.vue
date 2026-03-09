@@ -70,7 +70,7 @@ function run(): void {
       </div>
     </div>
     <ScrollArea class="max-h-64">
-      <pre class="p-3 text-sm"><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
+      <pre class="bg-muted/40 p-3 text-sm"><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
     </ScrollArea>
   </div>
 </template>

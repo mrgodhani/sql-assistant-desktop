@@ -21,10 +21,7 @@ const chatStore = useChatStore()
 const resultsStore = useResultsStore()
 
 const connectionId = computed(
-  () =>
-    chatStore.activeConnectionId ??
-    chatStore.currentConversation?.connectionId ??
-    null
+  () => chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
 )
 
 const SQL_BLOCK_REGEX = /```sql\n([\s\S]*?)```/gi
@@ -70,15 +67,17 @@ function onRun(code: string, blockIndex: number): void {
     <p class="whitespace-pre-wrap">{{ message.content }}</p>
   </template>
   <template v-else>
-    <div class="space-y-4">
+    <div class="space-y-6">
       <template v-for="(seg, i) in segments" :key="i">
         <div
           v-if="seg.type === 'text'"
-          class="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-3"
+          class="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted-foreground/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_p]:mb-4"
           v-html="renderMarkdown(seg.content)"
         />
         <template v-else>
-          <SqlCodeBlock :code="seg.content" :block-index="i" @run="(code) => onRun(code, i)" />
+          <div class="mt-4">
+            <SqlCodeBlock :code="seg.content" :block-index="i" @run="(code) => onRun(code, i)" />
+          </div>
           <ResultsPanel
             v-if="resultsStore.getResult(messageIndex, i)"
             :message-index="messageIndex"
