@@ -1,0 +1,69 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import DataTable from './DataTable.vue'
+import ChartPanel from './ChartPanel.vue'
+import ExportButton from './ExportButton.vue'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useResultsStore } from '@renderer/stores/useResultsStore'
+
+const props = defineProps<{
+  messageIndex: number
+  blockIndex: number
+  connectionId: string | null
+}>()
+
+const resultsStore = useResultsStore()
+
+const result = computed(() => resultsStore.getResult(props.messageIndex, props.blockIndex))
+
+function formatTime(ms: number): string {
+  if (ms < 1) return '<1ms'
+  if (ms < 1000) return `${Math.round(ms)}ms`
+  return `${(ms / 1000).toFixed(2)}s`
+}
+</script>
+
+<template>
+  <div class="mt-2 rounded-lg border border-border bg-muted/20 p-3">
+    <template v-if="result?.success && result.result">
+      <div class="mb-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div class="flex flex-wrap items-center gap-3">
+          <span>{{ result.result.rowCount }} row{{ result.result.rowCount === 1 ? '' : 's' }}</span>
+          <span>{{ formatTime(result.result.executionTimeMs) }}</span>
+          <span v-if="result.result.truncated" class="text-amber-600 dark:text-amber-500">
+            Showing first 100,000 rows
+          </span>
+        </div>
+        <ExportButton
+          :columns="result.result.columns"
+          :rows="result.result.rows"
+        />
+      </div>
+      <Tabs default-value="table" class="w-full">
+        <TabsList class="mb-2">
+          <TabsTrigger value="table">Table</TabsTrigger>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+        </TabsList>
+        <TabsContent value="table">
+          <DataTable
+            :columns="result.result.columns"
+            :rows="result.result.rows"
+            :row-count="result.result.rowCount"
+          />
+        </TabsContent>
+        <TabsContent value="chart">
+          <ChartPanel
+            :columns="result.result.columns"
+            :rows="result.result.rows"
+            :row-count="result.result.rowCount"
+          />
+        </TabsContent>
+      </Tabs>
+    </template>
+    <template v-else-if="result && !result.success">
+      <p :class="['text-sm', result.error === 'Running query...' ? 'text-muted-foreground' : 'text-destructive']">
+        {{ result.error }}
+      </p>
+    </template>
+  </div>
+</template>
