@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import log from 'electron-log/main'
 import { getDatabase, schema } from '../db'
 import { encryptionService } from './encryption.service'
-import type { AIProvider, ProviderConfig, ValidationResult, AppSettings } from '../../shared/types'
+import type { AIProvider, ProviderConfig, ThemeMode, ValidationResult, AppSettings } from '../../shared/types'
 import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS } from '../../shared/types'
 
 function maskKey(key: string): string {
@@ -41,12 +41,13 @@ export class SettingsService {
     return encryptionService.decrypt(row.value, row.encrypted ?? false)
   }
 
-  async getTheme(): Promise<'dark' | 'light'> {
+  async getTheme(): Promise<ThemeMode> {
     const theme = await this.get('theme')
-    return theme === 'light' ? 'light' : 'dark'
+    if (theme === 'system' || theme === 'dark' || theme === 'light') return theme
+    return 'system'
   }
 
-  async setTheme(theme: 'dark' | 'light'): Promise<void> {
+  async setTheme(theme: ThemeMode): Promise<void> {
     await this.set('theme', theme)
   }
 
