@@ -12,12 +12,10 @@ const props = defineProps<{
 const exporting = ref(false)
 const errorMessage = ref<string | null>(null)
 
-/** Converts to IPC-safe plain objects (unwraps Vue proxies, handles BigInt/Date/Buffer) */
-function sanitizeForIpc(rows: Record<string, unknown>[]): Record<string, unknown>[] {
-  return JSON.parse(
-    JSON.stringify(rows, (_key, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )
+/** Serializes rows to JSON string for IPC (handles BigInt, avoids structured clone issues) */
+function toExportPayload(rows: Record<string, unknown>[]): string {
+  return JSON.stringify(rows, (_key, value) =>
+    typeof value === 'bigint' ? value.toString() : value
   )
 }
 
@@ -38,7 +36,14 @@ async function exportCsv(): Promise<void> {
       filters: [{ name: 'CSV', extensions: ['csv'] }]
     })
     if (path) {
-      await window.exportApi.exportCsv(path, props.columns, sanitizeForIpc(props.rows))
+      let jsonRows: string
+      try {
+        jsonRows = toExportPayload(props.rows)
+      } catch {
+        errorMessage.value = 'Export data could not be serialized'
+        return
+      }
+      await window.exportApi.exportCsv(path, props.columns, jsonRows)
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Export failed'
@@ -57,7 +62,14 @@ async function exportExcel(): Promise<void> {
       filters: [{ name: 'Excel', extensions: ['xlsx'] }]
     })
     if (path) {
-      await window.exportApi.exportExcel(path, props.columns, sanitizeForIpc(props.rows))
+      let jsonRows: string
+      try {
+        jsonRows = toExportPayload(props.rows)
+      } catch {
+        errorMessage.value = 'Export data could not be serialized'
+        return
+      }
+      await window.exportApi.exportExcel(path, props.columns, jsonRows)
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Export failed'

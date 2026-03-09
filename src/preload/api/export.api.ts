@@ -6,15 +6,9 @@ export const exportApi = {
     filters?: { name: string; extensions: string[] }[]
   }): Promise<string | null> => ipcRenderer.invoke('export:showSaveDialog', options ?? {}),
 
-  exportCsv: (
-    filePath: string,
-    columns: string[],
-    rows: Record<string, unknown>[]
-  ): Promise<void> => ipcRenderer.invoke('export:csv', filePath, columns, rows),
+  exportCsv: (filePath: string, columns: string[], jsonRows: string): Promise<void> =>
+    ipcRenderer.invoke('export:csv', filePath, columns, jsonRows),
 
-  exportExcel: (
-    filePath: string,
-    columns: string[],
-    rows: Record<string, unknown>[]
-  ): Promise<void> => ipcRenderer.invoke('export:excel', filePath, columns, rows)
+  exportExcel: (filePath: string, columns: string[], jsonRows: string): Promise<void> =>
+    ipcRenderer.invoke('export:excel', filePath, columns, jsonRows)
 }

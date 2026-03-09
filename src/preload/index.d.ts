@@ -88,8 +88,8 @@ interface ExportApi {
     defaultPath?: string
     filters?: { name: string; extensions: string[] }[]
   }) => Promise<string | null>
-  exportCsv: (filePath: string, columns: string[], rows: Record<string, unknown>[]) => Promise<void>
-  exportExcel: (filePath: string, columns: string[], rows: Record<string, unknown>[]) => Promise<void>
+  exportCsv: (filePath: string, columns: string[], jsonRows: string) => Promise<void>
+  exportExcel: (filePath: string, columns: string[], jsonRows: string) => Promise<void>
 }
 
 interface AppApi {
