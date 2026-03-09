@@ -3,6 +3,7 @@ import type {
   AIProvider,
   AppSettings,
   ProviderConfig,
+  ThemeMode,
   ValidationResult,
   DatabaseConnection,
   ConnectionConfig,
@@ -16,8 +17,10 @@ import type {
 
 interface SettingsApi {
   getAll: () => Promise<AppSettings>
-  getTheme: () => Promise<'dark' | 'light'>
-  setTheme: (theme: 'dark' | 'light') => Promise<void>
+  getTheme: () => Promise<ThemeMode>
+  setTheme: (theme: ThemeMode) => Promise<void>
+  getSystemTheme: () => Promise<'dark' | 'light'>
+  onSystemThemeChange: (callback: (theme: 'dark' | 'light') => void) => () => void
   get: (key: string) => Promise<string | null>
   set: (key: string, value: string) => Promise<void>
   getProviderConfig: (provider: AIProvider) => Promise<ProviderConfig>
