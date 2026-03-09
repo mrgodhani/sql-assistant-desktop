@@ -11,6 +11,22 @@ describe('MessageActions', () => {
     expect(wrapper.emitted('copy')).toHaveLength(1)
   })
 
+  it('shows "Copied" when copied prop is true', () => {
+    const wrapper = mount(MessageActions, {
+      props: { role: 'user', copied: true }
+    })
+    expect(wrapper.find('[aria-label="Copied"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Copied')
+  })
+
+  it('shows Copy icon when copied prop is false', () => {
+    const wrapper = mount(MessageActions, {
+      props: { role: 'user', copied: false }
+    })
+    expect(wrapper.find('[aria-label="Copy"]').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('Copied')
+  })
+
   it('shows Edit for user only', () => {
     const userWrapper = mount(MessageActions, {
       props: { role: 'user' }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { ChatMessage as ChatMessageType } from '../../../../shared/types'
 import MessageActions from './MessageActions.vue'
 import MessageContent from './MessageContent.vue'
@@ -17,9 +17,14 @@ const chatStore = useChatStore()
 const resultsStore = useResultsStore()
 
 const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant'))
+const copied = ref(false)
 
-function noop(): void {
-  /* placeholder for Copy - implemented in later tasks */
+async function onCopy(): Promise<void> {
+  await navigator.clipboard.writeText(props.message.content)
+  copied.value = true
+  setTimeout(() => {
+    copied.value = false
+  }, 2000)
 }
 
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
@@ -60,7 +65,8 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
         <MessageActions
           :role="role"
           :is-streaming="isStreaming ?? false"
-          @copy="noop"
+          :copied="copied"
+          @copy="onCopy"
           @regenerate="() => chatStore.regenerateResponse(messageIndex)"
           @edit="() => chatStore.editAndResend(messageIndex)"
         />

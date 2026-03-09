@@ -6,8 +6,9 @@ const props = withDefaults(
   defineProps<{
     role: 'user' | 'assistant'
     isStreaming?: boolean
+    copied?: boolean
   }>(),
-  { isStreaming: false }
+  { isStreaming: false, copied: false }
 )
 
 const emit = defineEmits<{
@@ -36,18 +37,13 @@ function onEdit(): void {
     <Button
       variant="ghost"
       size="sm"
-      aria-label="Copy"
+      :aria-label="copied ? 'Copied' : 'Copy'"
       @click="onCopy"
     >
-      <Copy class="size-4" />
+      <span v-if="copied">Copied</span>
+      <Copy v-else class="size-4" />
     </Button>
-    <Button
-      v-if="role === 'user'"
-      variant="ghost"
-      size="sm"
-      aria-label="Edit"
-      @click="onEdit"
-    >
+    <Button v-if="role === 'user'" variant="ghost" size="sm" aria-label="Edit" @click="onEdit">
       <Pencil class="size-4" />
     </Button>
     <Button
