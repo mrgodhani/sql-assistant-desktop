@@ -45,5 +45,6 @@ if (process.contextIsolated) {
   window.conversationApi = conversationApi
   // @ts-ignore (define in dts)
   window.exportApi = exportApi
+  // @ts-ignore (define in dts)
   window.logsApi = logsApi
 }
