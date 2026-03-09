@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ChatMessage as ChatMessageType } from '../../../../shared/types'
+import MessageActions from './MessageActions.vue'
 import MessageContent from './MessageContent.vue'
+import MessageHeader from './MessageHeader.vue'
 import { useChatStore } from '@renderer/stores/useChatStore'
 import { useResultsStore } from '@renderer/stores/useResultsStore'
 
@@ -13,6 +15,12 @@ const props = defineProps<{
 
 const chatStore = useChatStore()
 const resultsStore = useResultsStore()
+
+const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant'))
+
+function noop(): void {
+  /* placeholder for Copy, Regenerate, Edit - implemented in later tasks */
+}
 
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
   const connectionId =
@@ -46,25 +54,38 @@ async function onRunSql(code: string, blockIndex: number): Promise<void> {
   }
 }
 
-const isUser = computed(() => props.message.role === 'user')
 const hasError = computed(() => props.message.content.includes('**Error:**'))
 </script>
 
 <template>
-  <div :class="['flex w-full', isUser ? 'justify-end' : 'justify-start']">
-    <div
-      :class="[
-        'max-w-[85%] rounded-lg px-3 py-2 text-sm',
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-muted',
-        hasError && 'border border-destructive/50'
-      ]"
-    >
-      <MessageContent
-        :message="message"
-        :message-index="messageIndex"
-        :is-streaming="isStreaming"
-        @run="(code, blockIndex) => onRunSql(code, blockIndex)"
-      />
+  <div
+    :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']"
+  >
+    <div class="flex max-w-[85%] flex-col items-start gap-1">
+      <div class="flex items-center gap-2">
+        <MessageHeader :role="role" />
+        <MessageActions
+          :role="role"
+          :is-streaming="isStreaming ?? false"
+          @copy="noop"
+          @regenerate="noop"
+          @edit="noop"
+        />
+      </div>
+      <div
+        :class="[
+          'rounded-lg px-3 py-2 text-sm',
+          role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
+          hasError && 'border border-destructive/50'
+        ]"
+      >
+        <MessageContent
+          :message="message"
+          :message-index="messageIndex"
+          :is-streaming="isStreaming"
+          @run="(code, blockIndex) => onRunSql(code, blockIndex)"
+        />
+      </div>
     </div>
   </div>
 </template>
