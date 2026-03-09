@@ -1,64 +1,38 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Plus } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { onMounted } from 'vue'
 import ConnectionForm from '@renderer/components/connections/ConnectionForm.vue'
 import ConnectionList from '@renderer/components/connections/ConnectionList.vue'
 import { useConnectionStore } from '@renderer/stores/useConnectionStore'
+import { useConnectionsViewStore } from '@renderer/stores/useConnectionsViewStore'
 
-const store = useConnectionStore()
-
-const mode = ref<'list' | 'create' | 'edit'>('list')
-const editingConnectionId = ref<string | null>(null)
+const connectionStore = useConnectionStore()
+const connectionsViewStore = useConnectionsViewStore()
 
 onMounted(async () => {
-  if (!store.connections.length) {
-    await store.loadConnections()
+  if (!connectionStore.connections.length) {
+    await connectionStore.loadConnections()
   }
 })
 
 function onEdit(connectionId: string): void {
-  editingConnectionId.value = connectionId
-  mode.value = 'edit'
+  connectionsViewStore.setEditMode(connectionId)
 }
 
 function onSaved(): void {
-  mode.value = 'list'
-  editingConnectionId.value = null
+  connectionsViewStore.setListMode()
 }
 
 function cancelForm(): void {
-  mode.value = 'list'
-  editingConnectionId.value = null
+  connectionsViewStore.setListMode()
 }
 </script>
 
 <template>
   <div class="h-full overflow-y-auto" data-testid="connections-view">
     <div class="mx-auto max-w-3xl p-6">
-      <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-2xl font-bold tracking-tight">Database Connections</h1>
-        <Button
-          v-if="mode === 'list'"
-          data-testid="connections-new-button"
-          @click="mode = 'create'"
-        >
-          <Plus class="mr-2 size-4" />
-          New Connection
-        </Button>
-        <Button
-          v-else
-          variant="ghost"
-          data-testid="connections-cancel-button"
-          @click="cancelForm"
-        >
-          Cancel
-        </Button>
-      </div>
-
       <ConnectionForm
-        v-if="mode !== 'list'"
-        :connection-id="editingConnectionId ?? undefined"
+        v-if="connectionsViewStore.mode !== 'list'"
+        :connection-id="connectionsViewStore.editingConnectionId ?? undefined"
         @saved="onSaved"
         @cancel="cancelForm"
       />

@@ -59,6 +59,16 @@ describe('stripConnectionStringParams', () => {
   })
 })
 
+import { databaseService } from './database.service'
+
+describe('validateSql', () => {
+  it('returns invalid for empty sql', async () => {
+    const result = await databaseService.validateSql('non-existent-id', '   ')
+    expect(result.valid).toBe(false)
+    expect(result.error).toContain('SQL query is required')
+  })
+})
+
 describe('buildConnectionString', () => {
   it('builds PostgreSQL connection string', () => {
     const config: ConnectionConfig = {

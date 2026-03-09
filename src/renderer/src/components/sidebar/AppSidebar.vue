@@ -62,7 +62,7 @@ const activeClasses = computed(() => (path: string) =>
           <TooltipTrigger as-child>
             <Button
               variant="outline"
-              class="w-full justify-start gap-2"
+              class="w-full justify-start gap-2 hover:shadow-sm"
               data-testid="sidebar-new-chat-button"
               @click="onNewChat"
             >
@@ -83,7 +83,7 @@ const activeClasses = computed(() => (path: string) =>
         :key="item.to"
         :to="item.to"
         :class="[
-          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150',
           activeClasses(item.to)
         ]"
         :data-testid="`sidebar-nav-${item.label.toLowerCase()}`"
@@ -95,21 +95,25 @@ const activeClasses = computed(() => (path: string) =>
 
     <Separator class="my-2" />
 
-    <ScrollArea class="flex-1 px-2">
-      <EmptyState v-if="!connectionStore.connections.length" message="No connections yet" />
+    <ScrollArea class="flex-1 min-h-0 px-2">
+      <div v-if="!connectionStore.connections.length" class="py-2">
+        <EmptyState message="No connections yet" />
+      </div>
       <template v-else>
-        <SidebarConnectionItem
-          v-for="conn in connectionStore.connections"
-          :key="conn.id"
-          :connection="conn"
-          :status="connectionStore.getStatus(conn.id).status"
-        />
+        <div class="space-y-3 py-2">
+          <SidebarConnectionItem
+            v-for="conn in connectionStore.connections"
+            :key="conn.id"
+            :connection="conn"
+            :status="connectionStore.getStatus(conn.id).status"
+          />
+        </div>
       </template>
     </ScrollArea>
 
     <Separator />
 
-    <ScrollArea class="flex-1 px-2">
+    <ScrollArea class="flex-1 min-h-0 px-2">
       <ConversationList />
     </ScrollArea>
   </aside>

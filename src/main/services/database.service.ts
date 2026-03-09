@@ -14,7 +14,8 @@ import type {
   ConnectionConfig,
   ConnectionTestResult,
   ConnectionResult,
-  QueryResult
+  QueryResult,
+  SqlValidationResult
 } from '../../shared/types'
 import { DEFAULT_PORTS } from '../../shared/types'
 
@@ -44,6 +45,18 @@ function sanitizeConnectionError(error: unknown): string {
   if (/SQLITE_CANTOPEN/i.test(msg)) return 'Cannot open database file. Check the file path.'
 
   return 'Connection failed. Please verify your settings.'
+}
+
+function sanitizeValidationError(error: unknown): string {
+  const msg = error instanceof Error ? error.message : String(error)
+  if (/syntax|parse|invalid sql/i.test(msg)) return 'Invalid SQL syntax. Check your query.'
+  if (/permission|access denied|unauthorized/i.test(msg))
+    return 'Permission denied. Check database user privileges.'
+  if (/connection|ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(msg))
+    return 'Connection lost. Please reconnect.'
+  if (/timeout|timed out/i.test(msg)) return 'Validation timed out.'
+  if (/Connection is not active/i.test(msg)) return 'Connection lost. Please reconnect.'
+  return 'Validation failed. Please check your SQL.'
 }
 
 /** Standard PostgreSQL connection params that pg driver recognizes. Others (e.g. from TablePlus, DataGrip) are stripped. */
@@ -333,6 +346,47 @@ class DatabaseService {
       rowCount: DatabaseService.ROW_LIMIT,
       executionTimeMs: result.executionTimeMs,
       truncated: true
+    }
+  }
+
+  async validateSql(connectionId: string, sql: string): Promise<SqlValidationResult> {
+    const trimmed = sql.trim()
+    if (!trimmed) {
+      return { valid: false, error: 'SQL query is required' }
+    }
+
+    const handle = this.pools.get(connectionId)
+    if (!handle) {
+      return { valid: false, error: 'Connection lost. Please reconnect.' }
+    }
+
+    try {
+      switch (handle.type) {
+        case 'postgresql': {
+          const id = randomUUID().replace(/-/g, '_').slice(0, 16)
+          const tag = `sql${id}`
+          await handle.pool.query(`PREPARE validate_${id} AS $${tag}$${trimmed}$${tag}$`)
+          await handle.pool.query(`DEALLOCATE PREPARE validate_${id}`)
+          return { valid: true }
+        }
+        case 'mysql': {
+          const escaped = trimmed.replace(/\\/g, '\\\\').replace(/'/g, "''")
+          await handle.pool.query(`SET @s = '${escaped}'`)
+          await handle.pool.query('PREPARE stmt FROM @s')
+          await handle.pool.query('DEALLOCATE PREPARE stmt')
+          return { valid: true }
+        }
+        case 'sqlite': {
+          handle.pool.prepare(trimmed)
+          return { valid: true }
+        }
+        case 'sqlserver': {
+          await handle.pool.request().query(`SET PARSEONLY ON; ${trimmed}; SET PARSEONLY OFF`)
+          return { valid: true }
+        }
+      }
+    } catch (error) {
+      return { valid: false, error: sanitizeValidationError(error) }
     }
   }
 

@@ -173,7 +173,7 @@ function toggleSort(col: string): void {
                       : 'descending'
                     : undefined
                 "
-                class="cursor-pointer whitespace-nowrap border-b border-border px-3 py-2 text-left font-medium hover:bg-muted/80"
+                class="cursor-pointer whitespace-nowrap border-b border-border px-3 py-2 text-left font-medium transition-colors duration-100 hover:bg-muted/80"
                 @click="toggleSort(col)"
               >
                 {{ col }}
@@ -189,7 +189,7 @@ function toggleSort(col: string): void {
               <tr
                 v-for="(row, ri) in sortedRows"
                 :key="ri"
-                class="border-b border-border/50 hover:bg-muted/30"
+                class="border-b border-border/50 transition-colors duration-100 hover:bg-muted/30"
               >
                 <td
                   v-for="col in columns"
@@ -228,7 +228,7 @@ function toggleSort(col: string): void {
             <div
               v-for="virtualRow in virtualizer.getVirtualItems()"
               :key="String(virtualRow.key)"
-              class="absolute left-0 grid w-full border-b border-border/50 bg-background"
+              class="absolute left-0 grid w-full border-b border-border/50 bg-background transition-colors duration-100 hover:bg-muted/30"
               :style="{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,

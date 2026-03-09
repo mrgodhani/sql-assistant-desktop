@@ -8,6 +8,7 @@ import { dbApi } from './api/db.api'
 import { conversationApi } from './api/conversation.api'
 import { exportApi } from './api/export.api'
 import { logsApi } from './api/logs.api'
+import { platformApi } from './api/platform.api'
 
 const api = {
   settings: settingsApi
@@ -24,6 +25,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('conversationApi', conversationApi)
     contextBridge.exposeInMainWorld('exportApi', exportApi)
     contextBridge.exposeInMainWorld('logsApi', logsApi)
+    contextBridge.exposeInMainWorld('platformApi', platformApi)
   } catch (error) {
     console.error('[Preload] Failed to expose APIs:', error)
   }
@@ -46,4 +48,6 @@ if (process.contextIsolated) {
   window.exportApi = exportApi
   // @ts-ignore (define in dts)
   window.logsApi = logsApi
+  // @ts-ignore (define in dts)
+  window.platformApi = platformApi
 }

@@ -29,7 +29,11 @@ const SUGGESTED_PROMPTS = [
 const isStreaming = computed(() => Boolean(chatStore.streamingState))
 const canSend = computed(() => {
   const trimmed = input.value.trim()
-  return trimmed.length > 0 && !isStreaming.value
+  return (
+    trimmed.length > 0 &&
+    !isStreaming.value &&
+    Boolean(chatStore.activeConnectionId)
+  )
 })
 
 function insertSuggestedPrompt(text: string): void {
@@ -38,6 +42,7 @@ function insertSuggestedPrompt(text: string): void {
 }
 
 function send(): void {
+  if (!chatStore.activeConnectionId) return
   const validated = chatStore.validateMessage(input.value.trim())
   if (!validated || validated === 'Message too long') return
   chatStore.sendMessage(validated)
@@ -62,6 +67,7 @@ function onKeydown(e: KeyboardEvent): void {
         variant="outline"
         size="sm"
         class="text-xs"
+        :disabled="!chatStore.activeConnectionId"
         @click="insertSuggestedPrompt(prompt.text)"
       >
         {{ prompt.text }}
@@ -71,9 +77,13 @@ function onKeydown(e: KeyboardEvent): void {
       <Textarea
         ref="textareaRef"
         v-model="input"
-        placeholder="Ask a question about your database... (Enter to send, Shift+Enter for new line)"
+        :placeholder="
+          chatStore.activeConnectionId
+            ? 'Ask a question about your database... (Enter to send, Shift+Enter for new line)'
+            : 'Select a connection above to start'
+        "
         class="min-h-12 flex-1 resize-none"
-        :disabled="isStreaming"
+        :disabled="isStreaming || !chatStore.activeConnectionId"
         :aria-label="isStreaming ? 'Waiting for response' : 'Message input'"
         @keydown="onKeydown"
       />

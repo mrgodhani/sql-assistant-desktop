@@ -26,7 +26,7 @@ const typeLabel = computed(() => DATABASE_TYPE_LABELS[props.connection.type])
 
 <template>
   <div
-    class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-sidebar-foreground"
+    class="flex items-center gap-2 rounded-md px-3 py-2.5 text-sm text-sidebar-foreground transition-colors duration-150 hover:bg-sidebar-accent/50"
     :title="`${connection.name} (${typeLabel}) — ${status}`"
     data-testid="sidebar-connection-item"
   >

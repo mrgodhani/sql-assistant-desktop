@@ -53,6 +53,7 @@ export const useChatStore = defineStore('chat', () => {
       const conv = await window.conversationApi.get(id)
       if (conv) {
         currentConversation.value = conv
+        activeConnectionId.value = conv.connectionId ?? null
       }
     } catch {
       currentConversation.value = null

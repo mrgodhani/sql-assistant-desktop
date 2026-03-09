@@ -51,13 +51,13 @@ watch(
 </script>
 
 <template>
-  <div class="space-y-1">
+  <div class="space-y-3 py-2">
     <template v-if="chatStore.conversations.length > 0">
       <button
         v-for="conv in chatStore.conversations"
         :key="conv.id"
         type="button"
-        class="group flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-sidebar-accent/50"
+        class="group flex w-full items-center gap-2 rounded-md px-3 py-3 text-left text-sm transition-colors duration-150 hover:bg-sidebar-accent/50"
         :class="{
           'bg-sidebar-accent text-sidebar-accent-foreground':
             chatStore.currentConversation?.id === conv.id
@@ -72,7 +72,7 @@ watch(
         <Button
           variant="ghost"
           size="icon"
-          class="size-7 shrink-0 opacity-0 hover:opacity-100 group-hover:opacity-100"
+          class="size-7 shrink-0 opacity-0 transition-opacity duration-150 hover:opacity-100 group-hover:opacity-100"
           @click="(e: Event) => deleteConversation(e, conv.id)"
         >
           <Trash2 class="size-3.5" />

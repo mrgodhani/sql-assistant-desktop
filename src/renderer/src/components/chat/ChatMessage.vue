@@ -34,7 +34,12 @@ async function onCopy(): Promise<void> {
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
   const connectionId =
     chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
-  const result = await resultsStore.executeQuery(connectionId, code, props.messageIndex, blockIndex)
+  const result = await resultsStore.executeQuery(
+    connectionId,
+    code,
+    props.messageIndex,
+    blockIndex
+  )
   const messageId = props.message.id
   if (messageId && result.success && result.result) {
     try {

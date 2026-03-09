@@ -124,6 +124,11 @@ export interface ExecutionResult {
   error?: string
 }
 
+export interface SqlValidationResult {
+  valid: boolean
+  error?: string
+}
+
 // ─── Chart & Export Types ────────────────────────────────────────────────────
 
 export type ChartType = 'bar' | 'line' | 'pie' | 'scatter' | 'area'

@@ -3,7 +3,6 @@ import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { MessageSquare } from 'lucide-vue-next'
 import { useChatStore } from '@renderer/stores/useChatStore'
-import ChatHeader from '@renderer/components/chat/ChatHeader.vue'
 import ChatMessages from '@renderer/components/chat/ChatMessages.vue'
 import ChatInput from '@renderer/components/chat/ChatInput.vue'
 import EmptyState from '@renderer/components/shared/EmptyState.vue'
@@ -30,7 +29,6 @@ watch(
 
 <template>
   <div class="flex h-full flex-col" data-testid="chat-view">
-    <ChatHeader />
     <ChatMessages v-if="chatStore.currentConversation?.messages.length" />
     <div
       v-else
@@ -39,7 +37,11 @@ watch(
       <EmptyState
         :icon="MessageSquare"
         title="Chat"
-        message="Connect to a database and start asking questions"
+        :message="
+          chatStore.activeConnectionId
+            ? 'Connect to a database and start asking questions'
+            : 'Select a connection above to start'
+        "
       />
     </div>
     <ChatInput />
