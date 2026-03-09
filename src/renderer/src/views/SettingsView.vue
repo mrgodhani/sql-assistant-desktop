@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ThemeSettings from '@renderer/components/settings/ThemeSettings.vue'
 import ProviderSettings from '@renderer/components/settings/ProviderSettings.vue'
+import LogsSettings from '@renderer/components/settings/LogsSettings.vue'
 </script>
 
 <template>
@@ -10,6 +11,7 @@ import ProviderSettings from '@renderer/components/settings/ProviderSettings.vue
       <div class="space-y-6">
         <ThemeSettings />
         <ProviderSettings />
+        <LogsSettings />
       </div>
     </div>
   </div>
