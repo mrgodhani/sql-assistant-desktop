@@ -135,6 +135,13 @@ export interface ChartConfig {
   labelColumn: string | null
 }
 
+export interface ReportExportOptions {
+  title: string
+  logoPath?: string
+  includeChart: boolean
+  chartImageBase64?: string
+}
+
 // ─── AI Chat Types ──────────────────────────────────────────────────────────
 
 export interface ChatMessage {
