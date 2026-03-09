@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.sql-assist.desktop
 productName: sql-assist-desktop
 directories:
   buildResources: build
@@ -22,10 +22,8 @@ nsis:
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder for database files and exports.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder for saving exports.
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
@@ -39,6 +37,7 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
+# Update publish.url when auto-update server is ready
 publish:
   provider: generic
   url: https://example.com/auto-updates

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import type { AcceptableValue } from 'reka-ui'
 import {
   Select,
   SelectContent,
@@ -174,8 +175,8 @@ async function pickFile(): Promise<void> {
   }
 }
 
-function onTypeChange(value: string): void {
-  form.type = value as DatabaseType
+function onTypeChange(value: AcceptableValue): void {
+  if (typeof value === 'string') form.type = value as DatabaseType
 }
 </script>
 

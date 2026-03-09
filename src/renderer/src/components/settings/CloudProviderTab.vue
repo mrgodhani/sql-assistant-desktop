@@ -5,6 +5,7 @@ import type { AIProvider, ValidationResult } from '@renderer/stores/useSettingsS
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { AcceptableValue } from 'reka-ui'
 import {
   Select,
   SelectContent,
@@ -58,10 +59,12 @@ async function testApiKey(): Promise<void> {
   }
 }
 
-function onModelChange(model: string): void {
-  settingsStore.updateProviderConfig(props.provider, { selectedModel: model })
-  if (isActive.value) {
-    settingsStore.setModel(model)
+function onModelChange(model: AcceptableValue): void {
+  if (typeof model === 'string') {
+    settingsStore.updateProviderConfig(props.provider, { selectedModel: model })
+    if (isActive.value) {
+      settingsStore.setModel(model)
+    }
   }
 }
 

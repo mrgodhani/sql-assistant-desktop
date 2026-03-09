@@ -95,7 +95,7 @@ function renderChart(): void {
     maintainAspectRatio: false,
     plugins: { legend: { display: chartType.value !== 'pie' } }
   }
-  if (type !== 'pie' && type !== 'doughnut') {
+  if (type !== 'pie') {
     options.scales = { x: { display: true }, y: { beginAtZero: true } }
   }
   chartInstance = new Chart(chartRef.value, {

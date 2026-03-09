@@ -24,7 +24,11 @@ function formatTime(ms: number): string {
 </script>
 
 <template>
-  <div class="mt-2 rounded-lg border border-border bg-muted/20 p-3">
+  <div
+    class="mt-2 rounded-lg border border-border bg-muted/20 p-3"
+    aria-live="polite"
+    aria-atomic="true"
+  >
     <template v-if="result?.success && result.result">
       <div class="mb-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div class="flex flex-wrap items-center gap-3">

@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useSettingsStore } from '@renderer/stores/useSettingsStore'
 import AppLayout from '@renderer/layouts/AppLayout.vue'
+import ErrorBoundary from '@renderer/components/shared/ErrorBoundary.vue'
 
 const settingsStore = useSettingsStore()
 
@@ -11,5 +12,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppLayout />
+  <ErrorBoundary>
+    <AppLayout />
+  </ErrorBoundary>
 </template>
