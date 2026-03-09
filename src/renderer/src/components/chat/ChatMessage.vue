@@ -94,23 +94,25 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
         <p class="whitespace-pre-wrap">{{ message.content }}</p>
       </template>
       <template v-else>
-        <template v-for="(seg, i) in segments" :key="i">
-          <div
-            v-if="seg.type === 'text'"
-            class="prose prose-sm dark:prose-invert max-w-none"
-            v-html="renderMarkdown(seg.content)"
-          />
-          <template v-else>
-            <SqlCodeBlock :code="seg.content" :block-index="i" @run="(code) => onRunSql(code, i)" />
-            <ResultsPanel
-              v-if="resultsStore.getResult(messageIndex, i)"
-              :message-index="messageIndex"
-              :block-index="i"
-              :connection-id="chatStore.activeConnectionId"
+        <div class="space-y-4">
+          <template v-for="(seg, i) in segments" :key="i">
+            <div
+              v-if="seg.type === 'text'"
+              class="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-3"
+              v-html="renderMarkdown(seg.content)"
             />
+            <template v-else>
+              <SqlCodeBlock :code="seg.content" :block-index="i" @run="(code) => onRunSql(code, i)" />
+              <ResultsPanel
+                v-if="resultsStore.getResult(messageIndex, i)"
+                :message-index="messageIndex"
+                :block-index="i"
+                :connection-id="chatStore.activeConnectionId"
+              />
+            </template>
           </template>
-        </template>
-        <span v-if="isStreaming" class="animate-pulse">▌</span>
+          <span v-if="isStreaming" class="animate-pulse">▌</span>
+        </div>
       </template>
     </div>
   </div>
