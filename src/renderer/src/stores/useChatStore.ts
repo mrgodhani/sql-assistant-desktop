@@ -15,6 +15,7 @@ export const useChatStore = defineStore('chat', () => {
   const activeConnectionId = ref<string | null>(null)
   const conversations = ref<ConversationSummary[]>([])
   const inputContentForEdit = ref<string | null>(null)
+  const regenerateError = ref<{ message: string; messageIndex: number } | null>(null)
 
   function validateMessage(text: string): string | null {
     const trimmed = text.trim()
@@ -102,7 +103,8 @@ export const useChatStore = defineStore('chat', () => {
   async function performStreaming(
     conv: Conversation,
     messageIndex: number,
-    requestId: string
+    requestId: string,
+    options?: { isRegenerate?: boolean }
   ): Promise<void> {
     let schemaContext = ''
     let databaseType: 'postgresql' | 'mysql' | 'sqlite' | 'sqlserver' | undefined
@@ -157,6 +159,11 @@ export const useChatStore = defineStore('chat', () => {
         requestId
       })
     } catch (err) {
+      if (options?.isRegenerate) {
+        streamingState.value = null
+        window.aiApi.offStreamChunk()
+        throw err
+      }
       conv.messages[messageIndex].content =
         `**Error:** ${err instanceof Error ? err.message : 'Request failed'}`
       streamingState.value = null
@@ -169,6 +176,8 @@ export const useChatStore = defineStore('chat', () => {
     const validated = validateMessage(text)
     if (!validated) return
     if (streamingState.value) return
+
+    regenerateError.value = null
 
     if (!currentConversation.value) {
       await startNewConversation()
@@ -212,6 +221,9 @@ export const useChatStore = defineStore('chat', () => {
     const msg = conv.messages[messageIndex]
     if (!msg || msg.role !== 'assistant') return
 
+    regenerateError.value = null
+
+    const originalMsg = { ...msg }
     conv.messages.splice(messageIndex, 1)
     conv.updatedAt = new Date().toISOString()
 
@@ -225,7 +237,16 @@ export const useChatStore = defineStore('chat', () => {
     const newMessageIndex = conv.messages.length - 1
     const requestId = crypto.randomUUID()
 
-    await performStreaming(conv, newMessageIndex, requestId)
+    try {
+      await performStreaming(conv, newMessageIndex, requestId, { isRegenerate: true })
+    } catch (err) {
+      conv.messages.splice(newMessageIndex, 1)
+      conv.messages.splice(messageIndex, 0, originalMsg)
+      regenerateError.value = {
+        message: err instanceof Error ? err.message : 'Request failed',
+        messageIndex
+      }
+    }
   }
 
   function clearInputContentForEdit(): void {
@@ -257,6 +278,7 @@ export const useChatStore = defineStore('chat', () => {
     activeConnectionId,
     conversations,
     inputContentForEdit,
+    regenerateError,
     sendMessage,
     regenerateResponse,
     editAndResend,

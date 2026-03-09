@@ -20,11 +20,15 @@ const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant
 const copied = ref(false)
 
 async function onCopy(): Promise<void> {
-  await navigator.clipboard.writeText(props.message.content)
-  copied.value = true
-  setTimeout(() => {
-    copied.value = false
-  }, 2000)
+  try {
+    await navigator.clipboard.writeText(props.message.content)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch {
+    // ignore copy failure
+  }
 }
 
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
@@ -55,13 +59,19 @@ async function onRunSql(code: string, blockIndex: number): Promise<void> {
 }
 
 const hasError = computed(() => props.message.content.includes('**Error:**'))
+
+const showRegenerateError = computed(
+  () =>
+    role.value === 'assistant' &&
+    chatStore.regenerateError?.messageIndex === props.messageIndex
+)
 </script>
 
 <template>
   <div :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']">
     <div class="flex max-w-[85%] flex-col items-start gap-1">
       <div class="flex items-center gap-2">
-        <MessageHeader :role="role" />
+        <MessageHeader :role="role" :has-error="hasError" />
         <MessageActions
           :role="role"
           :is-streaming="isStreaming ?? false"
@@ -85,6 +95,12 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
           @run="(code, blockIndex) => onRunSql(code, blockIndex)"
         />
       </div>
+      <p
+        v-if="showRegenerateError && chatStore.regenerateError"
+        class="text-xs text-destructive"
+      >
+        {{ chatStore.regenerateError.message }}
+      </p>
     </div>
   </div>
 </template>

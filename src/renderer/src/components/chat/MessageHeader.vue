@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { User, Bot } from 'lucide-vue-next'
+import { User, Bot, AlertCircle } from 'lucide-vue-next'
 
 const props = withDefaults(
   defineProps<{
     role: 'user' | 'assistant'
     timestamp?: string
+    hasError?: boolean
   }>(),
-  { timestamp: undefined }
+  { timestamp: undefined, hasError: false }
 )
 
 const label = computed(() => (props.role === 'user' ? 'You' : 'Assistant'))
@@ -25,6 +26,11 @@ const avatarClasses = computed(() =>
       <Bot v-else class="size-4" />
     </div>
     <span class="text-sm font-medium">{{ label }}</span>
+    <AlertCircle
+      v-if="role === 'assistant' && hasError"
+      class="size-4 shrink-0 text-destructive"
+      aria-label="Error"
+    />
     <span v-if="timestamp" class="text-xs text-muted-foreground">{{ timestamp }}</span>
   </div>
 </template>
