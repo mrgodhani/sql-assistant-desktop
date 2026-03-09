@@ -1,3 +1,4 @@
+import log from 'electron-log/renderer'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type {
@@ -43,7 +44,7 @@ export const useConnectionStore = defineStore('connections', () => {
         }
       }
     } catch (error) {
-      console.error('[Connections] Failed to load connections:', error)
+      log.error('[Connections] Failed to load connections:', error)
     } finally {
       isLoading.value = false
     }
@@ -56,7 +57,7 @@ export const useConnectionStore = defineStore('connections', () => {
       setStatus(conn.id, 'disconnected')
       return conn
     } catch (error) {
-      console.error('[Connections] Failed to create connection:', error)
+      log.error('[Connections] Failed to create connection:', error)
       throw error
     }
   }
@@ -72,7 +73,7 @@ export const useConnectionStore = defineStore('connections', () => {
       setStatus(id, 'disconnected')
       return conn
     } catch (error) {
-      console.error('[Connections] Failed to update connection:', error)
+      log.error('[Connections] Failed to update connection:', error)
       throw error
     }
   }
@@ -83,7 +84,7 @@ export const useConnectionStore = defineStore('connections', () => {
       connections.value = connections.value.filter((c) => c.id !== id)
       delete connectionStatuses.value[id]
     } catch (error) {
-      console.error('[Connections] Failed to delete connection:', error)
+      log.error('[Connections] Failed to delete connection:', error)
       throw error
     }
   }
@@ -99,7 +100,7 @@ export const useConnectionStore = defineStore('connections', () => {
       }
     } catch (error) {
       setStatus(id, 'error', 'Connection failed unexpectedly')
-      console.error('[Connections] Connect failed:', error)
+      log.error('[Connections] Connect failed:', error)
     }
   }
 
@@ -108,7 +109,7 @@ export const useConnectionStore = defineStore('connections', () => {
       await window.connectionsApi.disconnect(id)
       setStatus(id, 'disconnected')
     } catch (error) {
-      console.error('[Connections] Disconnect failed:', error)
+      log.error('[Connections] Disconnect failed:', error)
     }
   }
 
@@ -116,7 +117,7 @@ export const useConnectionStore = defineStore('connections', () => {
     try {
       return await window.connectionsApi.test(config)
     } catch (error) {
-      console.error('[Connections] Test connection failed:', error)
+      log.error('[Connections] Test connection failed:', error)
       return { success: false, message: 'Test request failed' }
     }
   }
@@ -125,7 +126,7 @@ export const useConnectionStore = defineStore('connections', () => {
     try {
       return await window.connectionsApi.pickSqliteFile()
     } catch (error) {
-      console.error('[Connections] File picker failed:', error)
+      log.error('[Connections] File picker failed:', error)
       return null
     }
   }

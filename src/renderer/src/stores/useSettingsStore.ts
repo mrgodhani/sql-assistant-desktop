@@ -1,3 +1,4 @@
+import log from 'electron-log/renderer'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AIProvider, ProviderConfig, ValidationResult } from '../../../shared/types'
@@ -35,7 +36,7 @@ export const useSettingsStore = defineStore('settings', () => {
       activeModel.value = settings.activeModel
       providerConfigs.value = settings.providerConfigs
     } catch (error) {
-      console.error('[Settings] Failed to load settings:', error)
+      log.error('[Settings] Failed to load settings:', error)
       applyTheme('dark')
     }
   }
@@ -46,7 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       await window.api.settings.setTheme(newTheme)
     } catch (error) {
-      console.error('[Settings] Failed to persist theme:', error)
+      log.error('[Settings] Failed to persist theme:', error)
     }
   }
 
@@ -58,7 +59,7 @@ export const useSettingsStore = defineStore('settings', () => {
       await window.api.settings.set('activeProvider', provider)
       await window.api.settings.set('activeModel', activeModel.value)
     } catch (error) {
-      console.error('[Settings] Failed to persist provider:', error)
+      log.error('[Settings] Failed to persist provider:', error)
     }
   }
 
@@ -71,7 +72,7 @@ export const useSettingsStore = defineStore('settings', () => {
         selectedModel: model
       })
     } catch (error) {
-      console.error('[Settings] Failed to persist model:', error)
+      log.error('[Settings] Failed to persist model:', error)
     }
   }
 
@@ -83,7 +84,7 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       await window.api.settings.setProviderConfig(provider, config)
     } catch (error) {
-      console.error('[Settings] Failed to persist provider config:', error)
+      log.error('[Settings] Failed to persist provider config:', error)
     }
   }
 
@@ -95,7 +96,7 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       return await window.api.settings.validateApiKey(provider, key)
     } catch (error) {
-      console.error('[Settings] Validation failed:', error)
+      log.error('[Settings] Validation failed:', error)
       return { valid: false, message: 'Validation request failed' }
     }
   }
@@ -112,7 +113,7 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       return models
     } catch (error) {
-      console.error('[Settings] Failed to fetch Ollama models:', error)
+      log.error('[Settings] Failed to fetch Ollama models:', error)
       return []
     }
   }
