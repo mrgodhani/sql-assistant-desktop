@@ -1,7 +1,7 @@
 import log from 'electron-log/main'
 log.initialize()
 
-import { app, shell, BrowserWindow, dialog } from 'electron'
+import { app, shell, BrowserWindow, dialog, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -9,6 +9,7 @@ import { initializeDatabase, closeDatabase } from './db'
 import { registerAllIpc } from './ipc'
 import { createMigrationTables } from './db/migrate'
 import { databaseService } from './services/database.service'
+import { settingsService } from './services/settings.service'
 import { schemaService } from './services/schema.service'
 import { aiService } from './services/ai.service'
 
@@ -78,6 +79,9 @@ app.whenReady().then(async () => {
   }
 
   registerAllIpc()
+
+  const storedTheme = await settingsService.getTheme()
+  nativeTheme.themeSource = storedTheme === 'system' ? 'system' : storedTheme
 
   createWindow()
 

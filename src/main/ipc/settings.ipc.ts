@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron'
+import { ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { settingsService } from '../services/settings.service'
-import type { AIProvider, ProviderConfig } from '../../shared/types'
+import type { AIProvider, ProviderConfig, ThemeMode } from '../../shared/types'
 
 export function registerSettingsIpc(): void {
   ipcMain.handle('settings:getAll', async () => {
@@ -11,8 +11,22 @@ export function registerSettingsIpc(): void {
     return settingsService.getTheme()
   })
 
-  ipcMain.handle('settings:setTheme', async (_event, theme: 'dark' | 'light') => {
+  ipcMain.handle('settings:getSystemTheme', () => {
+    return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+  })
+
+  ipcMain.handle('settings:setTheme', async (_event, theme: ThemeMode) => {
     await settingsService.setTheme(theme)
+    nativeTheme.themeSource = theme === 'system' ? 'system' : theme
+  })
+
+  nativeTheme.on('updated', () => {
+    const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+    BrowserWindow.getAllWindows().forEach((win) => {
+      if (win.webContents && !win.webContents.isDestroyed()) {
+        win.webContents.send('settings:systemThemeChanged', theme)
+      }
+    })
   })
 
   ipcMain.handle('settings:get', async (_event, key: string) => {
