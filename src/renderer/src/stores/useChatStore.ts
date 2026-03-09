@@ -99,41 +99,11 @@ export const useChatStore = defineStore('chat', () => {
     window.aiApi.onStreamChunk(handler)
   }
 
-  async function sendMessage(text: string): Promise<void> {
-    const validated = validateMessage(text)
-    if (!validated) return
-    if (streamingState.value) return
-
-    if (!currentConversation.value) {
-      await startNewConversation()
-    }
-
-    const conv = currentConversation.value
-    if (!conv) return
-
-    try {
-      const userMessageId = await window.conversationApi.addMessage(conv.id, 'user', validated)
-      conv.messages.push({ id: userMessageId, role: 'user', content: validated })
-    } catch {
-      conv.messages.push({ role: 'user', content: validated })
-    }
-
-    conv.messages.push({ role: 'assistant', content: '' })
-    conv.updatedAt = new Date().toISOString()
-
-    if (conv.messages.length === 2) {
-      const title = validated.slice(0, 50) + (validated.length > 50 ? '...' : '')
-      conv.title = title
-      try {
-        await window.conversationApi.updateTitle(conv.id, title)
-      } catch {
-        // ignore
-      }
-    }
-
-    const messageIndex = conv.messages.length - 1
-    const requestId = crypto.randomUUID()
-
+  async function performStreaming(
+    conv: Conversation,
+    messageIndex: number,
+    requestId: string
+  ): Promise<void> {
     let schemaContext = ''
     let databaseType: 'postgresql' | 'mysql' | 'sqlite' | 'sqlserver' | undefined
     let connectionName: string | undefined
@@ -195,6 +165,69 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  async function sendMessage(text: string): Promise<void> {
+    const validated = validateMessage(text)
+    if (!validated) return
+    if (streamingState.value) return
+
+    if (!currentConversation.value) {
+      await startNewConversation()
+    }
+
+    const conv = currentConversation.value
+    if (!conv) return
+
+    try {
+      const userMessageId = await window.conversationApi.addMessage(conv.id, 'user', validated)
+      conv.messages.push({ id: userMessageId, role: 'user', content: validated })
+    } catch {
+      conv.messages.push({ role: 'user', content: validated })
+    }
+
+    conv.messages.push({ role: 'assistant', content: '' })
+    conv.updatedAt = new Date().toISOString()
+
+    if (conv.messages.length === 2) {
+      const title = validated.slice(0, 50) + (validated.length > 50 ? '...' : '')
+      conv.title = title
+      try {
+        await window.conversationApi.updateTitle(conv.id, title)
+      } catch {
+        // ignore
+      }
+    }
+
+    const messageIndex = conv.messages.length - 1
+    const requestId = crypto.randomUUID()
+
+    await performStreaming(conv, messageIndex, requestId)
+  }
+
+  async function regenerateResponse(messageIndex: number): Promise<void> {
+    if (streamingState.value) return
+
+    const conv = currentConversation.value
+    if (!conv) return
+
+    const msg = conv.messages[messageIndex]
+    if (!msg || msg.role !== 'assistant') return
+
+    conv.messages.splice(messageIndex, 1)
+    conv.updatedAt = new Date().toISOString()
+
+    try {
+      await window.conversationApi.truncate(conv.id, messageIndex)
+    } catch {
+      // continue - in-memory state is already updated
+    }
+
+    conv.messages.push({ role: 'assistant', content: '' })
+    const newMessageIndex = conv.messages.length - 1
+    const requestId = crypto.randomUUID()
+
+    await performStreaming(conv, newMessageIndex, requestId)
+  }
+
   function clearInputContentForEdit(): void {
     inputContentForEdit.value = null
   }
@@ -225,6 +258,7 @@ export const useChatStore = defineStore('chat', () => {
     conversations,
     inputContentForEdit,
     sendMessage,
+    regenerateResponse,
     editAndResend,
     clearInputContentForEdit,
     cancelRequest,

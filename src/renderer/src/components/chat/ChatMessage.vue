@@ -19,7 +19,7 @@ const resultsStore = useResultsStore()
 const role = computed(() => (props.message.role === 'user' ? 'user' : 'assistant'))
 
 function noop(): void {
-  /* placeholder for Copy, Regenerate - implemented in later tasks */
+  /* placeholder for Copy - implemented in later tasks */
 }
 
 async function onRunSql(code: string, blockIndex: number): Promise<void> {
@@ -61,7 +61,7 @@ const hasError = computed(() => props.message.content.includes('**Error:**'))
           :role="role"
           :is-streaming="isStreaming ?? false"
           @copy="noop"
-          @regenerate="noop"
+          @regenerate="() => chatStore.regenerateResponse(messageIndex)"
           @edit="() => chatStore.editAndResend(messageIndex)"
         />
       </div>
