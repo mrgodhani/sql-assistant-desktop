@@ -84,6 +84,7 @@ interface LogsApi {
 }
 
 interface ExportApi {
+  showOpenDialog: (optionsJson: string) => Promise<string | null>
   showSaveDialog: (optionsJson: string) => Promise<string | null>
   exportCsv: (payload: string) => Promise<void>
   exportExcel: (payload: string) => Promise<void>

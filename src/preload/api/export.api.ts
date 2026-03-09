@@ -1,6 +1,9 @@
 import { ipcRenderer } from 'electron'
 
 export const exportApi = {
+  showOpenDialog: (optionsJson: string): Promise<string | null> =>
+    ipcRenderer.invoke('export:showOpenDialog', optionsJson),
+
   showSaveDialog: (optionsJson: string): Promise<string | null> =>
     ipcRenderer.invoke('export:showSaveDialog', optionsJson),
 

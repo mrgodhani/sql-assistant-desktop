@@ -2,6 +2,18 @@ import { ipcMain, dialog } from 'electron'
 import { exportService, sanitizeExportError } from '../services/export.service'
 
 export function registerExportIpc(): void {
+  ipcMain.handle('export:showOpenDialog', async (_event, optionsJson: string) => {
+    const options = JSON.parse(optionsJson || '{}') as {
+      filters?: { name: string; extensions: string[] }[]
+    }
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: options?.filters ?? [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif'] }]
+    })
+    if (result.canceled || !result.filePaths?.length) return null
+    return result.filePaths[0]
+  })
+
   ipcMain.handle('export:showSaveDialog', async (_event, optionsJson: string) => {
     const options = JSON.parse(optionsJson || '{}') as {
       defaultPath?: string
