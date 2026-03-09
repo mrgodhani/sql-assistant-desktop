@@ -1,11 +1,45 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
+import type { ChatMessage as ChatMessageType } from '../../../../shared/types'
 import ChatMessage from './ChatMessage.vue'
 import StreamingIndicator from './StreamingIndicator.vue'
 import { useChatStore } from '@renderer/stores/useChatStore'
 
 const chatStore = useChatStore()
 const messagesEndRef = ref<HTMLElement | null>(null)
+
+interface PairItem {
+  message: ChatMessageType
+  originalIndex: number
+}
+
+const messagePairs = computed<PairItem[][]>(() => {
+  const msgs = chatStore.currentConversation?.messages ?? []
+  const pairs: PairItem[][] = []
+  let current: PairItem[] = []
+
+  for (let idx = 0; idx < msgs.length; idx++) {
+    const m = msgs[idx]
+    const item: PairItem = { message: m, originalIndex: idx }
+    if (m.role === 'user') {
+      if (current.length > 0) {
+        pairs.push([...current])
+        current = []
+      }
+      current.push(item)
+    } else {
+      if (current.length > 0) {
+        current.push(item)
+        pairs.push([...current])
+        current = []
+      } else {
+        pairs.push([item])
+      }
+    }
+  }
+  if (current.length > 0) pairs.push(current)
+  return pairs
+})
 
 function scrollToBottom(): void {
   nextTick(() => {
@@ -25,17 +59,23 @@ watch(
 
 <template>
   <div class="flex-1 overflow-y-auto p-4">
-    <div class="mx-auto max-w-3xl space-y-4">
-      <ChatMessage
-        v-for="(msg, i) in chatStore.currentConversation?.messages"
-        :key="i"
-        :message="msg"
-        :message-index="i"
-        :is-streaming="
-          chatStore.streamingState !== null &&
-          chatStore.streamingState.messageIndex === i
-        "
-      />
+    <div class="mx-auto max-w-3xl space-y-8">
+      <div
+        v-for="(pair, pairIdx) in messagePairs"
+        :key="pairIdx"
+        class="space-y-6"
+      >
+        <ChatMessage
+          v-for="(item, i) in pair"
+          :key="`${pairIdx}-${i}`"
+          :message="item.message"
+          :message-index="item.originalIndex"
+          :is-streaming="
+            chatStore.streamingState !== null &&
+            chatStore.streamingState.messageIndex === item.originalIndex
+          "
+        />
+      </div>
       <StreamingIndicator v-if="chatStore.streamingState" />
       <div ref="messagesEndRef" />
     </div>
