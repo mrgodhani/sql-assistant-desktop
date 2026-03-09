@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DataTable from './DataTable.vue'
 import ChartPanel from './ChartPanel.vue'
 import ExportButton from './ExportButton.vue'
@@ -13,8 +13,22 @@ const props = defineProps<{
 }>()
 
 const resultsStore = useResultsStore()
+const chartPanelRef = ref<InstanceType<typeof ChartPanel> | null>(null)
 
 const result = computed(() => resultsStore.getResult(props.messageIndex, props.blockIndex))
+
+function isNumeric(val: unknown): boolean {
+  if (val === null || val === undefined) return false
+  const n = Number(val)
+  return !Number.isNaN(n) && Number.isFinite(n)
+}
+
+const canIncludeChart = computed(() => {
+  const r = result.value?.success && result.value?.result
+  if (!r || r.rows.length === 0) return false
+  const sample = r.rows.slice(0, 100)
+  return r.columns.some((col: string) => sample.some((row: Record<string, unknown>) => isNumeric(row[col])))
+})
 
 function formatTime(ms: number): string {
   if (ms < 1) return '<1ms'
@@ -30,7 +44,9 @@ function formatTime(ms: number): string {
     aria-atomic="true"
   >
     <template v-if="result?.success && result.result">
-      <div class="mb-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div
+        class="mb-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground"
+      >
         <div class="flex flex-wrap items-center gap-3">
           <span>{{ result.result.rowCount }} row{{ result.result.rowCount === 1 ? '' : 's' }}</span>
           <span>{{ formatTime(result.result.executionTimeMs) }}</span>
@@ -41,6 +57,8 @@ function formatTime(ms: number): string {
         <ExportButton
           :columns="result.result.columns"
           :rows="result.result.rows"
+          :chart-panel-ref="chartPanelRef"
+          :can-include-chart="canIncludeChart"
         />
       </div>
       <Tabs default-value="table" class="results-tabs w-full min-w-0">
@@ -57,6 +75,7 @@ function formatTime(ms: number): string {
         </TabsContent>
         <TabsContent value="chart" :force-mount="true">
           <ChartPanel
+            ref="chartPanelRef"
             :columns="result.result.columns"
             :rows="result.result.rows"
             :row-count="result.result.rowCount"
@@ -65,7 +84,12 @@ function formatTime(ms: number): string {
       </Tabs>
     </template>
     <template v-else-if="result && !result.success">
-      <p :class="['text-sm', result.error === 'Running query...' ? 'text-muted-foreground' : 'text-destructive']">
+      <p
+        :class="[
+          'text-sm',
+          result.error === 'Running query...' ? 'text-muted-foreground' : 'text-destructive'
+        ]"
+      >
         {{ result.error }}
       </p>
     </template>
@@ -73,7 +97,7 @@ function formatTime(ms: number): string {
 </template>
 
 <style scoped>
-.results-tabs [data-state="inactive"] {
+.results-tabs [data-state='inactive'] {
   display: none;
 }
 </style>
