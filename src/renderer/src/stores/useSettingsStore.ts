@@ -1,14 +1,14 @@
 import log from 'electron-log/renderer'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AIProvider, ProviderConfig, ValidationResult } from '../../../shared/types'
+import type { AIProvider, ProviderConfig, ThemeMode, ValidationResult } from '../../../shared/types'
 import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS, PROVIDER_LABELS } from '../../../shared/types'
 
 export { AI_PROVIDERS, PROVIDER_LABELS }
-export type { AIProvider, ProviderConfig, ValidationResult }
+export type { AIProvider, ProviderConfig, ThemeMode, ValidationResult }
 
 export const useSettingsStore = defineStore('settings', () => {
-  const theme = ref<'dark' | 'light'>('dark')
+  const theme = ref<ThemeMode>('system')
   const activeProvider = ref<AIProvider>('ollama')
   const activeModel = ref('llama3.2')
   const providerConfigs = ref<Record<AIProvider, ProviderConfig>>(
@@ -23,29 +23,46 @@ export const useSettingsStore = defineStore('settings', () => {
     return Boolean(config.apiKey)
   }
 
-  function applyTheme(value: 'dark' | 'light'): void {
-    theme.value = value
-    document.documentElement.classList.toggle('dark', value === 'dark')
+  function applyTheme(effective: 'dark' | 'light'): void {
+    document.documentElement.classList.toggle('dark', effective === 'dark')
+  }
+
+  async function resolveEffectiveTheme(): Promise<'dark' | 'light'> {
+    if (theme.value === 'system') {
+      return window.api.settings.getSystemTheme()
+    }
+    return theme.value
   }
 
   async function loadSettings(): Promise<void> {
     try {
       const settings = await window.api.settings.getAll()
-      applyTheme(settings.theme)
+      theme.value = settings.theme
       activeProvider.value = settings.activeProvider
       activeModel.value = settings.activeModel
       providerConfigs.value = settings.providerConfigs
+
+      const effective = await resolveEffectiveTheme()
+      applyTheme(effective)
+
+      window.api.settings.onSystemThemeChange((newTheme) => {
+        if (theme.value === 'system') {
+          applyTheme(newTheme)
+        }
+      })
     } catch (error) {
       log.error('[Settings] Failed to load settings:', error)
+      theme.value = 'system'
       applyTheme('dark')
     }
   }
 
-  async function toggleTheme(): Promise<void> {
-    const newTheme = theme.value === 'dark' ? 'light' : 'dark'
-    applyTheme(newTheme)
+  async function setTheme(newTheme: ThemeMode): Promise<void> {
+    theme.value = newTheme
     try {
       await window.api.settings.setTheme(newTheme)
+      const effective = await resolveEffectiveTheme()
+      applyTheme(effective)
     } catch (error) {
       log.error('[Settings] Failed to persist theme:', error)
     }
@@ -126,7 +143,7 @@ export const useSettingsStore = defineStore('settings', () => {
     activeProviderConfig,
     isProviderConfigured,
     loadSettings,
-    toggleTheme,
+    setTheme,
     setProvider,
     setModel,
     updateProviderConfig,
