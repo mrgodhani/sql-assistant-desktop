@@ -1,11 +1,28 @@
 /**
  * @vitest-environment node
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mkdtempSync, rmSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import { homedir } from 'os'
 import ExcelJS from 'exceljs'
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: (name: string) => {
+      const map: Record<string, string> = {
+        home: homedir(),
+        documents: join(homedir(), 'Documents'),
+        downloads: join(homedir(), 'Downloads'),
+        desktop: join(homedir(), 'Desktop'),
+        temp: tmpdir()
+      }
+      return map[name] ?? tmpdir()
+    }
+  }
+}))
+
 import { exportService } from './export.service'
 import type { ReportExportOptions } from '../../shared/types'
 

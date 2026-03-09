@@ -1,33 +1,22 @@
-import { ipcMain } from 'electron'
 import { schemaService } from '../services/schema.service'
+import { handleValidated, assertString } from '../lib/ipc-validator'
 
 export function registerSchemaIpc(): void {
-  ipcMain.handle('schema:introspect', async (_event, connectionId: string) => {
-    if (!connectionId || typeof connectionId !== 'string') {
-      return {
-        success: false,
-        error: 'Connection ID is required',
-        tableCount: 0,
-        introspectedAt: new Date().toISOString()
-      }
-    }
-    return schemaService.introspect(connectionId)
-  })
+  handleValidated(
+    'schema:introspect',
+    (connectionId) => assertString(connectionId, 'connectionId'),
+    async (connectionId) => schemaService.introspect(connectionId)
+  )
 
-  ipcMain.handle('schema:refresh', async (_event, connectionId: string) => {
-    if (!connectionId || typeof connectionId !== 'string') {
-      return {
-        success: false,
-        error: 'Connection ID is required',
-        tableCount: 0,
-        introspectedAt: new Date().toISOString()
-      }
-    }
-    return schemaService.refresh(connectionId)
-  })
+  handleValidated(
+    'schema:refresh',
+    (connectionId) => assertString(connectionId, 'connectionId'),
+    async (connectionId) => schemaService.refresh(connectionId)
+  )
 
-  ipcMain.handle('schema:getContext', async (_event, connectionId: string) => {
-    if (!connectionId || typeof connectionId !== 'string') return ''
-    return schemaService.getSchemaContext(connectionId)
-  })
+  handleValidated(
+    'schema:getContext',
+    (connectionId) => assertString(connectionId, 'connectionId'),
+    async (connectionId) => schemaService.getSchemaContext(connectionId)
+  )
 }

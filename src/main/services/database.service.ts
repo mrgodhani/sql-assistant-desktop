@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { statSync } from 'fs'
 import { dialog } from 'electron'
 import log from 'electron-log/main'
 import { eq } from 'drizzle-orm'
@@ -61,8 +62,17 @@ function sanitizeValidationError(error: unknown): string {
 
 /** Standard PostgreSQL connection params that pg driver recognizes. Others (e.g. from TablePlus, DataGrip) are stripped. */
 const PG_STANDARD_PARAMS = new Set([
-  'sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'sslcrl', 'application_name',
-  'fallback_application_name', 'connect_timeout', 'options', 'krbsrvname', 'gssencmode'
+  'sslmode',
+  'sslcert',
+  'sslkey',
+  'sslrootcert',
+  'sslcrl',
+  'application_name',
+  'fallback_application_name',
+  'connect_timeout',
+  'options',
+  'krbsrvname',
+  'gssencmode'
 ])
 
 /** Strips non-standard query params from connection strings (e.g. statusColor, tLSMode from DB GUI tools). */
@@ -259,14 +269,11 @@ class DatabaseService {
       : undefined
 
     try {
-      const handle = await this.createPool(row, password, connectionString)
+      const handle = await this.createPool(row, password, connectionString, false)
       this.pools.set(id, handle)
       return { success: true }
     } catch (error) {
-      log.error(
-        `[Database] Connection failed for "${row.name}":`,
-        sanitizeConnectionError(error)
-      )
+      log.error(`[Database] Connection failed for "${row.name}":`, sanitizeConnectionError(error))
       return { success: false, error: sanitizeConnectionError(error) }
     }
   }
@@ -278,10 +285,7 @@ class DatabaseService {
     try {
       await this.closePool(handle)
     } catch (error) {
-      log.error(
-        '[Database] Error closing pool:',
-        error instanceof Error ? error.message : error
-      )
+      log.error('[Database] Error closing pool:', error instanceof Error ? error.message : error)
     }
     this.pools.delete(id)
   }
@@ -313,7 +317,8 @@ class DatabaseService {
       const handle = await this.createPool(
         row as typeof schema.connections.$inferSelect,
         config.password,
-        connStr
+        connStr,
+        config.trustSelfSignedCert ?? false
       )
       await this.closePool(handle)
 
@@ -370,8 +375,8 @@ class DatabaseService {
           return { valid: true }
         }
         case 'mysql': {
-          const escaped = trimmed.replace(/\\/g, '\\\\').replace(/'/g, "''")
-          await handle.pool.query(`SET @s = '${escaped}'`)
+          const hex = Buffer.from(trimmed, 'utf8').toString('hex')
+          await handle.pool.query(`SET @s = UNHEX('${hex}')`)
           await handle.pool.query('PREPARE stmt FROM @s')
           await handle.pool.query('DEALLOCATE PREPARE stmt')
           return { valid: true }
@@ -476,7 +481,8 @@ class DatabaseService {
       filePath: string | null
     },
     password?: string,
-    connectionString?: string
+    connectionString?: string,
+    trustSelfSignedCert = false
   ): Promise<PoolHandle> {
     const dbType = row.type as DatabaseType
 
@@ -503,7 +509,7 @@ class DatabaseService {
           database,
           user,
           password: pass,
-          ssl: row.sslEnabled ? { rejectUnauthorized: false } : false,
+          ssl: row.sslEnabled ? { rejectUnauthorized: !trustSelfSignedCert } : false,
           connectionTimeoutMillis: CONNECTION_TIMEOUT_MS
         })
         await pool.query('SELECT 1')
@@ -563,7 +569,7 @@ class DatabaseService {
           password: mssqlPass,
           options: {
             encrypt: row.sslEnabled ?? false,
-            trustServerCertificate: true
+            trustServerCertificate: trustSelfSignedCert
           },
           connectionTimeout: CONNECTION_TIMEOUT_MS
         })
@@ -574,6 +580,14 @@ class DatabaseService {
 
       case 'sqlite': {
         const filePath = row.filePath || row.database
+        try {
+          const stat = statSync(filePath)
+          if (!stat.isFile()) throw new Error('Path is not a regular file')
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw error
+          }
+        }
         const db = new BetterSqlite3(filePath)
         db.pragma('journal_mode = WAL')
         return { type: 'sqlite', pool: db }

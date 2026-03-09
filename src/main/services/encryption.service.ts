@@ -16,7 +16,7 @@ class EncryptionService {
 
   encrypt(value: string): string {
     if (!this.isAvailable()) {
-      return value
+      throw new Error('Secure storage is unavailable. Credentials cannot be saved.')
     }
     const encrypted = safeStorage.encryptString(value)
     return encrypted.toString('base64')

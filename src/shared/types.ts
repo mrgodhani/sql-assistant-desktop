@@ -46,6 +46,7 @@ export interface ConnectionConfig {
   connectionString?: string
   sslEnabled: boolean
   filePath?: string
+  trustSelfSignedCert?: boolean
 }
 
 export interface ConnectionTestResult {
@@ -122,6 +123,8 @@ export interface ExecutionResult {
   success: boolean
   result?: QueryResult
   error?: string
+  requiresConfirmation?: boolean
+  detectedStatements?: string[]
 }
 
 export interface SqlValidationResult {
@@ -172,7 +175,14 @@ export interface StreamChunk {
   error?: string
 }
 
-export type AIErrorType = 'auth' | 'rate_limit' | 'network' | 'token_limit' | 'model_not_found' | 'cancelled' | 'unknown'
+export type AIErrorType =
+  | 'auth'
+  | 'rate_limit'
+  | 'network'
+  | 'token_limit'
+  | 'model_not_found'
+  | 'cancelled'
+  | 'unknown'
 
 export interface Conversation {
   id: string

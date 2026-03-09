@@ -1,4 +1,3 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
   AIProvider,
   AppSettings,
@@ -58,6 +57,7 @@ interface AiApi {
 
 interface DbApi {
   execute: (connectionId: string, sql: string) => Promise<ExecutionResult>
+  executeConfirmed: (connectionId: string, sql: string) => Promise<ExecutionResult>
   validateSql: (connectionId: string, sql: string) => Promise<SqlValidationResult>
 }
 
@@ -98,9 +98,14 @@ interface AppApi {
   settings: SettingsApi
 }
 
+interface MinimalElectronBridge {
+  platform: 'darwin' | 'win32' | 'linux'
+  versions: { electron: string; chrome: string }
+}
+
 declare global {
   interface Window {
-    electron: ElectronAPI
+    electron: MinimalElectronBridge
     api: AppApi
     connectionsApi: ConnectionsApi
     schemaApi: SchemaApi

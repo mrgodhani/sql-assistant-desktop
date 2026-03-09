@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { settingsService } from '../services/settings.service'
+import { handleValidated, assertString } from '../lib/ipc-validator'
 import type { AIProvider, ProviderConfig, ThemeMode } from '../../shared/types'
 
 export function registerSettingsIpc(): void {
@@ -15,10 +16,14 @@ export function registerSettingsIpc(): void {
     return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
   })
 
-  ipcMain.handle('settings:setTheme', async (_event, theme: ThemeMode) => {
-    await settingsService.setTheme(theme)
-    nativeTheme.themeSource = theme === 'system' ? 'system' : theme
-  })
+  handleValidated(
+    'settings:setTheme',
+    (theme) => assertString(theme, 'theme') as ThemeMode,
+    async (theme) => {
+      await settingsService.setTheme(theme)
+      nativeTheme.themeSource = theme === 'system' ? 'system' : theme
+    }
+  )
 
   nativeTheme.on('updated', () => {
     const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
@@ -29,33 +34,49 @@ export function registerSettingsIpc(): void {
     })
   })
 
-  ipcMain.handle('settings:get', async (_event, key: string) => {
-    return settingsService.get(key)
-  })
+  handleValidated(
+    'settings:get',
+    (key) => assertString(key, 'key'),
+    async (key) => settingsService.get(key)
+  )
 
-  ipcMain.handle('settings:set', async (_event, key: string, value: string) => {
-    await settingsService.set(key, value)
-  })
+  handleValidated(
+    'settings:set',
+    (key, value) => ({ key: assertString(key, 'key'), value: assertString(value, 'value') }),
+    async ({ key, value }) => {
+      await settingsService.set(key, value)
+    }
+  )
 
-  ipcMain.handle('settings:getProviderConfig', async (_event, provider: AIProvider) => {
-    return settingsService.getProviderConfig(provider)
-  })
+  handleValidated(
+    'settings:getProviderConfig',
+    (provider) => assertString(provider, 'provider') as AIProvider,
+    async (provider) => settingsService.getProviderConfig(provider)
+  )
 
-  ipcMain.handle(
+  handleValidated(
     'settings:setProviderConfig',
-    async (_event, provider: AIProvider, config: Partial<ProviderConfig>) => {
+    (provider, config) => ({
+      provider: assertString(provider, 'provider') as AIProvider,
+      config: config as Partial<ProviderConfig>
+    }),
+    async ({ provider, config }) => {
       await settingsService.setProviderConfig(provider, config)
     }
   )
 
-  ipcMain.handle(
+  handleValidated(
     'settings:validateApiKey',
-    async (_event, provider: AIProvider, apiKey: string) => {
-      return settingsService.validateApiKey(provider, apiKey)
-    }
+    (provider, apiKey) => ({
+      provider: assertString(provider, 'provider') as AIProvider,
+      apiKey: assertString(apiKey, 'apiKey')
+    }),
+    async ({ provider, apiKey }) => settingsService.validateApiKey(provider, apiKey)
   )
 
-  ipcMain.handle('settings:fetchOllamaModels', async (_event, baseUrl: string) => {
-    return settingsService.fetchOllamaModels(baseUrl)
-  })
+  handleValidated(
+    'settings:fetchOllamaModels',
+    (baseUrl) => assertString(baseUrl, 'baseUrl'),
+    async (baseUrl) => settingsService.fetchOllamaModels(baseUrl)
+  )
 }

@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { databaseService } from '../services/database.service'
 import { schemaService } from '../services/schema.service'
+import { handleValidated, assertString } from '../lib/ipc-validator'
 import type { ConnectionConfig } from '../../shared/types'
 
 export function registerConnectionsIpc(): void {
@@ -9,36 +10,55 @@ export function registerConnectionsIpc(): void {
     return databaseService.listConnections()
   })
 
-  ipcMain.handle('connections:get', async (_event, id: string) => {
-    return databaseService.getConnection(id)
-  })
+  handleValidated(
+    'connections:get',
+    (id) => assertString(id, 'id'),
+    async (id) => databaseService.getConnection(id)
+  )
 
   ipcMain.handle('connections:create', async (_event, config: ConnectionConfig) => {
     return databaseService.createConnection(config)
   })
 
-  ipcMain.handle('connections:update', async (_event, id: string, config: ConnectionConfig) => {
-    return databaseService.updateConnection(id, config)
-  })
+  handleValidated(
+    'connections:update',
+    (id, config) => ({ id: assertString(id, 'id'), config: config as ConnectionConfig }),
+    async ({ id, config }) => databaseService.updateConnection(id, config)
+  )
 
-  ipcMain.handle('connections:delete', async (_event, id: string) => {
-    await databaseService.deleteConnection(id)
-  })
-
-  ipcMain.handle('connections:connect', async (_event, id: string) => {
-    const result = await databaseService.connect(id)
-    if (result.success) {
-      schemaService.introspect(id).catch((err) => {
-        log.error('[Schema] Background introspection failed:', err instanceof Error ? err.message : err)
-      })
+  handleValidated(
+    'connections:delete',
+    (id) => assertString(id, 'id'),
+    async (id) => {
+      await databaseService.deleteConnection(id)
     }
-    return result
-  })
+  )
 
-  ipcMain.handle('connections:disconnect', async (_event, id: string) => {
-    schemaService.clearCache(id)
-    await databaseService.disconnect(id)
-  })
+  handleValidated(
+    'connections:connect',
+    (id) => assertString(id, 'id'),
+    async (id) => {
+      const result = await databaseService.connect(id)
+      if (result.success) {
+        schemaService.introspect(id).catch((err) => {
+          log.error(
+            '[Schema] Background introspection failed:',
+            err instanceof Error ? err.message : err
+          )
+        })
+      }
+      return result
+    }
+  )
+
+  handleValidated(
+    'connections:disconnect',
+    (id) => assertString(id, 'id'),
+    async (id) => {
+      schemaService.clearCache(id)
+      await databaseService.disconnect(id)
+    }
+  )
 
   ipcMain.handle('connections:test', async (_event, config: ConnectionConfig) => {
     return databaseService.testConnection(config)

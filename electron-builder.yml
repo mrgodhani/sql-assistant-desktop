@@ -14,7 +14,8 @@ asarUnpack:
   - node_modules/better-sqlite3/**
 mac:
   hardenedRuntime: true
-  entitlementsInherit: build/entitlements.mac.plist
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.inherit.plist
   extendInfo:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder for database files and exports.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder for saving exports.
@@ -23,10 +24,20 @@ mac:
       arch:
         - universal
   notarize: true
+mas:
+  hardenedRuntime: false
+  entitlements: build/entitlements.mas.plist
+  entitlementsInherit: build/entitlements.mas.inherit.plist
+  extendInfo:
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder for database files and exports.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder for saving exports.
+  target:
+    - target: mas
+      arch:
+        - universal
 dmg:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
-# Update when auto-update server is ready
 publish:
   provider: generic
   url: https://github.com/meetgodhani/sql-assist-desktop/releases

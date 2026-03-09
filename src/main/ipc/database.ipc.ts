@@ -1,5 +1,7 @@
-import { ipcMain } from 'electron'
 import { databaseService } from '../services/database.service'
+import { settingsService } from '../services/settings.service'
+import { handleValidated, assertString } from '../lib/ipc-validator'
+import { detectDestructiveStatements } from '../lib/sql-safety'
 import type { ExecutionResult, SqlValidationResult } from '../../shared/types'
 
 const QUERY_TIMEOUT_MS = 60_000
@@ -18,10 +20,7 @@ function sanitizeQueryError(error: unknown): string {
   return 'Query failed. Please check your SQL and try again.'
 }
 
-function executeWithTimeout<T>(
-  promise: Promise<T>,
-  label: string
-): Promise<T> {
+function executeWithTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(
       () => reject(new Error(`${label} timed out after ${QUERY_TIMEOUT_MS / 1000}s`)),
@@ -32,38 +31,71 @@ function executeWithTimeout<T>(
 }
 
 export function registerDatabaseIpc(): void {
-  ipcMain.handle('db:execute', async (_event, connectionId: unknown, sql: unknown): Promise<ExecutionResult> => {
-    if (!connectionId || typeof connectionId !== 'string')
-      return { success: false, error: 'Connection ID is required' }
-    if (!sql || typeof sql !== 'string' || !String(sql).trim())
-      return { success: false, error: 'SQL query is required' }
-    if (!databaseService.isConnected(connectionId))
-      return { success: false, error: 'Connection lost. Please reconnect.' }
+  handleValidated(
+    'db:execute',
+    (connectionId, sql) => ({
+      connectionId: assertString(connectionId, 'connectionId'),
+      sql: assertString(sql, 'sql')
+    }),
+    async ({ connectionId, sql }): Promise<ExecutionResult> => {
+      if (!databaseService.isConnected(connectionId))
+        return { success: false, error: 'Connection lost. Please reconnect.' }
 
-    try {
-      const result = await executeWithTimeout(
-        databaseService.executeQuery(connectionId, String(sql).trim()),
-        'Query execution'
-      )
-      return { success: true, result }
-    } catch (error) {
-      return { success: false, error: sanitizeQueryError(error) }
+      const safeMode = await settingsService.get('safeMode')
+      if (safeMode === 'true') {
+        const detected = detectDestructiveStatements(sql)
+        if (detected.length > 0) {
+          return { success: false, requiresConfirmation: true, detectedStatements: detected }
+        }
+      }
+
+      try {
+        const result = await executeWithTimeout(
+          databaseService.executeQuery(connectionId, sql),
+          'Query execution'
+        )
+        return { success: true, result }
+      } catch (error) {
+        return { success: false, error: sanitizeQueryError(error) }
+      }
     }
-  })
+  )
 
-  ipcMain.handle(
+  handleValidated(
+    'db:executeConfirmed',
+    (connectionId, sql) => ({
+      connectionId: assertString(connectionId, 'connectionId'),
+      sql: assertString(sql, 'sql')
+    }),
+    async ({ connectionId, sql }): Promise<ExecutionResult> => {
+      if (!databaseService.isConnected(connectionId))
+        return { success: false, error: 'Connection lost. Please reconnect.' }
+
+      try {
+        const result = await executeWithTimeout(
+          databaseService.executeQuery(connectionId, sql),
+          'Query execution'
+        )
+        return { success: true, result }
+      } catch (error) {
+        return { success: false, error: sanitizeQueryError(error) }
+      }
+    }
+  )
+
+  handleValidated(
     'db:validateSql',
-    async (_event, connectionId: unknown, sql: unknown): Promise<SqlValidationResult> => {
-      if (!connectionId || typeof connectionId !== 'string')
-        return { valid: false, error: 'Connection ID is required' }
-      if (!sql || typeof sql !== 'string' || !String(sql).trim())
-        return { valid: false, error: 'SQL query is required' }
+    (connectionId, sql) => ({
+      connectionId: assertString(connectionId, 'connectionId'),
+      sql: assertString(sql, 'sql')
+    }),
+    async ({ connectionId, sql }): Promise<SqlValidationResult> => {
       if (!databaseService.isConnected(connectionId))
         return { valid: false, error: 'Connection lost. Please reconnect.' }
 
       try {
         return await executeWithTimeout(
-          databaseService.validateSql(connectionId, String(sql).trim()),
+          databaseService.validateSql(connectionId, sql),
           'Validation'
         )
       } catch (error) {

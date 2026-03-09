@@ -1,5 +1,6 @@
 import { writeFile, readFile } from 'fs/promises'
-import { resolve } from 'path'
+import { resolve, sep } from 'path'
+import { app } from 'electron'
 import ExcelJS from 'exceljs'
 import type { ReportExportOptions } from '../../shared/types'
 
@@ -16,7 +17,8 @@ function escapeCsvCell(value: unknown): string {
 /** Converts any value to Excel-safe primitive (string, number, boolean, null, Date) */
 function toExcelCellValue(value: unknown): string | number | boolean | null | Date {
   if (value == null) return null
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return value
   if (value instanceof Date) return value
   if (typeof value === 'object') return String(value)
   return String(value)
@@ -32,10 +34,22 @@ function sanitizeExportError(error: unknown): string {
   return `Export failed: ${msg}`
 }
 
+function isAllowedPath(resolved: string): boolean {
+  const allowed = [
+    app.getPath('home'),
+    app.getPath('documents'),
+    app.getPath('downloads'),
+    app.getPath('desktop'),
+    app.getPath('temp')
+  ]
+  return allowed.some((dir) => resolved.startsWith(dir + sep) || resolved === dir)
+}
+
 function validatePath(filePath: unknown): string | null {
   if (typeof filePath !== 'string' || !filePath.trim()) return null
   const resolved = resolve(filePath.trim())
   if (resolved.includes('..')) return null
+  if (!isAllowedPath(resolved)) return null
   return resolved
 }
 
@@ -49,7 +63,11 @@ function validatePayload(
 }
 
 export class ExportService {
-  async exportCsv(filePath: string, columns: string[], rows: Record<string, unknown>[]): Promise<void> {
+  async exportCsv(
+    filePath: string,
+    columns: string[],
+    rows: Record<string, unknown>[]
+  ): Promise<void> {
     const path = validatePath(filePath)
     if (!path) throw new Error('Invalid file path')
 
@@ -140,21 +158,24 @@ export class ExportService {
     dataSheet.pageSetup.printArea = `A1:F${rws.length + 4}`
     dataSheet.headerFooter.firstFooter = `Generated on ${new Date().toLocaleDateString()}`
 
-    // Logo (optional) - add before chart sheet so data sheet is complete
     if (options.logoPath) {
-      try {
-        const logoBuf = await readFile(options.logoPath)
-        if (logoBuf.length <= 500 * 1024) {
-          const ext = options.logoPath.toLowerCase().endsWith('.png') ? 'png' : 'jpeg'
-          const logoId = workbook.addImage({
-            // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
-            buffer: Buffer.from(logoBuf),
-            extension: ext
-          })
-          dataSheet.addImage(logoId, 'A1:A2')
+      const validLogoPath = validatePath(options.logoPath)
+      const ext = options.logoPath.toLowerCase().split('.').pop() ?? ''
+      if (validLogoPath && ['png', 'jpg', 'jpeg'].includes(ext)) {
+        try {
+          const logoBuf = await readFile(validLogoPath)
+          if (logoBuf.length <= 500 * 1024) {
+            const imgExt = ext === 'jpg' ? 'jpeg' : ext
+            const logoId = workbook.addImage({
+              // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
+              buffer: Buffer.from(logoBuf),
+              extension: imgExt as 'png' | 'jpeg'
+            })
+            dataSheet.addImage(logoId, 'A1:A2')
+          }
+        } catch {
+          // Skip logo on error
         }
-      } catch {
-        // Skip logo on error
       }
     }
 
