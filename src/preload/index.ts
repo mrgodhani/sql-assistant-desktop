@@ -7,6 +7,7 @@ import { aiApi } from './api/ai.api'
 import { dbApi } from './api/db.api'
 import { conversationApi } from './api/conversation.api'
 import { exportApi } from './api/export.api'
+import { logsApi } from './api/logs.api'
 
 const api = {
   settings: settingsApi
@@ -22,6 +23,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('dbApi', dbApi)
     contextBridge.exposeInMainWorld('conversationApi', conversationApi)
     contextBridge.exposeInMainWorld('exportApi', exportApi)
+    contextBridge.exposeInMainWorld('logsApi', logsApi)
   } catch (error) {
     console.error(error)
   }
@@ -42,4 +44,5 @@ if (process.contextIsolated) {
   window.conversationApi = conversationApi
   // @ts-ignore (define in dts)
   window.exportApi = exportApi
+  window.logsApi = logsApi
 }

@@ -74,6 +74,12 @@ interface ConversationApi {
   ) => Promise<void>
 }
 
+interface LogsApi {
+  getLogPath: () => Promise<string>
+  getRecentLogs: (lines?: number) => Promise<string>
+  openLogFolder: () => Promise<void>
+}
+
 interface ExportApi {
   showSaveDialog: (options?: {
     defaultPath?: string
@@ -97,5 +103,6 @@ declare global {
     dbApi: DbApi
     conversationApi: ConversationApi
     exportApi: ExportApi
+    logsApi: LogsApi
   }
 }
