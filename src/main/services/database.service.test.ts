@@ -67,6 +67,12 @@ describe('validateSql', () => {
     expect(result.valid).toBe(false)
     expect(result.error).toContain('SQL query is required')
   })
+
+  it('returns invalid when connection is not active', async () => {
+    const result = await databaseService.validateSql('non-existent-id', 'SELECT 1')
+    expect(result.valid).toBe(false)
+    expect(result.error).toContain('Connection lost')
+  })
 })
 
 describe('buildConnectionString', () => {
