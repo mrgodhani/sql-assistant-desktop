@@ -12,7 +12,8 @@ import type {
   SchemaIntrospectionResult,
   AIChatParams,
   StreamChunk,
-  ExecutionResult
+  ExecutionResult,
+  SqlValidationResult
 } from '../shared/types'
 
 interface SettingsApi {
@@ -57,6 +58,7 @@ interface AiApi {
 
 interface DbApi {
   execute: (connectionId: string, sql: string) => Promise<ExecutionResult>
+  validateSql: (connectionId: string, sql: string) => Promise<SqlValidationResult>
 }
 
 interface ConversationApi {

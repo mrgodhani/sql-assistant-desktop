@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { databaseService } from '../services/database.service'
-import type { ExecutionResult, QueryResult } from '../../shared/types'
+import type { ExecutionResult, SqlValidationResult } from '../../shared/types'
 
 const QUERY_TIMEOUT_MS = 60_000
 
@@ -11,16 +11,17 @@ function sanitizeQueryError(error: unknown): string {
     return 'Permission denied. Check database user privileges.'
   if (/connection|ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(msg))
     return 'Connection lost. Please reconnect.'
+  if (/Validation timed out/i.test(msg)) return 'Validation timed out.'
   if (/timeout|timed out/i.test(msg))
     return 'Query timed out. Try a more specific query or add limits.'
   if (/Connection is not active/i.test(msg)) return 'Connection lost. Please reconnect.'
   return 'Query failed. Please check your SQL and try again.'
 }
 
-function executeWithTimeout(
-  promise: Promise<QueryResult>,
+function executeWithTimeout<T>(
+  promise: Promise<T>,
   label: string
-): Promise<QueryResult> {
+): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(
       () => reject(new Error(`${label} timed out after ${QUERY_TIMEOUT_MS / 1000}s`)),
@@ -49,4 +50,25 @@ export function registerDatabaseIpc(): void {
       return { success: false, error: sanitizeQueryError(error) }
     }
   })
+
+  ipcMain.handle(
+    'db:validateSql',
+    async (_event, connectionId: unknown, sql: unknown): Promise<SqlValidationResult> => {
+      if (!connectionId || typeof connectionId !== 'string')
+        return { valid: false, error: 'Connection ID is required' }
+      if (!sql || typeof sql !== 'string' || !String(sql).trim())
+        return { valid: false, error: 'SQL query is required' }
+      if (!databaseService.isConnected(connectionId))
+        return { valid: false, error: 'Connection lost. Please reconnect.' }
+
+      try {
+        return await executeWithTimeout(
+          databaseService.validateSql(connectionId, String(sql).trim()),
+          'Validation'
+        )
+      } catch (error) {
+        return { valid: false, error: sanitizeQueryError(error) }
+      }
+    }
+  )
 }
