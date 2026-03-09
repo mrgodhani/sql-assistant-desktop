@@ -1,4 +1,3 @@
-import log from 'electron-log/renderer'
 import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { settingsApi } from './api/settings.api'
@@ -26,7 +25,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('exportApi', exportApi)
     contextBridge.exposeInMainWorld('logsApi', logsApi)
   } catch (error) {
-    log.error(error)
+    console.error('[Preload] Failed to expose APIs:', error)
   }
 } else {
   // @ts-ignore (define in dts)

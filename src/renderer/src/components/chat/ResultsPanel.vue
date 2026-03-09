@@ -39,7 +39,7 @@ function formatTime(ms: number): string {
           :rows="result.result.rows"
         />
       </div>
-      <Tabs default-value="table" class="w-full">
+      <Tabs default-value="table" class="w-full min-w-0">
         <TabsList class="mb-2">
           <TabsTrigger value="table">Table</TabsTrigger>
           <TabsTrigger value="chart">Chart</TabsTrigger>

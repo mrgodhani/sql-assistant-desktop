@@ -34,14 +34,38 @@ function sanitizeConnectionError(error: unknown): string {
     return 'Connection timed out. Server may be unreachable.'
   if (msg.includes('ENOTFOUND') || msg.includes('getaddrinfo'))
     return 'Host not found. Check the hostname.'
-  if (/authentication|password|login/i.test(msg))
-    return 'Authentication failed. Check username and password.'
+  if (/authentication|password|login/i.test(msg)) {
+    log.error('[Database] Auth error (raw):', msg)
+    return 'Authentication failed. If your password contains @, :, #, ?, or spaces, URL-encode them (e.g. @ → %40).'
+  }
   if (/database.*not exist|unknown database/i.test(msg))
     return 'Database not found. Check the database name.'
   if (/ssl|tls|certificate/i.test(msg)) return 'SSL connection failed. Check SSL settings.'
   if (/SQLITE_CANTOPEN/i.test(msg)) return 'Cannot open database file. Check the file path.'
 
   return 'Connection failed. Please verify your settings.'
+}
+
+/** Standard PostgreSQL connection params that pg driver recognizes. Others (e.g. from TablePlus, DataGrip) are stripped. */
+const PG_STANDARD_PARAMS = new Set([
+  'sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'sslcrl', 'application_name',
+  'fallback_application_name', 'connect_timeout', 'options', 'krbsrvname', 'gssencmode'
+])
+
+/** Strips non-standard query params from connection strings (e.g. statusColor, tLSMode from DB GUI tools). */
+export function stripConnectionStringParams(connStr: string): string {
+  const trimmed = connStr.trim()
+  const qIdx = trimmed.indexOf('?')
+  if (qIdx === -1) return trimmed
+
+  const base = trimmed.slice(0, qIdx)
+  const search = trimmed.slice(qIdx + 1)
+  const params = new URLSearchParams(search)
+  const kept: string[] = []
+  params.forEach((value, key) => {
+    if (PG_STANDARD_PARAMS.has(key.toLowerCase())) kept.push(`${key}=${value}`)
+  })
+  return kept.length ? `${base}?${kept.join('&')}` : base
 }
 
 export function parseConnectionString(
@@ -110,20 +134,33 @@ class DatabaseService {
     const id = randomUUID()
     const now = new Date().toISOString()
 
-    const passwordEncrypted = config.password ? encryptionService.encrypt(config.password) : null
-    const connStringEncrypted = config.connectionString
-      ? encryptionService.encrypt(config.connectionString)
-      : null
+    let host = config.host?.trim() || null
+    let port = config.port || null
+    let database = config.database?.trim() || ''
+    let username = config.username?.trim() || null
+    let passwordEncrypted: string | null = null
+    let connStringEncrypted: string | null = null
+
+    if (config.connectionString?.trim()) {
+      connStringEncrypted = encryptionService.encrypt(config.connectionString)
+      const parsed = parseConnectionString(config.connectionString)
+      host = parsed.host ?? null
+      port = parsed.port ?? null
+      database = parsed.database ?? ''
+      username = parsed.username ?? null
+    } else if (config.password) {
+      passwordEncrypted = encryptionService.encrypt(config.password)
+    }
 
     db.insert(schema.connections)
       .values({
         id,
         name: config.name.trim(),
         type: config.type,
-        host: config.host?.trim() || null,
-        port: config.port || null,
-        database: config.database.trim(),
-        username: config.username?.trim() || null,
+        host,
+        port,
+        database,
+        username,
         passwordEncrypted,
         connectionStringEncrypted: connStringEncrypted,
         sslEnabled: config.sslEnabled,
@@ -145,21 +182,36 @@ class DatabaseService {
     }
 
     const db = getDatabase()
+    const existing = db.select().from(schema.connections).where(eq(schema.connections.id, id)).get()
     const now = new Date().toISOString()
 
-    const passwordEncrypted = config.password ? encryptionService.encrypt(config.password) : null
-    const connStringEncrypted = config.connectionString
-      ? encryptionService.encrypt(config.connectionString)
-      : null
+    let host = config.host?.trim() || null
+    let port = config.port || null
+    let database = config.database?.trim() || ''
+    let username = config.username?.trim() || null
+    let passwordEncrypted: string | null = existing?.passwordEncrypted ?? null
+    let connStringEncrypted: string | null = null
+
+    if (config.connectionString?.trim()) {
+      connStringEncrypted = encryptionService.encrypt(config.connectionString)
+      const parsed = parseConnectionString(config.connectionString)
+      host = parsed.host ?? null
+      port = parsed.port ?? null
+      database = parsed.database ?? ''
+      username = parsed.username ?? null
+      passwordEncrypted = null
+    } else if (config.password) {
+      passwordEncrypted = encryptionService.encrypt(config.password)
+    }
 
     db.update(schema.connections)
       .set({
         name: config.name.trim(),
         type: config.type,
-        host: config.host?.trim() || null,
-        port: config.port || null,
-        database: config.database.trim(),
-        username: config.username?.trim() || null,
+        host,
+        port,
+        database,
+        username,
         passwordEncrypted,
         connectionStringEncrypted: connStringEncrypted,
         sslEnabled: config.sslEnabled,
@@ -189,9 +241,12 @@ class DatabaseService {
     const password = row.passwordEncrypted
       ? encryptionService.decrypt(row.passwordEncrypted, true)
       : undefined
+    const connectionString = row.connectionStringEncrypted
+      ? stripConnectionStringParams(encryptionService.decrypt(row.connectionStringEncrypted, true))
+      : undefined
 
     try {
-      const handle = await this.createPool(row, password)
+      const handle = await this.createPool(row, password, connectionString)
       this.pools.set(id, handle)
       return { success: true }
     } catch (error) {
@@ -238,10 +293,14 @@ class DatabaseService {
         sslEnabled: config.sslEnabled ?? false,
         filePath: config.filePath || null
       }
+      const connStr = config.connectionString?.trim()
+        ? stripConnectionStringParams(config.connectionString)
+        : undefined
 
       const handle = await this.createPool(
         row as typeof schema.connections.$inferSelect,
-        config.password
+        config.password,
+        connStr
       )
       await this.closePool(handle)
 
@@ -362,18 +421,34 @@ class DatabaseService {
       sslEnabled: boolean | null
       filePath: string | null
     },
-    password?: string
+    password?: string,
+    connectionString?: string
   ): Promise<PoolHandle> {
     const dbType = row.type as DatabaseType
 
     switch (dbType) {
       case 'postgresql': {
+        let host = row.host || 'localhost'
+        let port = row.port || DEFAULT_PORTS.postgresql
+        let database = row.database
+        let user = row.username || undefined
+        let pass = password
+
+        if (connectionString) {
+          const parsed = parseConnectionString(connectionString)
+          host = parsed.host ?? host
+          port = parsed.port ?? port
+          database = parsed.database ?? database
+          user = parsed.username ?? user
+          pass = parsed.password ?? pass
+        }
+
         const pool = new pg.Pool({
-          host: row.host || 'localhost',
-          port: row.port || DEFAULT_PORTS.postgresql,
-          database: row.database,
-          user: row.username || undefined,
-          password: password || undefined,
+          host,
+          port,
+          database,
+          user,
+          password: pass,
           ssl: row.sslEnabled ? { rejectUnauthorized: false } : false,
           connectionTimeoutMillis: CONNECTION_TIMEOUT_MS
         })
@@ -382,12 +457,27 @@ class DatabaseService {
       }
 
       case 'mysql': {
+        let mysqlHost = row.host || 'localhost'
+        let mysqlPort = row.port || DEFAULT_PORTS.mysql
+        let mysqlDatabase = row.database
+        let mysqlUser = row.username || undefined
+        let mysqlPass = password
+
+        if (connectionString) {
+          const parsed = parseConnectionString(connectionString)
+          mysqlHost = parsed.host ?? mysqlHost
+          mysqlPort = parsed.port ?? mysqlPort
+          mysqlDatabase = parsed.database ?? mysqlDatabase
+          mysqlUser = parsed.username ?? mysqlUser
+          mysqlPass = parsed.password ?? mysqlPass
+        }
+
         const pool = mysql2.createPool({
-          host: row.host || 'localhost',
-          port: row.port || DEFAULT_PORTS.mysql,
-          database: row.database,
-          user: row.username || undefined,
-          password: password || undefined,
+          host: mysqlHost,
+          port: mysqlPort,
+          database: mysqlDatabase,
+          user: mysqlUser,
+          password: mysqlPass,
           ssl: row.sslEnabled ? {} : undefined,
           connectTimeout: CONNECTION_TIMEOUT_MS
         })
@@ -396,12 +486,27 @@ class DatabaseService {
       }
 
       case 'sqlserver': {
+        let mssqlHost = row.host || 'localhost'
+        let mssqlPort = row.port || DEFAULT_PORTS.sqlserver
+        let mssqlDatabase = row.database
+        let mssqlUser = row.username || undefined
+        let mssqlPass = password
+
+        if (connectionString) {
+          const parsed = parseConnectionString(connectionString)
+          mssqlHost = parsed.host ?? mssqlHost
+          mssqlPort = parsed.port ?? mssqlPort
+          mssqlDatabase = parsed.database ?? mssqlDatabase
+          mssqlUser = parsed.username ?? mssqlUser
+          mssqlPass = parsed.password ?? mssqlPass
+        }
+
         const pool = new mssql.ConnectionPool({
-          server: row.host || 'localhost',
-          port: row.port || DEFAULT_PORTS.sqlserver,
-          database: row.database,
-          user: row.username || undefined,
-          password: password || undefined,
+          server: mssqlHost,
+          port: mssqlPort,
+          database: mssqlDatabase,
+          user: mssqlUser,
+          password: mssqlPass,
           options: {
             encrypt: row.sslEnabled ?? false,
             trustServerCertificate: true
@@ -466,6 +571,8 @@ class DatabaseService {
     if (config.type === 'sqlite') {
       if (!config.filePath?.trim() && !config.database?.trim())
         throw new Error('Database file path is required for SQLite')
+    } else if (config.connectionString?.trim()) {
+      parseConnectionString(config.connectionString)
     } else {
       if (!config.host?.trim()) throw new Error('Host is required')
       if (!config.database?.trim()) throw new Error('Database name is required')

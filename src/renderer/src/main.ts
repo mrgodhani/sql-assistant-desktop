@@ -3,6 +3,7 @@ import 'prismjs/themes/prism-tomorrow.css'
 
 import log from 'electron-log/renderer'
 import { createApp } from 'vue'
+
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'

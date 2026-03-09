@@ -51,6 +51,12 @@ export const useConnectionStore = defineStore('connections', () => {
   }
 
   async function createConnection(config: ConnectionConfig): Promise<DatabaseConnection | null> {
+    if (!window.connectionsApi) {
+      const msg =
+        'Electron APIs not available. Run the app with "npm run dev" or the built executable.'
+      log.error('[Connections]', msg)
+      throw new Error(msg)
+    }
     try {
       const conn = await window.connectionsApi.create(config)
       connections.value.push(conn)

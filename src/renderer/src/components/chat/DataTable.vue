@@ -112,25 +112,26 @@ function toggleSort(col: string): void {
       class="max-w-xs text-sm"
       aria-label="Filter table rows"
     />
-    <div class="rounded border border-border">
-      <table class="w-full border-collapse text-sm">
-        <thead class="bg-muted">
-          <tr>
-            <th
-              v-for="col in columns"
-              :key="col"
-              class="cursor-pointer border-b border-border px-3 py-2 text-left font-medium hover:bg-muted/80"
-              @click="toggleSort(col)"
-            >
-              {{ col }}
-              <span v-if="sortColumn === col" class="ml-1">{{ sortAsc ? '↑' : '↓' }}</span>
-            </th>
-            <th class="w-12 border-b border-border px-2 py-2" />
-          </tr>
-        </thead>
-      </table>
-      <div ref="scrollRef" class="max-h-96 overflow-auto">
-        <table v-if="!useVirtual" class="w-full border-collapse text-sm">
+    <div class="rounded border border-border overflow-x-auto">
+      <div class="min-w-max">
+        <table class="w-full min-w-max border-collapse text-sm">
+          <thead class="bg-muted">
+            <tr>
+              <th
+                v-for="col in columns"
+                :key="col"
+                class="cursor-pointer whitespace-nowrap border-b border-border px-3 py-2 text-left font-medium hover:bg-muted/80"
+                @click="toggleSort(col)"
+              >
+                {{ col }}
+                <span v-if="sortColumn === col" class="ml-1">{{ sortAsc ? '↑' : '↓' }}</span>
+              </th>
+              <th class="w-12 shrink-0 border-b border-border px-2 py-2" />
+            </tr>
+          </thead>
+        </table>
+        <div ref="scrollRef" class="max-h-96 overflow-y-auto overflow-x-visible">
+        <table v-if="!useVirtual" class="w-full min-w-max border-collapse text-sm">
           <tbody>
             <tr
               v-for="(row, ri) in sortedRows"
@@ -141,7 +142,7 @@ function toggleSort(col: string): void {
                 v-for="col in columns"
                 :key="col"
                 :class="[
-                  'cursor-pointer border-r border-border/30 px-3 py-1.5',
+                  'cursor-pointer whitespace-nowrap border-r border-border/30 px-3 py-1.5',
                   (row[col] ?? null) == null && 'italic text-muted-foreground'
                 ]"
                 @click="copyCell(ri, col)"
