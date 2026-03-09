@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { MessageSquare } from 'lucide-vue-next'
 import { useChatStore } from '@renderer/stores/useChatStore'
 import ChatMessages from '@renderer/components/chat/ChatMessages.vue'
 import ChatInput from '@renderer/components/chat/ChatInput.vue'
-import EmptyState from '@renderer/components/shared/EmptyState.vue'
+import ChatPromptSuggestions from '@renderer/components/chat/ChatPromptSuggestions.vue'
 
 const route = useRoute()
 const chatStore = useChatStore()
@@ -32,17 +31,9 @@ watch(
     <ChatMessages v-if="chatStore.currentConversation?.messages.length" />
     <div
       v-else
-      class="flex flex-1 flex-col items-center justify-center"
+      class="flex flex-1 flex-col items-center justify-center overflow-y-auto"
     >
-      <EmptyState
-        :icon="MessageSquare"
-        title="Chat"
-        :message="
-          chatStore.activeConnectionId
-            ? 'Connect to a database and start asking questions'
-            : 'Select a connection above to start'
-        "
-      />
+      <ChatPromptSuggestions />
     </div>
     <ChatInput />
   </div>

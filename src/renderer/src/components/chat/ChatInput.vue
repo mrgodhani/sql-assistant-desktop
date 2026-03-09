@@ -20,12 +20,6 @@ watch(
   }
 )
 
-const SUGGESTED_PROMPTS = [
-  { text: 'Show me all tables in this database', icon: 'Table' },
-  { text: 'Write a query to count rows in the users table', icon: 'Hash' },
-  { text: 'Explain the schema and relationships', icon: 'Database' }
-] as const
-
 const isStreaming = computed(() => Boolean(chatStore.streamingState))
 const canSend = computed(() => {
   const trimmed = input.value.trim()
@@ -35,11 +29,6 @@ const canSend = computed(() => {
     Boolean(chatStore.activeConnectionId)
   )
 })
-
-function insertSuggestedPrompt(text: string): void {
-  input.value = text
-  nextTick(() => textareaRef.value?.focus())
-}
 
 function send(): void {
   if (!chatStore.activeConnectionId) return
@@ -60,19 +49,6 @@ function onKeydown(e: KeyboardEvent): void {
 
 <template>
   <div class="border-t border-border bg-background p-3">
-    <div v-if="!chatStore.currentConversation?.messages.length" class="mb-3 flex flex-wrap gap-2">
-      <Button
-        v-for="(prompt, i) in SUGGESTED_PROMPTS"
-        :key="i"
-        variant="outline"
-        size="sm"
-        class="text-xs"
-        :disabled="!chatStore.activeConnectionId"
-        @click="insertSuggestedPrompt(prompt.text)"
-      >
-        {{ prompt.text }}
-      </Button>
-    </div>
     <div class="flex gap-2">
       <Textarea
         ref="textareaRef"

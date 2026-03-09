@@ -2,8 +2,8 @@
 import { ref, onMounted, watch } from 'vue'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-sql'
+import 'prismjs/themes/prism-tomorrow.css'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Check, AlertCircle, Copy, Play } from 'lucide-vue-next'
 
@@ -100,8 +100,8 @@ function run(): void {
         </Button>
       </div>
     </div>
-    <ScrollArea class="max-h-64">
-      <pre class="bg-muted/40 p-3 text-sm rounded-b-md"><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
-    </ScrollArea>
+    <div class="max-h-96 overflow-auto rounded-b-md">
+      <pre class="bg-muted/40 p-3 text-sm"><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
+    </div>
   </div>
 </template>
