@@ -8,5 +8,8 @@ export const exportApi = {
     ipcRenderer.invoke('export:csv', payload),
 
   exportExcel: (payload: string): Promise<void> =>
-    ipcRenderer.invoke('export:excel', payload)
+    ipcRenderer.invoke('export:excel', payload),
+
+  exportExcelReport: (payload: string): Promise<void> =>
+    ipcRenderer.invoke('export:excelReport', payload)
 }

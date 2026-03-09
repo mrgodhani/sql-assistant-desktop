@@ -87,6 +87,7 @@ interface ExportApi {
   showSaveDialog: (optionsJson: string) => Promise<string | null>
   exportCsv: (payload: string) => Promise<void>
   exportExcel: (payload: string) => Promise<void>
+  exportExcelReport: (payload: string) => Promise<void>
 }
 
 interface AppApi {
@@ -104,5 +105,6 @@ declare global {
     conversationApi: ConversationApi
     exportApi: ExportApi
     logsApi: LogsApi
+    platformApi: { getPlatform: () => 'darwin' | 'win32' | 'linux' }
   }
 }

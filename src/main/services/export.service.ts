@@ -136,9 +136,9 @@ export class ExportService {
       dataSheet.addRow(cols.map((col) => toExcelCellValue(row[col])))
     }
 
-    // Page setup footer
+    // Page setup and footer
     dataSheet.pageSetup.printArea = `A1:F${rws.length + 4}`
-    dataSheet.pageSetup.firstFooter = `Generated on ${new Date().toLocaleDateString()}`
+    dataSheet.headerFooter.firstFooter = `Generated on ${new Date().toLocaleDateString()}`
 
     // Logo (optional) - add before chart sheet so data sheet is complete
     if (options.logoPath) {
@@ -146,7 +146,11 @@ export class ExportService {
         const logoBuf = await readFile(options.logoPath)
         if (logoBuf.length <= 500 * 1024) {
           const ext = options.logoPath.toLowerCase().endsWith('.png') ? 'png' : 'jpeg'
-          const logoId = workbook.addImage({ buffer: logoBuf, extension: ext })
+          const logoId = workbook.addImage({
+            // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
+            buffer: Buffer.from(logoBuf),
+            extension: ext
+          })
           dataSheet.addImage(logoId, 'A1:A2')
         }
       } catch {
@@ -163,11 +167,12 @@ export class ExportService {
 
       const base64 = options.chartImageBase64.replace(/^data:image\/\w+;base64,/, '')
       const imageId = workbook.addImage({
+        // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
         buffer: Buffer.from(base64, 'base64'),
         extension: 'png'
       })
       chartSheet.addImage(imageId, 'A3:I20')
-      chartSheet.pageSetup.firstFooter = `Generated on ${new Date().toLocaleDateString()}`
+      chartSheet.headerFooter.firstFooter = `Generated on ${new Date().toLocaleDateString()}`
     }
 
     await workbook.xlsx.writeFile(path)

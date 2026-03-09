@@ -51,4 +51,28 @@ export function registerExportIpc(): void {
       throw new Error(sanitizeExportError(error))
     }
   })
+
+  ipcMain.handle('export:excelReport', async (_event, payload: string) => {
+    try {
+      const { path, columns, jsonRows, reportOptions } = JSON.parse(payload) as {
+        path: string
+        columns: string[]
+        jsonRows: string
+        reportOptions: {
+          title: string
+          logoPath?: string
+          includeChart: boolean
+          chartImageBase64?: string
+        }
+      }
+      const parsed = JSON.parse(jsonRows)
+      if (!Array.isArray(parsed) || parsed.some((r) => typeof r !== 'object' || r === null)) {
+        throw new Error('Invalid export data')
+      }
+      const rows = parsed as Record<string, unknown>[]
+      await exportService.exportExcelReport(path, columns, rows, reportOptions)
+    } catch (error) {
+      throw new Error(sanitizeExportError(error))
+    }
+  })
 }

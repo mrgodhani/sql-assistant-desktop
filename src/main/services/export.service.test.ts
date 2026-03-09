@@ -30,6 +30,7 @@ describe('exportExcelReport', () => {
 
     const buf = readFileSync(path)
     const wb = new ExcelJS.Workbook()
+    // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
     await wb.xlsx.load(buf)
     expect(wb.worksheets.length).toBe(1)
     expect(wb.worksheets[0]?.name).toBe('Data')
@@ -53,6 +54,7 @@ describe('exportExcelReport', () => {
 
     const buf = readFileSync(path)
     const wb = new ExcelJS.Workbook()
+    // @ts-expect-error - Node 22+ Buffer type differs from ExcelJS expectation
     await wb.xlsx.load(buf)
     expect(wb.worksheets.length).toBe(2)
     expect(wb.worksheets[1]?.name).toBe('Chart')
