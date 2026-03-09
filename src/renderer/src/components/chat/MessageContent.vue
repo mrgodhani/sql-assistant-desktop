@@ -20,6 +20,13 @@ const emit = defineEmits<{
 const chatStore = useChatStore()
 const resultsStore = useResultsStore()
 
+const connectionId = computed(
+  () =>
+    chatStore.activeConnectionId ??
+    chatStore.currentConversation?.connectionId ??
+    null
+)
+
 const SQL_BLOCK_REGEX = /```sql\n([\s\S]*?)```/gi
 
 interface Segment {
@@ -76,7 +83,7 @@ function onRun(code: string, blockIndex: number): void {
             v-if="resultsStore.getResult(messageIndex, i)"
             :message-index="messageIndex"
             :block-index="i"
-            :connection-id="chatStore.activeConnectionId"
+            :connection-id="connectionId"
           />
         </template>
       </template>
