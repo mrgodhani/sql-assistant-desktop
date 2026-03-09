@@ -34,4 +34,29 @@ describe('MessageActions', () => {
     })
     expect(userWrapper.find('[aria-label="Regenerate"]').exists()).toBe(false)
   })
+
+  it('Regenerate disabled when isStreaming is true', () => {
+    const wrapper = mount(MessageActions, {
+      props: { role: 'assistant', isStreaming: true }
+    })
+    const regenerateBtn = wrapper.find('[aria-label="Regenerate"]')
+    expect(regenerateBtn.exists()).toBe(true)
+    expect(regenerateBtn.attributes('disabled')).toBeDefined()
+  })
+
+  it('emits regenerate when Regenerate clicked and not streaming', async () => {
+    const wrapper = mount(MessageActions, {
+      props: { role: 'assistant', isStreaming: false }
+    })
+    await wrapper.find('[aria-label="Regenerate"]').trigger('click')
+    expect(wrapper.emitted('regenerate')).toHaveLength(1)
+  })
+
+  it('emits edit when Edit clicked', async () => {
+    const wrapper = mount(MessageActions, {
+      props: { role: 'user' }
+    })
+    await wrapper.find('[aria-label="Edit"]').trigger('click')
+    expect(wrapper.emitted('edit')).toHaveLength(1)
+  })
 })
