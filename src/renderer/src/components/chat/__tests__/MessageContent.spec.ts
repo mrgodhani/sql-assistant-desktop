@@ -6,7 +6,6 @@ import MessageContent from '../MessageContent.vue'
 vi.mock('electron-log/renderer', () => ({ default: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
 const TRUNCATE_LENGTH = 250
-const COLLAPSE_THRESHOLD = 350
 
 function makeLongProse(length: number): string {
   const head = 'Lorem ipsum dolor sit amet consectetur adipiscing elit. '.repeat(5).slice(0, TRUNCATE_LENGTH)
