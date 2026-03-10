@@ -90,7 +90,7 @@ const showRegenerateError = computed(
 
 <template>
   <div :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']">
-    <div class="flex max-w-[85%] flex-col items-start gap-1">
+    <div class="flex max-w-[85%] min-w-0 flex-col items-start gap-1">
       <div class="flex items-center gap-2">
         <MessageHeader :role="role" :has-error="hasError" />
         <MessageActions

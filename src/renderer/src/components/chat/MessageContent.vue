@@ -88,7 +88,7 @@ function onRun(code: string, blockIndex: number): void {
     <p class="whitespace-pre-wrap">{{ message.content }}</p>
   </template>
   <template v-else>
-    <div class="space-y-6">
+    <div class="min-w-0 space-y-6">
       <template v-for="(seg, i) in segments" :key="i">
         <div
           v-if="seg.type === 'text'"
