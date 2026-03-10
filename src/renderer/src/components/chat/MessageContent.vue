@@ -78,6 +78,17 @@ watch(
 
 const isUser = computed(() => props.message.role === 'user')
 
+const sqlBlockCount = computed(() => segments.value.filter((s) => s.type === 'sql').length)
+
+function getSqlBlockLabel(segmentIndex: number): string | undefined {
+  if (sqlBlockCount.value <= 1) return undefined
+  const sqlIndex =
+    segments.value
+      .slice(0, segmentIndex + 1)
+      .filter((s) => s.type === 'sql').length
+  return `Query ${sqlIndex}`
+}
+
 function onRun(code: string, blockIndex: number): void {
   emit('run', code, blockIndex)
 }
@@ -88,29 +99,36 @@ function onRun(code: string, blockIndex: number): void {
     <p class="whitespace-pre-wrap">{{ message.content }}</p>
   </template>
   <template v-else>
-    <div class="min-w-0 space-y-6">
+    <div class="min-w-0 space-y-8">
       <template v-for="(seg, i) in segments" :key="i">
         <div
           v-if="seg.type === 'text'"
-          class="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted-foreground/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_p]:mb-4"
-          v-html="renderMarkdown(seg.content)"
-        />
+          class="rounded-md border-l-2 border-muted bg-muted/5 pl-3 py-2"
+        >
+          <div
+            class="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted-foreground/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_p]:mb-4"
+            v-html="renderMarkdown(seg.content)"
+          />
+        </div>
         <template v-else>
           <div class="mt-4">
             <SqlCodeBlock
               :code="seg.content"
               :block-index="i"
+              :block-label="getSqlBlockLabel(i)"
               :has-connection="Boolean(connectionId)"
               :validation-result="validationStore.getValidation(messageIndex, i)"
               @run="(code) => onRun(code, i)"
             />
           </div>
-          <ResultsPanel
-            v-if="resultsStore.getResult(messageIndex, i)"
-            :message-index="messageIndex"
-            :block-index="i"
-            :connection-id="connectionId"
-          />
+          <div v-if="resultsStore.getResult(messageIndex, i)">
+            <span class="text-xs font-medium text-muted-foreground">Results</span>
+            <ResultsPanel
+              :message-index="messageIndex"
+              :block-index="i"
+              :connection-id="connectionId"
+            />
+          </div>
         </template>
       </template>
       <span v-if="isStreaming" class="animate-pulse">▌</span>

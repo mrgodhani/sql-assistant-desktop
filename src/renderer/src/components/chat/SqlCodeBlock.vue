@@ -10,6 +10,7 @@ import { Check, AlertCircle, Copy, Play } from 'lucide-vue-next'
 const props = defineProps<{
   code: string
   blockIndex?: number
+  blockLabel?: string
   hasConnection?: boolean
   validationResult?: { valid: boolean; error?: string } | null
 }>()
@@ -51,7 +52,9 @@ function run(): void {
       class="relative z-10 flex items-center justify-between border-b border-border px-2 py-1 transition-colors duration-150"
     >
       <div class="flex items-center gap-2">
-        <span class="text-xs text-muted-foreground">SQL</span>
+        <span class="text-xs text-muted-foreground">
+          {{ blockLabel ? `SQL · ${blockLabel}` : 'SQL' }}
+        </span>
         <TooltipProvider v-if="validationResult">
           <Tooltip>
             <TooltipTrigger as-child>
