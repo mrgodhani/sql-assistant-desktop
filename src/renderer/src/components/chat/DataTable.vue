@@ -205,7 +205,7 @@ function updateHasOverflow(): void {
             </tr>
           </thead>
         </table>
-        <div ref="scrollRef" class="max-h-96 overflow-y-auto overflow-x-visible">
+        <div ref="scrollRef" class="max-h-[28rem] overflow-y-auto overflow-x-visible">
           <table v-if="!useVirtual" class="w-full min-w-max border-collapse text-sm">
             <tbody>
               <tr

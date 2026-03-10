@@ -39,7 +39,7 @@ function formatTime(ms: number): string {
 
 <template>
   <div
-    class="mt-2 min-w-0 rounded-lg border border-border bg-muted/20 p-3"
+    class="mt-2 min-w-0 rounded-lg border border-border/60 bg-muted/10 p-2.5"
     aria-live="polite"
     aria-atomic="true"
   >
