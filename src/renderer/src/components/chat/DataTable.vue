@@ -64,21 +64,30 @@ function measureColumns(): void {
 }
 
 let resizeObserver: ResizeObserver | null = null
+let scrollContainerResizeObserver: ResizeObserver | null = null
 
 onMounted(async () => {
   await nextTick()
   measureColumns()
+  updateHasOverflow()
   resizeObserver = new ResizeObserver(measureColumns)
   if (headerTableRef.value) resizeObserver.observe(headerTableRef.value)
+  scrollContainerResizeObserver = new ResizeObserver(updateHasOverflow)
+  if (scrollContainerRef.value) scrollContainerResizeObserver.observe(scrollContainerRef.value)
 })
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
+  scrollContainerResizeObserver?.disconnect()
 })
 
 watch(
   () => props.columns,
-  () => measureColumns(),
+  async () => {
+    measureColumns()
+    await nextTick()
+    updateHasOverflow()
+  },
   { immediate: true }
 )
 
@@ -144,6 +153,16 @@ function toggleSort(col: string): void {
     sortAsc.value = true
   }
 }
+
+// Scroll affordance: show right-edge fade when horizontal overflow exists
+const scrollContainerRef = ref<HTMLDivElement | null>(null)
+const hasHorizontalOverflow = ref(false)
+
+function updateHasOverflow(): void {
+  const el = scrollContainerRef.value
+  if (!el) return
+  hasHorizontalOverflow.value = el.scrollWidth > el.clientWidth
+}
 </script>
 
 <template>
@@ -154,11 +173,14 @@ function toggleSort(col: string): void {
       class="max-w-xs text-sm"
       aria-label="Filter table rows"
     />
-    <div
-      class="rounded border border-border overflow-x-auto"
-      role="grid"
-      aria-label="Query results"
-    >
+    <div class="relative">
+      <div
+        ref="scrollContainerRef"
+        class="rounded border border-border overflow-x-auto"
+        role="grid"
+        aria-label="Query results"
+        @scroll="updateHasOverflow"
+      >
       <div class="min-w-max">
         <table ref="headerTableRef" class="w-full min-w-max border-collapse text-sm">
           <thead class="bg-muted">
@@ -267,5 +289,11 @@ function toggleSort(col: string): void {
         </div>
       </div>
     </div>
+    <div
+      v-if="hasHorizontalOverflow"
+      class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 shrink-0 bg-gradient-to-l from-black/10 to-transparent dark:from-white/10"
+      aria-hidden="true"
+    />
+  </div>
   </div>
 </template>
