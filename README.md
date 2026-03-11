@@ -51,14 +51,6 @@ npm run dev
 npm run build
 ```
 
-Platform-specific builds:
-
-| Platform | Command |
-|----------|---------|
-| macOS (universal + notarized) | `npm run build:mac` |
-| Windows | `npm run build:win` |
-| Linux | `npm run build:linux` |
-
 ### macOS Build (Universal + Notarized)
 
 Produces a universal DMG (Intel + Apple Silicon) and notarizes it for distribution.
