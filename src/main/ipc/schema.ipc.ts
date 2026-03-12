@@ -34,7 +34,7 @@ export function registerSchemaIpc(): void {
         schema = result.schema ?? null
       }
       if (!schema) return []
-      return searchSchema(schema, query)
+      return searchSchema(schema, query).slice(0, 100)
     }
   )
 }

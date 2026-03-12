@@ -5,8 +5,12 @@ export interface SearchResult {
 
 /** Minimal schema shape needed for search. DatabaseSchema satisfies this. */
 interface SearchableSchema {
-  tables: Array<{ name: string; columns: Array<{ name: string }> }>
-  views: Array<{ name: string; columns: Array<{ name: string }> }>
+  tables: Array<{ name: string; schema?: string; columns: Array<{ name: string }> }>
+  views: Array<{ name: string; schema?: string; columns: Array<{ name: string }> }>
+}
+
+function qualifiedTableName(table: { name: string; schema?: string }): string {
+  return table.schema ? `${table.schema}.${table.name}` : table.name
 }
 
 /**
@@ -20,11 +24,12 @@ export function searchSchema(schema: SearchableSchema, query: string): SearchRes
 
   const searchIn = (items: SearchableSchema['tables']) => {
     for (const table of items) {
-      const tableMatches = table.name.toLowerCase().includes(q)
+      const tableName = qualifiedTableName(table)
+      const tableMatches = tableName.toLowerCase().includes(q)
       for (const col of table.columns) {
         const colMatches = col.name.toLowerCase().includes(q)
         if (tableMatches || colMatches) {
-          results.push({ table: table.name, column: col.name })
+          results.push({ table: tableName, column: col.name })
         }
       }
     }
