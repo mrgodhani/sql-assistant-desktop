@@ -5,8 +5,9 @@ import 'prismjs/components/prism-sql'
 import 'prismjs/themes/prism-tomorrow.css'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Check, AlertCircle, Copy, Play, GitBranch } from 'lucide-vue-next'
+import { Check, AlertCircle, Copy, Play, GitBranch, Zap } from 'lucide-vue-next'
 import ExplainPanel from './ExplainPanel.vue'
+import OptimizePanel from './OptimizePanel.vue'
 
 const props = defineProps<{
   code: string
@@ -24,6 +25,7 @@ const emit = defineEmits<{
 const codeRef = ref<HTMLElement | null>(null)
 const copied = ref(false)
 const showExplain = ref(false)
+const showOptimize = ref(false)
 
 function highlight(): void {
   if (codeRef.value) {
@@ -113,6 +115,17 @@ function run(): void {
           size="sm"
           class="h-7 gap-1 px-2 text-xs"
           :disabled="!hasConnection"
+          :aria-label="hasConnection ? 'Optimize query' : 'Select a connection first'"
+          @click="showOptimize = !showOptimize"
+        >
+          <Zap class="size-3.5" />
+          Optimize
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1 px-2 text-xs"
+          :disabled="!hasConnection"
           :aria-label="hasConnection ? 'Run query' : 'Select a connection first'"
           @click="run"
         >
@@ -131,6 +144,12 @@ function run(): void {
       :connection-id="connectionId ?? null"
       :sql="code"
       :open="showExplain"
+    />
+    <OptimizePanel
+      v-if="showOptimize"
+      :connection-id="connectionId ?? null"
+      :sql="code"
+      :open="showOptimize"
     />
   </div>
 </template>
