@@ -67,12 +67,7 @@ watch(
       for (let i = 0; i < segments.value.length; i++) {
         const seg = segments.value[i]
         if (seg.type === 'sql') {
-          validationStore.validateSqlBlock(
-            connectionId.value!,
-            props.messageIndex,
-            i,
-            seg.content
-          )
+          validationStore.validateSqlBlock(connectionId.value!, props.messageIndex, i, seg.content)
         }
       }
     }
@@ -85,10 +80,7 @@ const sqlBlockCount = computed(() => segments.value.filter((s) => s.type === 'sq
 
 function getSqlBlockLabel(segmentIndex: number): string | undefined {
   if (sqlBlockCount.value <= 1) return undefined
-  const sqlIndex =
-    segments.value
-      .slice(0, segmentIndex + 1)
-      .filter((s) => s.type === 'sql').length
+  const sqlIndex = segments.value.slice(0, segmentIndex + 1).filter((s) => s.type === 'sql').length
   return `Query ${sqlIndex}`
 }
 
@@ -143,13 +135,7 @@ function isProseExpanded(index: number): boolean {
           </button>
         </div>
         <template v-else>
-          <div
-            :class="
-              segments.slice(0, i).some((s) => s.type === 'text')
-                ? 'mt-6'
-                : 'mt-4'
-            "
-          >
+          <div :class="segments.slice(0, i).some((s) => s.type === 'text') ? 'mt-6' : 'mt-4'">
             <SqlCodeBlock
               :code="seg.content"
               :block-index="i"
@@ -159,13 +145,8 @@ function isProseExpanded(index: number): boolean {
               @run="(code) => onRun(code, i)"
             />
           </div>
-          <div
-            v-if="resultsStore.getResult(messageIndex, i)"
-            class="mt-4"
-          >
-            <span class="mb-2 block text-xs font-medium text-muted-foreground"
-              >Results</span
-            >
+          <div v-if="resultsStore.getResult(messageIndex, i)" class="mt-4">
+            <span class="mb-2 block text-xs font-medium text-muted-foreground">Results</span>
             <ResultsPanel
               :message-index="messageIndex"
               :block-index="i"
@@ -174,11 +155,7 @@ function isProseExpanded(index: number): boolean {
           </div>
         </template>
       </template>
-      <span
-        v-if="isStreaming"
-        class="animate-pulse"
-        aria-hidden="true"
-      >▌</span>
+      <span v-if="isStreaming" class="animate-pulse" aria-hidden="true">▌</span>
     </div>
   </template>
 </template>

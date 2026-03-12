@@ -50,12 +50,7 @@ async function onRunSql(code: string, blockIndex: number): Promise<void> {
     })
     return
   }
-  const result = await resultsStore.executeQuery(
-    connectionId,
-    code,
-    props.messageIndex,
-    blockIndex
-  )
+  const result = await resultsStore.executeQuery(connectionId, code, props.messageIndex, blockIndex)
   const messageId = props.message.id
   if (messageId && result.success && result.result) {
     try {
@@ -82,18 +77,14 @@ async function onRunSql(code: string, blockIndex: number): Promise<void> {
 const hasError = computed(() => props.message.content.includes('**Error:**'))
 
 const showRegenerateError = computed(
-  () =>
-    role.value === 'assistant' &&
-    chatStore.regenerateError?.messageIndex === props.messageIndex
+  () => role.value === 'assistant' && chatStore.regenerateError?.messageIndex === props.messageIndex
 )
 </script>
 
 <template>
   <div :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']">
     <div class="flex max-w-[85%] min-w-0 flex-col items-start gap-4">
-      <div
-        class="flex items-center gap-2 pb-3 mb-3 border-b border-border/60 w-full"
-      >
+      <div class="flex items-center gap-2 pb-3 mb-3 border-b border-border/60 w-full">
         <MessageHeader :role="role" :has-error="hasError" />
         <MessageActions
           :role="role"
