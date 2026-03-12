@@ -9,6 +9,7 @@ import { conversationApi } from './api/conversation.api'
 import { exportApi } from './api/export.api'
 import { logsApi } from './api/logs.api'
 import { platformApi } from './api/platform.api'
+import { explainApi } from './api/explain.api'
 
 const api = {
   settings: settingsApi
@@ -24,6 +25,7 @@ try {
   contextBridge.exposeInMainWorld('exportApi', exportApi)
   contextBridge.exposeInMainWorld('logsApi', logsApi)
   contextBridge.exposeInMainWorld('platformApi', platformApi)
+  contextBridge.exposeInMainWorld('explainApi', explainApi)
 } catch (error) {
   console.error('[Preload] Failed to expose APIs:', error)
 }

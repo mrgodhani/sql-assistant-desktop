@@ -81,6 +81,10 @@ interface ConversationApi {
   ) => Promise<void>
 }
 
+interface ExplainApi {
+  run: (connectionId: string, sql: string) => Promise<{ raw: string; mermaid: string }>
+}
+
 interface LogsApi {
   getLogPath: () => Promise<string>
   getRecentLogs: (lines?: number) => Promise<string>
@@ -116,5 +120,6 @@ declare global {
     exportApi: ExportApi
     logsApi: LogsApi
     platformApi: { getPlatform: () => 'darwin' | 'win32' | 'linux' }
+    explainApi: ExplainApi
   }
 }
