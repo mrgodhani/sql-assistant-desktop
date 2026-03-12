@@ -5,13 +5,15 @@ import 'prismjs/components/prism-sql'
 import 'prismjs/themes/prism-tomorrow.css'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Check, AlertCircle, Copy, Play } from 'lucide-vue-next'
+import { Check, AlertCircle, Copy, Play, GitBranch } from 'lucide-vue-next'
+import ExplainPanel from './ExplainPanel.vue'
 
 const props = defineProps<{
   code: string
   blockIndex?: number
   blockLabel?: string
   hasConnection?: boolean
+  connectionId?: string | null
   validationResult?: { valid: boolean; error?: string } | null
 }>()
 
@@ -21,6 +23,7 @@ const emit = defineEmits<{
 
 const codeRef = ref<HTMLElement | null>(null)
 const copied = ref(false)
+const showExplain = ref(false)
 
 function highlight(): void {
   if (codeRef.value) {
@@ -99,6 +102,17 @@ function run(): void {
           size="sm"
           class="h-7 gap-1 px-2 text-xs"
           :disabled="!hasConnection"
+          :aria-label="hasConnection ? 'Explain plan' : 'Select a connection first'"
+          @click="showExplain = !showExplain"
+        >
+          <GitBranch class="size-3.5" />
+          Explain
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1 px-2 text-xs"
+          :disabled="!hasConnection"
           :aria-label="hasConnection ? 'Run query' : 'Select a connection first'"
           @click="run"
         >
@@ -112,5 +126,11 @@ function run(): void {
         class="bg-muted/40 p-3 text-sm"
       ><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
     </div>
+    <ExplainPanel
+      v-if="showExplain"
+      :connection-id="connectionId ?? null"
+      :sql="code"
+      :open="showExplain"
+    />
   </div>
 </template>

@@ -141,6 +141,7 @@ function isProseExpanded(index: number): boolean {
               :block-index="i"
               :block-label="getSqlBlockLabel(i)"
               :has-connection="Boolean(connectionId)"
+              :connection-id="connectionId"
               :validation-result="validationStore.getValidation(messageIndex, i)"
               @run="(code) => onRun(code, i)"
             />
