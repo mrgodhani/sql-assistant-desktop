@@ -45,6 +45,7 @@ interface SchemaApi {
   introspect: (connectionId: string) => Promise<SchemaIntrospectionResult>
   refresh: (connectionId: string) => Promise<SchemaIntrospectionResult>
   getContext: (connectionId: string) => Promise<string>
+  search: (connectionId: string, query: string) => Promise<Array<{ table: string; column: string }>>
 }
 
 interface AiApi {

@@ -9,5 +9,8 @@ export const schemaApi = {
     ipcRenderer.invoke('schema:refresh', connectionId),
 
   getContext: (connectionId: string): Promise<string> =>
-    ipcRenderer.invoke('schema:getContext', connectionId)
+    ipcRenderer.invoke('schema:getContext', connectionId),
+
+  search: (connectionId: string, query: string) =>
+    ipcRenderer.invoke('schema:search', connectionId, query)
 }

@@ -11,7 +11,7 @@ describe('searchSchema', () => {
       { name: 'customers', columns: [{ name: 'id' }, { name: 'email' }] }
     ],
     views: []
-  } as import('../../shared/types').DatabaseSchema
+  }
 
   it('returns matches for partial table name', () => {
     const result = searchSchema(schema, 'customer')
