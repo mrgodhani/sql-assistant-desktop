@@ -24,13 +24,21 @@ async function fetchExplain(): Promise<void> {
     const result = await window.explainApi.run(props.connectionId, props.sql)
     raw.value = result.raw
     if (result.mermaid && result.mermaid !== 'flowchart TB') {
-      const id = `explain-${Date.now()}-${Math.random().toString(36).slice(2)}`
-      mermaid.initialize({ startOnLoad: false })
-      const { svg } = await mermaid.render(id, result.mermaid)
-      mermaidSvg.value = svg
+      try {
+        const id = `explain-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        mermaid.initialize({ startOnLoad: false })
+        const { svg } = await mermaid.render(id, result.mermaid)
+        mermaidSvg.value = svg
+      } catch {
+        // Mermaid render failed; raw tab still available
+      }
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to run EXPLAIN'
+    const msg = e instanceof Error ? e.message : 'Failed to run EXPLAIN'
+    error.value =
+      /connection|not active|reconnect|ECONNREFUSED|ETIMEDOUT/i.test(msg)
+        ? 'Connection lost. Please reconnect.'
+        : msg
   } finally {
     loading.value = false
   }
