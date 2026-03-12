@@ -3,7 +3,6 @@ import { ref, watch, nextTick, computed } from 'vue'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import type { ChatMessage as ChatMessageType } from '../../../../shared/types'
 import ChatMessage from './ChatMessage.vue'
-import StreamingIndicator from './StreamingIndicator.vue'
 import { useChatStore } from '@renderer/stores/useChatStore'
 
 const VIRTUAL_THRESHOLD = 20
@@ -77,7 +76,7 @@ watch(
   <div ref="scrollContainerRef" class="flex-1 overflow-y-auto p-4">
     <div class="mx-auto max-w-3xl space-y-8">
       <template v-if="!useVirtual">
-        <div v-for="(pair, pairIdx) in messagePairs" :key="pairIdx" class="space-y-6">
+        <div v-for="(pair, pairIdx) in messagePairs" :key="pairIdx" class="space-y-8">
           <ChatMessage
             v-for="(item, i) in pair"
             :key="`${pairIdx}-${i}`"
@@ -101,7 +100,7 @@ watch(
         <div
           v-for="virtualRow in virtualizer.getVirtualItems()"
           :key="String(virtualRow.key)"
-          class="absolute left-0 w-full space-y-6"
+          class="absolute left-0 w-full space-y-8"
           :style="{
             height: `${virtualRow.size}px`,
             transform: `translateY(${virtualRow.start}px)`
@@ -119,7 +118,6 @@ watch(
           />
         </div>
       </div>
-      <StreamingIndicator v-if="chatStore.streamingState" />
       <div ref="messagesEndRef" />
     </div>
   </div>
