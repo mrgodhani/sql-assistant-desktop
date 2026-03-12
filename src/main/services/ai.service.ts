@@ -1,6 +1,8 @@
 import log from 'electron-log/main'
 import { settingsService } from './settings.service'
-import { buildSystemPrompt } from './ai/prompt'
+import { schemaService } from './schema.service'
+import { databaseService } from './database.service'
+import { buildSystemPrompt, buildOptimizationPrompt } from './ai/prompt'
 import { classifyError } from './ai/types'
 import { openaiAdapter } from './ai/openai.adapter'
 import { anthropicAdapter } from './ai/anthropic.adapter'
@@ -8,7 +10,7 @@ import { googleAdapter } from './ai/google.adapter'
 import { ollamaAdapter } from './ai/ollama.adapter'
 import { openrouterAdapter } from './ai/openrouter.adapter'
 import type { ProviderAdapter } from './ai/types'
-import type { AIProvider, AIChatParams, StreamChunk } from '../../shared/types'
+import type { AIProvider, AIChatParams, StreamChunk, ChatMessage } from '../../shared/types'
 import { DEFAULT_PROVIDER_CONFIGS } from '../../shared/types'
 
 const STREAM_INACTIVITY_TIMEOUT = 60_000
@@ -52,7 +54,9 @@ class AIService {
         return
       }
 
-      const systemPrompt = buildSystemPrompt(schemaContext, databaseType, connectionName)
+      const systemPrompt =
+        params.systemPromptOverride ??
+        buildSystemPrompt(schemaContext, databaseType, connectionName)
       const adapter = getAdapter(provider)
 
       const watchdog = this.createWatchdog(controller)
@@ -87,6 +91,66 @@ class AIService {
       controller.abort()
       this.activeRequests.delete(requestId)
     }
+  }
+
+  async optimizeQuery(connectionId: string, sql: string): Promise<string> {
+    const settings = await settingsService.getAll()
+    const provider = settings.activeProvider
+    const model = settings.activeModel
+    if (!model) {
+      throw new Error('No AI model selected. Configure a provider in Settings.')
+    }
+
+    const config = await settingsService.getProviderConfig(provider)
+    if (provider !== 'ollama' && !config.apiKey) {
+      throw new Error(`No API key configured for ${provider}. Add one in Settings.`)
+    }
+
+    let schemaContext = ''
+    let databaseType: import('../../shared/types').DatabaseType | undefined
+    let connectionName: string | undefined
+
+    try {
+      schemaContext = schemaService.getSchemaContext(connectionId)
+      const conn = await databaseService.getConnection(connectionId)
+      if (conn) {
+        databaseType = conn.type
+        connectionName = conn.name
+      }
+    } catch {
+      // continue without schema
+    }
+
+    const systemPrompt = buildOptimizationPrompt(sql, schemaContext, databaseType, connectionName)
+    const messages: ChatMessage[] = [
+      { role: 'user', content: `Optimize this query:\n\n\`\`\`sql\n${sql}\n\`\`\`` }
+    ]
+
+    const requestId = `optimize-${Date.now()}`
+    let collected = ''
+    let streamError: string | null = null
+
+    await this.chatStream(
+      {
+        provider,
+        model,
+        messages,
+        schemaContext,
+        databaseType,
+        connectionName,
+        requestId,
+        systemPromptOverride: systemPrompt
+      },
+      (chunk) => {
+        if (chunk.chunk) collected += chunk.chunk
+        if (chunk.error) streamError = chunk.error
+      }
+    )
+
+    if (streamError) {
+      throw new Error(streamError)
+    }
+    return collected
   }
 
   async listModels(provider: AIProvider): Promise<string[]> {

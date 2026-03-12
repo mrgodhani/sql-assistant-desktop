@@ -45,3 +45,42 @@ export function buildSystemPrompt(
 
   return parts.join('\n')
 }
+
+const OPTIMIZATION_PROMPT = `You are an expert SQL performance consultant. Analyze the given SQL query and suggest optimizations.
+
+Your response MUST include:
+1. **Index recommendations** - Suggest indexes for columns used in WHERE, JOIN, ORDER BY, GROUP BY. Explain why each helps.
+2. **Query rewrites** - Suggest alternative formulations (e.g., avoid SELECT *, use EXISTS instead of IN when appropriate, avoid correlated subqueries).
+3. **Trade-offs** - Explain the cost of each suggestion (e.g., index maintenance overhead, when a rewrite may not help).
+
+Format your response in markdown. Wrap any suggested SQL in code blocks with the sql language tag.
+Be concise but thorough. Focus on the highest-impact improvements first.`
+
+export function buildOptimizationPrompt(
+  sql: string,
+  schemaContext?: string,
+  databaseType?: DatabaseType,
+  connectionName?: string
+): string {
+  const parts: string[] = [OPTIMIZATION_PROMPT]
+
+  if (databaseType && connectionName) {
+    parts.push('')
+    parts.push(`Database: ${connectionName} (${databaseType})`)
+    parts.push(`SQL Dialect: ${DIALECT_HINTS[databaseType]}`)
+  }
+
+  if (schemaContext) {
+    parts.push('')
+    parts.push('Schema:')
+    parts.push(schemaContext)
+  }
+
+  parts.push('')
+  parts.push('Query to optimize:')
+  parts.push('```sql')
+  parts.push(sql)
+  parts.push('```')
+
+  return parts.join('\n')
+}

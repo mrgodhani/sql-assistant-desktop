@@ -48,4 +48,17 @@ export function registerAiIpc(): void {
     if (!provider || !AI_PROVIDERS.includes(provider)) return []
     return aiService.listModels(provider)
   })
+
+  ipcMain.handle(
+    'ai:optimize-query',
+    async (_event, connectionId: string, sql: string) => {
+      if (typeof connectionId !== 'string' || !connectionId.trim()) {
+        throw new Error('connectionId is required')
+      }
+      if (typeof sql !== 'string') {
+        throw new Error('sql is required')
+      }
+      return aiService.optimizeQuery(connectionId, sql)
+    }
+  )
 }

@@ -166,6 +166,8 @@ export interface AIChatParams {
   databaseType?: DatabaseType
   connectionName?: string
   requestId: string
+  /** When set, used instead of buildSystemPrompt(schemaContext, databaseType, connectionName) */
+  systemPromptOverride?: string
 }
 
 export interface StreamChunk {

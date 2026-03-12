@@ -52,6 +52,7 @@ interface AiApi {
   chatStream: (params: AIChatParams) => Promise<{ requestId: string }>
   cancel: (requestId: string) => void
   listModels: (provider: AIProvider) => Promise<string[]>
+  optimizeQuery: (connectionId: string, sql: string) => Promise<string>
   onStreamChunk: (callback: (chunk: StreamChunk) => void) => void
   offStreamChunk: () => void
 }

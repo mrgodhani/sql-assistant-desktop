@@ -10,6 +10,9 @@ export const aiApi = {
   listModels: (provider: AIProvider): Promise<string[]> =>
     ipcRenderer.invoke('ai:list-models', provider),
 
+  optimizeQuery: (connectionId: string, sql: string): Promise<string> =>
+    ipcRenderer.invoke('ai:optimize-query', connectionId, sql),
+
   onStreamChunk: (callback: (chunk: StreamChunk) => void): void => {
     ipcRenderer.on('ai:stream-chunk', (_event, chunk: StreamChunk) => callback(chunk))
   },
