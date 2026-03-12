@@ -5,6 +5,8 @@
 
 **Turn natural language into SQL.** Connect to your database, ask questions in plain English, and get accurate queries powered by AI. Execute, visualize, and export—all from a native desktop app.
 
+![SQL Assist Desktop](screenshot.png)
+
 ## Why SQL Assist?
 
 - **No SQL expertise required** — Describe what you need, get working queries
