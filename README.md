@@ -21,6 +21,9 @@
 | **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server                  |
 | **AI providers**   | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
 | **Schema-aware**   | AI receives your schema for context-accurate queries   |
+| **Schema search**  | Fuzzy search across tables and columns (`Cmd+K`)        |
+| **EXPLAIN visualizer** | Run EXPLAIN on queries, view plans as Mermaid diagrams |
+| **AI query optimization** | Get index and rewrite suggestions from AI              |
 | **Results**        | Sortable, filterable tables with virtual scrolling     |
 | **Charts**         | Bar, line, pie, scatter, area—from any result set      |
 | **Export**         | Excel, CSV, and Report (headers, footers, logo, chart) |
