@@ -90,8 +90,10 @@ const showRegenerateError = computed(
 
 <template>
   <div :class="['group flex w-full', role === 'user' ? 'justify-end' : 'justify-start']">
-    <div class="flex max-w-[85%] min-w-0 flex-col items-start gap-1">
-      <div class="flex items-center gap-2">
+    <div class="flex max-w-[85%] min-w-0 flex-col items-start gap-4">
+      <div
+        class="flex items-center gap-2 pb-3 mb-3 border-b border-border/60 w-full"
+      >
         <MessageHeader :role="role" :has-error="hasError" />
         <MessageActions
           :role="role"
@@ -104,7 +106,7 @@ const showRegenerateError = computed(
       </div>
       <div
         :class="[
-          'rounded-lg px-3 py-2 text-sm',
+          'rounded-lg px-4 py-3 text-sm',
           role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
           hasError && 'border border-destructive/50'
         ]"
@@ -118,7 +120,7 @@ const showRegenerateError = computed(
       </div>
       <p
         v-if="showRegenerateError && chatStore.regenerateError"
-        class="text-xs text-destructive"
+        class="mt-2 text-xs text-destructive"
       >
         {{ chatStore.regenerateError.message }}
       </p>
