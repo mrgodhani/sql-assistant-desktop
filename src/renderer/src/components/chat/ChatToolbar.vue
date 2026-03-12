@@ -51,36 +51,22 @@ function newChat(): void {
 
 <template>
   <div class="flex flex-wrap items-center gap-2">
-    <Select
-      :model-value="settingsStore.activeProvider"
-      @update:model-value="onProviderChange"
-    >
+    <Select :model-value="settingsStore.activeProvider" @update:model-value="onProviderChange">
       <SelectTrigger class="w-[140px]" aria-label="AI provider">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem
-          v-for="p in AI_PROVIDERS"
-          :key="p"
-          :value="p"
-        >
+        <SelectItem v-for="p in AI_PROVIDERS" :key="p" :value="p">
           {{ PROVIDER_LABELS[p] }}
         </SelectItem>
       </SelectContent>
     </Select>
-    <Select
-      :model-value="settingsStore.activeModel"
-      @update:model-value="onModelChange"
-    >
+    <Select :model-value="settingsStore.activeModel" @update:model-value="onModelChange">
       <SelectTrigger class="w-[180px]" aria-label="AI model">
         <SelectValue placeholder="Model" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem
-          v-for="m in models"
-          :key="m"
-          :value="m"
-        >
+        <SelectItem v-for="m in models" :key="m" :value="m">
           {{ m }}
         </SelectItem>
       </SelectContent>
@@ -94,21 +80,12 @@ function newChat(): void {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="__none__">No connection</SelectItem>
-        <SelectItem
-          v-for="c in connectionStore.connectedConnections"
-          :key="c.id"
-          :value="c.id"
-        >
+        <SelectItem v-for="c in connectionStore.connectedConnections" :key="c.id" :value="c.id">
           {{ c.name }}
         </SelectItem>
       </SelectContent>
     </Select>
-    <Button
-      variant="outline"
-      size="sm"
-      class="gap-1"
-      @click="newChat"
-    >
+    <Button variant="outline" size="sm" class="gap-1" @click="newChat">
       <PlusCircle class="size-4" />
       New Chat
     </Button>

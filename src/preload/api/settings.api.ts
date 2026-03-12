@@ -1,13 +1,17 @@
 import { ipcRenderer } from 'electron'
-import type { AIProvider, AppSettings, ProviderConfig, ThemeMode, ValidationResult } from '../../shared/types'
+import type {
+  AIProvider,
+  AppSettings,
+  ProviderConfig,
+  ThemeMode,
+  ValidationResult
+} from '../../shared/types'
 
 export const settingsApi = {
   getAll: (): Promise<AppSettings> => ipcRenderer.invoke('settings:getAll'),
   getTheme: (): Promise<ThemeMode> => ipcRenderer.invoke('settings:getTheme'),
-  setTheme: (theme: ThemeMode): Promise<void> =>
-    ipcRenderer.invoke('settings:setTheme', theme),
-  getSystemTheme: (): Promise<'dark' | 'light'> =>
-    ipcRenderer.invoke('settings:getSystemTheme'),
+  setTheme: (theme: ThemeMode): Promise<void> => ipcRenderer.invoke('settings:setTheme', theme),
+  getSystemTheme: (): Promise<'dark' | 'light'> => ipcRenderer.invoke('settings:getSystemTheme'),
   onSystemThemeChange: (callback: (theme: 'dark' | 'light') => void): (() => void) => {
     const handler = (_: Electron.IpcRendererEvent, theme: 'dark' | 'light') => callback(theme)
     ipcRenderer.on('settings:systemThemeChanged', handler)

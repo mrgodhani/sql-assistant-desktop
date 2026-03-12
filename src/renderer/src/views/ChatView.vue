@@ -29,10 +29,7 @@ watch(
 <template>
   <div class="flex h-full flex-col" data-testid="chat-view">
     <ChatMessages v-if="chatStore.currentConversation?.messages.length" />
-    <div
-      v-else
-      class="flex flex-1 flex-col items-center justify-center overflow-y-auto"
-    >
+    <div v-else class="flex flex-1 flex-col items-center justify-center overflow-y-auto">
       <ChatPromptSuggestions />
     </div>
     <ChatInput />

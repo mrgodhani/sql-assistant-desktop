@@ -37,25 +37,60 @@ export function classifyError(error: unknown, provider: AIProvider): AIServiceEr
   const status = (error as Record<string, unknown>)?.status as number | undefined
 
   if (status === 401 || status === 403) {
-    return new AIServiceError('auth', 'Invalid or expired API key. Check your settings.', provider, false)
+    return new AIServiceError(
+      'auth',
+      'Invalid or expired API key. Check your settings.',
+      provider,
+      false
+    )
   }
   if (status === 404) {
-    return new AIServiceError('model_not_found', 'Model not found. Try refreshing your model list in Settings.', provider, false)
+    return new AIServiceError(
+      'model_not_found',
+      'Model not found. Try refreshing your model list in Settings.',
+      provider,
+      false
+    )
   }
   if (status === 429) {
-    return new AIServiceError('rate_limit', 'Rate limit exceeded. Please wait and try again.', provider, true)
+    return new AIServiceError(
+      'rate_limit',
+      'Rate limit exceeded. Please wait and try again.',
+      provider,
+      true
+    )
   }
   if (status === 400 && /token|context|length/i.test(msg)) {
-    return new AIServiceError('token_limit', 'Message too long. Try shortening the conversation or reducing schema context.', provider, false)
+    return new AIServiceError(
+      'token_limit',
+      'Message too long. Try shortening the conversation or reducing schema context.',
+      provider,
+      false
+    )
   }
   if (status && status >= 500) {
-    return new AIServiceError('unknown', `Provider server error (${status}). Try again shortly.`, provider, true)
+    return new AIServiceError(
+      'unknown',
+      `Provider server error (${status}). Try again shortly.`,
+      provider,
+      true
+    )
   }
   if (/ECONNREFUSED|ENOTFOUND|network|fetch failed/i.test(msg)) {
-    return new AIServiceError('network', 'Network error. Check your connection and provider URL.', provider, true)
+    return new AIServiceError(
+      'network',
+      'Network error. Check your connection and provider URL.',
+      provider,
+      true
+    )
   }
   if (/timed? ?out/i.test(msg)) {
-    return new AIServiceError('network', 'Request timed out. The provider may be overloaded.', provider, true)
+    return new AIServiceError(
+      'network',
+      'Request timed out. The provider may be overloaded.',
+      provider,
+      true
+    )
   }
 
   const detail = msg.length > 150 ? msg.slice(0, 150) + '...' : msg

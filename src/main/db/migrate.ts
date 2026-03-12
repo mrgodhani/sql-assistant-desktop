@@ -54,8 +54,12 @@ export function createMigrationTables(): void {
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`)
 
-  db.run(sql`CREATE INDEX IF NOT EXISTS idx_conversations_connection ON conversations(connection_id)`)
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_conversations_connection ON conversations(connection_id)`
+  )
   db.run(sql`CREATE INDEX IF NOT EXISTS idx_conversations_updated ON conversations(updated_at)`)
-  db.run(sql`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, created_at)`)
+  db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, created_at)`
+  )
   db.run(sql`CREATE INDEX IF NOT EXISTS idx_queries_message ON generated_queries(message_id)`)
 }

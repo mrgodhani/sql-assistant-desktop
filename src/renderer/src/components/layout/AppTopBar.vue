@@ -22,16 +22,9 @@ const toolbarComponent = computed(() => {
     data-testid="app-topbar"
   >
     <!-- Traffic lights safe area (macOS only) -->
-    <div
-      v-if="isMac"
-      class="w-[70px] shrink-0"
-      data-testid="traffic-lights-region"
-    />
+    <div v-if="isMac" class="w-[70px] shrink-0" data-testid="traffic-lights-region" />
     <!-- Toolbar content - draggable on Mac -->
-    <div
-      class="flex flex-1 items-center gap-2 px-4 py-2"
-      :class="{ 'app-region-drag': isMac }"
-    >
+    <div class="flex flex-1 items-center gap-2 px-4 py-2" :class="{ 'app-region-drag': isMac }">
       <component
         :is="toolbarComponent"
         v-if="toolbarComponent"

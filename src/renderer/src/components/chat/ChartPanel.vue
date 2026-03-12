@@ -47,17 +47,21 @@ function sampleValues(values: unknown[]): unknown[] {
   return values.filter((_, i) => i % step === 0)
 }
 
-function buildChartData(): { labels: string[]; datasets: { label: string; data: number[] }[] } | null {
+function buildChartData(): {
+  labels: string[]
+  datasets: { label: string; data: number[] }[]
+} | null {
   const numericCols = getNumericColumns()
   if (numericCols.length === 0) return null
 
-  const yCol = yAxisColumn.value && numericCols.includes(yAxisColumn.value)
-    ? yAxisColumn.value
-    : numericCols[0]
+  const yCol =
+    yAxisColumn.value && numericCols.includes(yAxisColumn.value)
+      ? yAxisColumn.value
+      : numericCols[0]
   const xCol =
     xAxisColumn.value && props.columns.includes(xAxisColumn.value)
       ? xAxisColumn.value
-      : props.columns[0] ?? ''
+      : (props.columns[0] ?? '')
 
   if (chartType.value === 'pie') {
     const labels = sampleValues(props.rows.map((r) => String(r[xCol] ?? ''))).map(String)
@@ -68,9 +72,9 @@ function buildChartData(): { labels: string[]; datasets: { label: string; data: 
   }
 
   const labels = sampleValues(props.rows.map((r) => String(r[xCol] ?? ''))).map(String)
-  const data = sampleValues(
-    props.rows.map((r) => (isNumeric(r[yCol]) ? Number(r[yCol]) : 0))
-  ).map((v) => Number(v))
+  const data = sampleValues(props.rows.map((r) => (isNumeric(r[yCol]) ? Number(r[yCol]) : 0))).map(
+    (v) => Number(v)
+  )
   return { labels, datasets: [{ label: yCol, data }] }
 }
 
@@ -171,18 +175,17 @@ defineExpose({ getChartImage })
             <SelectValue placeholder="Select column" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem
-              v-for="col in getNumericColumns()"
-              :key="col"
-              :value="col"
-            >
+            <SelectItem v-for="col in getNumericColumns()" :key="col" :value="col">
               {{ col }}
             </SelectItem>
           </SelectContent>
         </Select>
       </div>
     </div>
-    <div v-if="getNumericColumns().length === 0" class="rounded border border-dashed p-6 text-center text-sm text-muted-foreground">
+    <div
+      v-if="getNumericColumns().length === 0"
+      class="rounded border border-dashed p-6 text-center text-sm text-muted-foreground"
+    >
       No numeric columns to visualize
     </div>
     <div v-else class="h-[280px] rounded-md border border-border bg-muted/5 p-2">

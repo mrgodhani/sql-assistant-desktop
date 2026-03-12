@@ -18,10 +18,14 @@ async function copyRecentLogs(): Promise<void> {
     }
     await navigator.clipboard.writeText(logs)
     copyFeedback.value = 'success'
-    setTimeout(() => { copyFeedback.value = 'idle' }, 2000)
+    setTimeout(() => {
+      copyFeedback.value = 'idle'
+    }, 2000)
   } catch {
     copyFeedback.value = 'error'
-    setTimeout(() => { copyFeedback.value = 'idle' }, 2000)
+    setTimeout(() => {
+      copyFeedback.value = 'idle'
+    }, 2000)
   }
 }
 </script>
@@ -37,19 +41,14 @@ async function copyRecentLogs(): Promise<void> {
       </p>
       <div class="flex flex-wrap gap-2">
         <Button variant="outline" @click="openLogFolder">Open log folder</Button>
-        <Button variant="outline" @click="copyRecentLogs">
-          Copy recent logs
-        </Button>
+        <Button variant="outline" @click="copyRecentLogs"> Copy recent logs </Button>
         <span
           v-if="copyFeedback === 'success'"
           class="self-center text-sm text-green-600 dark:text-green-400"
         >
           Copied!
         </span>
-        <span
-          v-else-if="copyFeedback === 'error'"
-          class="self-center text-sm text-destructive"
-        >
+        <span v-else-if="copyFeedback === 'error'" class="self-center text-sm text-destructive">
           Unable to read logs
         </span>
       </div>

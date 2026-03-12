@@ -74,7 +74,11 @@ function run(): void {
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {{ validationResult.valid ? 'Valid syntax' : (validationResult.error ?? 'Invalid syntax') }}
+              {{
+                validationResult.valid
+                  ? 'Valid syntax'
+                  : (validationResult.error ?? 'Invalid syntax')
+              }}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -104,7 +108,9 @@ function run(): void {
       </div>
     </div>
     <div class="max-h-96 overflow-auto rounded-b-md">
-      <pre class="bg-muted/40 p-3 text-sm"><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
+      <pre
+        class="bg-muted/40 p-3 text-sm"
+      ><code ref="codeRef" class="language-sql">{{ code }}</code></pre>
     </div>
   </div>
 </template>

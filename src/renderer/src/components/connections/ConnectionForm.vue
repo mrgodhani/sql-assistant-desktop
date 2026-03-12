@@ -15,11 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { useConnectionStore } from '@renderer/stores/useConnectionStore'
-import type {
-  ConnectionConfig,
-  ConnectionTestResult,
-  DatabaseType
-} from '../../../../shared/types'
+import type { ConnectionConfig, ConnectionTestResult, DatabaseType } from '../../../../shared/types'
 import { DATABASE_TYPES, DATABASE_TYPE_LABELS, DEFAULT_PORTS } from '../../../../shared/types'
 
 const props = defineProps<{
@@ -212,10 +208,7 @@ function onTypeChange(value: AcceptableValue): void {
       </div>
 
       <div v-if="form.type !== 'sqlite'" class="flex items-center gap-2">
-        <Switch
-          v-model="useConnectionString"
-          data-testid="connection-form-string-toggle"
-        />
+        <Switch v-model="useConnectionString" data-testid="connection-form-string-toggle" />
         <Label>Use connection string</Label>
       </div>
 
@@ -243,11 +236,7 @@ function onTypeChange(value: AcceptableValue): void {
               class="flex-1"
               data-testid="connection-form-filepath"
             />
-            <Button
-              variant="outline"
-              @click="pickFile"
-              data-testid="connection-form-browse"
-            >
+            <Button variant="outline" @click="pickFile" data-testid="connection-form-browse">
               Browse
             </Button>
           </div>
@@ -308,10 +297,7 @@ function onTypeChange(value: AcceptableValue): void {
           />
         </div>
         <div class="flex items-center gap-2">
-          <Switch
-            v-model="form.sslEnabled"
-            data-testid="connection-form-ssl"
-          />
+          <Switch v-model="form.sslEnabled" data-testid="connection-form-ssl" />
           <Label>Enable SSL</Label>
         </div>
       </template>
@@ -344,18 +330,10 @@ function onTypeChange(value: AcceptableValue): void {
         {{ isTesting ? 'Testing...' : 'Test Connection' }}
       </Button>
       <div class="flex gap-2">
-        <Button
-          variant="ghost"
-          data-testid="connection-form-cancel"
-          @click="$emit('cancel')"
-        >
+        <Button variant="ghost" data-testid="connection-form-cancel" @click="$emit('cancel')">
           Cancel
         </Button>
-        <Button
-          :disabled="isSaving"
-          data-testid="connection-form-save"
-          @click="saveConnection"
-        >
+        <Button :disabled="isSaving" data-testid="connection-form-save" @click="saveConnection">
           {{ isSaving ? 'Saving...' : isEditing ? 'Update' : 'Save' }}
         </Button>
       </div>

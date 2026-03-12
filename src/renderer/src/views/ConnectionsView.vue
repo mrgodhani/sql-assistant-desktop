@@ -36,10 +36,7 @@ function cancelForm(): void {
         @saved="onSaved"
         @cancel="cancelForm"
       />
-      <ConnectionList
-        v-else
-        @edit="onEdit"
-      />
+      <ConnectionList v-else @edit="onEdit" />
     </div>
   </div>
 </template>

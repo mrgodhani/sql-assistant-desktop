@@ -27,7 +27,9 @@ const canIncludeChart = computed(() => {
   const r = result.value?.success && result.value?.result
   if (!r || r.rows.length === 0) return false
   const sample = r.rows.slice(0, 100)
-  return r.columns.some((col: string) => sample.some((row: Record<string, unknown>) => isNumeric(row[col])))
+  return r.columns.some((col: string) =>
+    sample.some((row: Record<string, unknown>) => isNumeric(row[col]))
+  )
 })
 
 function formatTime(ms: number): string {

@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@renderer/stores/useSettingsStore'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ActiveProviderBadge from './ActiveProviderBadge.vue'
 import CloudProviderTab from './CloudProviderTab.vue'

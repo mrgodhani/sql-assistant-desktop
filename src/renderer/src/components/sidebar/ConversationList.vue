@@ -79,8 +79,6 @@ watch(
         </Button>
       </button>
     </template>
-    <p v-else class="px-3 py-4 text-center text-sm text-muted-foreground">
-      No conversations yet
-    </p>
+    <p v-else class="px-3 py-4 text-center text-sm text-muted-foreground">No conversations yet</p>
   </div>
 </template>

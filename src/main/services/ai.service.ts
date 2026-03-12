@@ -31,10 +31,7 @@ function getAdapter(provider: AIProvider): ProviderAdapter {
 class AIService {
   private activeRequests: Map<string, AbortController> = new Map()
 
-  async chatStream(
-    params: AIChatParams,
-    sendChunk: (chunk: StreamChunk) => void
-  ): Promise<void> {
+  async chatStream(params: AIChatParams, sendChunk: (chunk: StreamChunk) => void): Promise<void> {
     const { provider, model, messages, schemaContext, databaseType, connectionName, requestId } =
       params
 
@@ -46,7 +43,12 @@ class AIService {
       const baseUrl = config.baseUrl ?? DEFAULT_PROVIDER_CONFIGS[provider].baseUrl ?? ''
 
       if (provider !== 'ollama' && !apiKey) {
-        sendChunk({ requestId, chunk: '', done: true, error: `No API key configured for ${provider}. Add one in Settings.` })
+        sendChunk({
+          requestId,
+          chunk: '',
+          done: true,
+          error: `No API key configured for ${provider}. Add one in Settings.`
+        })
         return
       }
 

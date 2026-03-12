@@ -59,9 +59,7 @@ function selectPrompt(text: string): void {
 <template>
   <div class="flex flex-col items-center gap-6 px-6 py-8">
     <div class="text-center">
-      <h2 class="text-lg font-semibold text-foreground">
-        What would you like to explore?
-      </h2>
+      <h2 class="text-lg font-semibold text-foreground">What would you like to explore?</h2>
       <p class="mt-1 text-sm text-muted-foreground">
         {{
           hasConnection
@@ -72,11 +70,7 @@ function selectPrompt(text: string): void {
     </div>
 
     <div class="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div
-        v-for="category in categories"
-        :key="category.label"
-        class="flex flex-col gap-2"
-      >
+      <div v-for="category in categories" :key="category.label" class="flex flex-col gap-2">
         <div class="flex items-center gap-2 text-muted-foreground">
           <component :is="category.icon" class="size-4 shrink-0" />
           <span class="text-xs font-medium uppercase tracking-wide">

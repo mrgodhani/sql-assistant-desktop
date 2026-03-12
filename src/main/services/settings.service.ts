@@ -2,7 +2,13 @@ import { eq } from 'drizzle-orm'
 import log from 'electron-log/main'
 import { getDatabase, schema } from '../db'
 import { encryptionService } from './encryption.service'
-import type { AIProvider, ProviderConfig, ThemeMode, ValidationResult, AppSettings } from '../../shared/types'
+import type {
+  AIProvider,
+  ProviderConfig,
+  ThemeMode,
+  ValidationResult,
+  AppSettings
+} from '../../shared/types'
 import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS } from '../../shared/types'
 
 function maskKey(key: string): string {
@@ -54,7 +60,8 @@ export class SettingsService {
   async getAll(): Promise<AppSettings> {
     const theme = await this.getTheme()
     const activeProvider = ((await this.get('activeProvider')) as AIProvider) || 'ollama'
-    const activeModel = (await this.get('activeModel')) || DEFAULT_PROVIDER_CONFIGS[activeProvider].selectedModel
+    const activeModel =
+      (await this.get('activeModel')) || DEFAULT_PROVIDER_CONFIGS[activeProvider].selectedModel
 
     const providerConfigs = {} as Record<AIProvider, ProviderConfig>
     for (const provider of AI_PROVIDERS) {

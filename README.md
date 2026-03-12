@@ -16,15 +16,15 @@
 
 ## Features
 
-| Feature | Description |
-|--------|-------------|
-| **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server |
-| **AI providers** | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
-| **Schema-aware** | AI receives your schema for context-accurate queries |
-| **Results** | Sortable, filterable tables with virtual scrolling |
-| **Charts** | Bar, line, pie, scatter, area—from any result set |
-| **Export** | Excel, CSV, and Report (headers, footers, logo, chart) |
-| **Conversations** | Chat history saved locally |
+| Feature            | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server                  |
+| **AI providers**   | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
+| **Schema-aware**   | AI receives your schema for context-accurate queries   |
+| **Results**        | Sortable, filterable tables with virtual scrolling     |
+| **Charts**         | Bar, line, pie, scatter, area—from any result set      |
+| **Export**         | Excel, CSV, and Report (headers, footers, logo, chart) |
+| **Conversations**  | Chat history saved locally                             |
 
 ## Quick Start
 
@@ -58,11 +58,13 @@ npm run build
 Produces a universal DMG (Intel + Apple Silicon) and notarizes it for distribution.
 
 **Prerequisites:**
+
 - Xcode Command Line Tools: `xcode-select --install`
 - Apple Developer account
 - App-specific password: [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords
 
 **Setup:**
+
 1. Copy `.env.example` to `.env`
 2. Set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Team ID from [developer.apple.com](https://developer.apple.com/account))
 3. Run `npm run build:mac`

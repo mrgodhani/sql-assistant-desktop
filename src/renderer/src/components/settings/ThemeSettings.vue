@@ -34,19 +34,12 @@ function onThemeChange(value: unknown): void {
     <CardContent>
       <div class="flex items-center justify-between">
         <Label for="theme-select">Theme</Label>
-        <Select
-          :model-value="settingsStore.theme"
-          @update:model-value="onThemeChange"
-        >
+        <Select :model-value="settingsStore.theme" @update:model-value="onThemeChange">
           <SelectTrigger id="theme-select" class="w-[140px]" data-testid="theme-select">
             <SelectValue placeholder="Select theme" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem
-              v-for="opt in THEME_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >
+            <SelectItem v-for="opt in THEME_OPTIONS" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </SelectItem>
           </SelectContent>

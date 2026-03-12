@@ -3,12 +3,16 @@ import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import MessageContent from '../MessageContent.vue'
 
-vi.mock('electron-log/renderer', () => ({ default: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }))
+vi.mock('electron-log/renderer', () => ({
+  default: { warn: vi.fn(), error: vi.fn(), info: vi.fn() }
+}))
 
 const TRUNCATE_LENGTH = 250
 
 function makeLongProse(length: number): string {
-  const head = 'Lorem ipsum dolor sit amet consectetur adipiscing elit. '.repeat(5).slice(0, TRUNCATE_LENGTH)
+  const head = 'Lorem ipsum dolor sit amet consectetur adipiscing elit. '
+    .repeat(5)
+    .slice(0, TRUNCATE_LENGTH)
   const tail = ' [EXPANDED_ONLY_TAIL] '.repeat(20).slice(0, length - TRUNCATE_LENGTH)
   return head + tail
 }
@@ -67,6 +71,11 @@ describe('MessageContent', () => {
     // Click Show less -> collapsed again
     await showLessBtn!.trigger('click')
     expect(wrapper.text()).toContain(truncated)
-    expect(wrapper.findAll('button').find((b) => b.text().includes('Show more'))?.exists()).toBe(true)
+    expect(
+      wrapper
+        .findAll('button')
+        .find((b) => b.text().includes('Show more'))
+        ?.exists()
+    ).toBe(true)
   })
 })

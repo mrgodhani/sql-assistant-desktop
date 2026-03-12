@@ -5,12 +5,7 @@ import { MessageSquare, Database, Settings, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import EmptyState from '@renderer/components/shared/EmptyState.vue'
 import SidebarConnectionItem from './SidebarConnectionItem.vue'
 import ConversationList from './ConversationList.vue'
@@ -44,10 +39,11 @@ function isActive(path: string): boolean {
   return route.path === path || route.path.startsWith(path + '/')
 }
 
-const activeClasses = computed(() => (path: string) =>
-  isActive(path)
-    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+const activeClasses = computed(
+  () => (path: string) =>
+    isActive(path)
+      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+      : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
 )
 </script>
 

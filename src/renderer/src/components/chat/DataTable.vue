@@ -181,119 +181,115 @@ function updateHasOverflow(): void {
         aria-label="Query results"
         @scroll="updateHasOverflow"
       >
-      <div class="min-w-max">
-        <table ref="headerTableRef" class="w-full min-w-max border-collapse text-sm">
-          <thead class="bg-muted">
-            <tr>
-              <th
-                v-for="col in columns"
-                :key="col"
-                :aria-sort="
-                  sortColumn === col
-                    ? sortAsc
-                      ? 'ascending'
-                      : 'descending'
-                    : undefined
-                "
-                class="cursor-pointer whitespace-nowrap border-b border-border px-3 py-2 text-left font-medium transition-colors duration-100 hover:bg-muted/80"
-                @click="toggleSort(col)"
+        <div class="min-w-max">
+          <table ref="headerTableRef" class="w-full min-w-max border-collapse text-sm">
+            <thead class="bg-muted">
+              <tr>
+                <th
+                  v-for="col in columns"
+                  :key="col"
+                  :aria-sort="
+                    sortColumn === col ? (sortAsc ? 'ascending' : 'descending') : undefined
+                  "
+                  class="cursor-pointer whitespace-nowrap border-b border-border px-3 py-2 text-left font-medium transition-colors duration-100 hover:bg-muted/80"
+                  @click="toggleSort(col)"
+                >
+                  {{ col }}
+                  <span v-if="sortColumn === col" class="ml-1">{{ sortAsc ? '↑' : '↓' }}</span>
+                </th>
+                <th class="w-12 shrink-0 border-b border-border px-2 py-2"></th>
+              </tr>
+            </thead>
+          </table>
+          <div ref="scrollRef" class="max-h-[28rem] overflow-y-auto overflow-x-visible">
+            <table v-if="!useVirtual" class="w-full min-w-max border-collapse text-sm">
+              <tbody>
+                <tr
+                  v-for="(row, ri) in sortedRows"
+                  :key="ri"
+                  class="border-b border-border/50 transition-colors duration-100 hover:bg-muted/30"
+                >
+                  <td
+                    v-for="col in columns"
+                    :key="col"
+                    :class="[
+                      'cursor-pointer whitespace-nowrap border-r border-border/30 px-3 py-1.5',
+                      (row[col] ?? null) == null && 'italic text-muted-foreground'
+                    ]"
+                    @click="copyCell(ri, col)"
+                  >
+                    {{ displayValue(row[col]) }}
+                  </td>
+                  <td class="px-2 py-1.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="h-7 w-7"
+                      :aria-label="copiedRow === ri ? 'Copied' : 'Copy row'"
+                      @click="copyRow(ri)"
+                    >
+                      <CopyCheck v-if="copiedRow === ri" class="size-3.5 text-green-600" />
+                      <Copy v-else class="size-3.5" />
+                    </Button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              v-else
+              :style="{
+                height: `${virtualizer.getTotalSize()}px`,
+                position: 'relative',
+                width: '100%'
+              }"
+            >
+              <div
+                v-for="virtualRow in virtualizer.getVirtualItems()"
+                :key="String(virtualRow.key)"
+                class="absolute left-0 grid w-full border-b border-border/50 bg-background transition-colors duration-100 hover:bg-muted/30"
+                :style="{
+                  height: `${virtualRow.size}px`,
+                  transform: `translateY(${virtualRow.start}px)`,
+                  ...virtualRowGridStyle
+                }"
               >
-                {{ col }}
-                <span v-if="sortColumn === col" class="ml-1">{{ sortAsc ? '↑' : '↓' }}</span>
-              </th>
-              <th class="w-12 shrink-0 border-b border-border px-2 py-2"></th>
-            </tr>
-          </thead>
-        </table>
-        <div ref="scrollRef" class="max-h-[28rem] overflow-y-auto overflow-x-visible">
-          <table v-if="!useVirtual" class="w-full min-w-max border-collapse text-sm">
-            <tbody>
-              <tr
-                v-for="(row, ri) in sortedRows"
-                :key="ri"
-                class="border-b border-border/50 transition-colors duration-100 hover:bg-muted/30"
-              >
-                <td
+                <div
                   v-for="col in columns"
                   :key="col"
                   :class="[
-                    'cursor-pointer whitespace-nowrap border-r border-border/30 px-3 py-1.5',
-                    (row[col] ?? null) == null && 'italic text-muted-foreground'
+                    'min-w-0 cursor-pointer overflow-hidden truncate border-r border-border/30 px-3 py-1.5',
+                    (sortedRows[virtualRow.index]?.[col] ?? null) == null &&
+                      'italic text-muted-foreground'
                   ]"
-                  @click="copyCell(ri, col)"
+                  @click="copyCell(virtualRow.index, col)"
                 >
-                  {{ displayValue(row[col]) }}
-                </td>
-                <td class="px-2 py-1.5">
+                  {{ displayValue(sortedRows[virtualRow.index]?.[col]) }}
+                </div>
+                <div class="flex w-12 shrink-0 items-center justify-center px-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     class="h-7 w-7"
-                    :aria-label="copiedRow === ri ? 'Copied' : 'Copy row'"
-                    @click="copyRow(ri)"
+                    :aria-label="copiedRow === virtualRow.index ? 'Copied' : 'Copy row'"
+                    @click="copyRow(virtualRow.index)"
                   >
-                    <CopyCheck v-if="copiedRow === ri" class="size-3.5 text-green-600" />
+                    <CopyCheck
+                      v-if="copiedRow === virtualRow.index"
+                      class="size-3.5 text-green-600"
+                    />
                     <Copy v-else class="size-3.5" />
                   </Button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div
-            v-else
-            :style="{
-              height: `${virtualizer.getTotalSize()}px`,
-              position: 'relative',
-              width: '100%'
-            }"
-          >
-            <div
-              v-for="virtualRow in virtualizer.getVirtualItems()"
-              :key="String(virtualRow.key)"
-              class="absolute left-0 grid w-full border-b border-border/50 bg-background transition-colors duration-100 hover:bg-muted/30"
-              :style="{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-                ...virtualRowGridStyle
-              }"
-            >
-              <div
-                v-for="col in columns"
-                :key="col"
-                :class="[
-                  'min-w-0 cursor-pointer overflow-hidden truncate border-r border-border/30 px-3 py-1.5',
-                  (sortedRows[virtualRow.index]?.[col] ?? null) == null &&
-                    'italic text-muted-foreground'
-                ]"
-                @click="copyCell(virtualRow.index, col)"
-              >
-                {{ displayValue(sortedRows[virtualRow.index]?.[col]) }}
-              </div>
-              <div class="flex w-12 shrink-0 items-center justify-center px-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="h-7 w-7"
-                  :aria-label="copiedRow === virtualRow.index ? 'Copied' : 'Copy row'"
-                  @click="copyRow(virtualRow.index)"
-                >
-                  <CopyCheck
-                    v-if="copiedRow === virtualRow.index"
-                    class="size-3.5 text-green-600"
-                  />
-                  <Copy v-else class="size-3.5" />
-                </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div
+        v-if="hasHorizontalOverflow"
+        class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 shrink-0 bg-gradient-to-l from-black/10 to-transparent dark:from-white/10"
+        aria-hidden="true"
+      />
     </div>
-    <div
-      v-if="hasHorizontalOverflow"
-      class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 shrink-0 bg-gradient-to-l from-black/10 to-transparent dark:from-white/10"
-      aria-hidden="true"
-    />
-  </div>
   </div>
 </template>

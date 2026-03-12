@@ -12,7 +12,11 @@ export const useValidationStore = defineStore('validation', () => {
   const getValidation = (messageIndex: number, blockIndex: number): SqlValidationResult | null =>
     results.value[key(messageIndex, blockIndex)] ?? null
 
-  function setValidation(messageIndex: number, blockIndex: number, result: SqlValidationResult): void {
+  function setValidation(
+    messageIndex: number,
+    blockIndex: number,
+    result: SqlValidationResult
+  ): void {
     results.value[key(messageIndex, blockIndex)] = result
   }
 

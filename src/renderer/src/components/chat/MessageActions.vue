@@ -34,12 +34,7 @@ function onEdit(): void {
   <div
     class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
   >
-    <Button
-      variant="ghost"
-      size="sm"
-      :aria-label="copied ? 'Copied' : 'Copy'"
-      @click="onCopy"
-    >
+    <Button variant="ghost" size="sm" :aria-label="copied ? 'Copied' : 'Copy'" @click="onCopy">
       <span v-if="copied">Copied</span>
       <Copy v-else class="size-4" />
     </Button>

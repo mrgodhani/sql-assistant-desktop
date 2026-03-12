@@ -23,11 +23,7 @@ watch(
 const isStreaming = computed(() => Boolean(chatStore.streamingState))
 const canSend = computed(() => {
   const trimmed = input.value.trim()
-  return (
-    trimmed.length > 0 &&
-    !isStreaming.value &&
-    Boolean(chatStore.activeConnectionId)
-  )
+  return trimmed.length > 0 && !isStreaming.value && Boolean(chatStore.activeConnectionId)
 })
 
 function send(): void {

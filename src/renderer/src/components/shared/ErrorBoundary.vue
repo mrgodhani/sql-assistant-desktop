@@ -21,10 +21,7 @@ function reset(): void {
 </script>
 
 <template>
-  <div
-    v-if="hasError"
-    class="flex flex-col items-center justify-center gap-3 p-8 text-center"
-  >
+  <div v-if="hasError" class="flex flex-col items-center justify-center gap-3 p-8 text-center">
     <AlertCircle class="size-12 text-destructive" />
     <h2 class="text-lg font-medium">Something went wrong</h2>
     <p class="text-sm text-muted-foreground">

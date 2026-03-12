@@ -17,9 +17,11 @@ const VALID_TABLE_NAME = /^[a-zA-Z_][a-zA-Z0-9_ $.[\]-]*$/
 
 function sanitizeSchemaError(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error)
-  if (/permission|denied|privilege/i.test(msg)) return 'Insufficient permissions to read database schema'
+  if (/permission|denied|privilege/i.test(msg))
+    return 'Insufficient permissions to read database schema'
   if (/timed? ?out/i.test(msg)) return 'Schema introspection timed out'
-  if (/connection.*closed|not connected/i.test(msg)) return 'Connection was lost during schema introspection'
+  if (/connection.*closed|not connected/i.test(msg))
+    return 'Connection was lost during schema introspection'
   if (/SQLITE_CANTOPEN/i.test(msg)) return 'Cannot open database file for schema reading'
   return 'Schema introspection failed'
 }
@@ -45,12 +47,22 @@ class SchemaService {
     const now = new Date().toISOString()
 
     if (!databaseService.isConnected(connectionId)) {
-      return { success: false, error: 'Connection is not active', tableCount: 0, introspectedAt: now }
+      return {
+        success: false,
+        error: 'Connection is not active',
+        tableCount: 0,
+        introspectedAt: now
+      }
     }
 
     const dbType = databaseService.getConnectionType(connectionId)
     if (!dbType) {
-      return { success: false, error: 'Connection type unknown', tableCount: 0, introspectedAt: now }
+      return {
+        success: false,
+        error: 'Connection type unknown',
+        tableCount: 0,
+        introspectedAt: now
+      }
     }
 
     try {
@@ -104,7 +116,10 @@ class SchemaService {
     this.cache.clear()
   }
 
-  private async introspectByType(connectionId: string, dbType: DatabaseType): Promise<DatabaseSchema> {
+  private async introspectByType(
+    connectionId: string,
+    dbType: DatabaseType
+  ): Promise<DatabaseSchema> {
     switch (dbType) {
       case 'postgresql':
         return this.introspectPostgresql(connectionId)
@@ -170,7 +185,9 @@ class SchemaService {
     const pkMap = this.groupBy(pkResult.rows, (r) => `${r.table_schema}.${r.table_name}`)
     const colMap = this.groupBy(columnsResult.rows, (r) => `${r.table_schema}.${r.table_name}`)
     const fkMap = this.groupByFk(fkResult.rows, (r) => `${r.table_schema}.${r.table_name}`)
-    const rowMap = new Map(rowCountResult.rows.map((r) => [`${r.schemaname}.${r.relname}`, Number(r.n_live_tup)]))
+    const rowMap = new Map(
+      rowCountResult.rows.map((r) => [`${r.schemaname}.${r.relname}`, Number(r.n_live_tup)])
+    )
 
     const tables: TableInfo[] = []
     const views: TableInfo[] = []
@@ -181,7 +198,10 @@ class SchemaService {
       const pks = (pkMap.get(key) ?? []).map((r) => String(r.column_name))
 
       const columns: ColumnInfo[] = (colMap.get(key) ?? []).map((c) => {
-        const typeName = this.pgTypeName(String(c.udt_name), c.character_maximum_length as number | null)
+        const typeName = this.pgTypeName(
+          String(c.udt_name),
+          c.character_maximum_length as number | null
+        )
         return {
           name: String(c.column_name),
           type: typeName,
@@ -215,10 +235,25 @@ class SchemaService {
   private pgTypeName(udtName: string, charMaxLen: number | null): string {
     if (charMaxLen && /varchar|char|bpchar/.test(udtName)) return `varchar(${charMaxLen})`
     const typeMap: Record<string, string> = {
-      int4: 'integer', int8: 'bigint', int2: 'smallint', float4: 'real', float8: 'double precision',
-      bool: 'boolean', varchar: 'varchar', bpchar: 'char', text: 'text', numeric: 'numeric',
-      timestamp: 'timestamp', timestamptz: 'timestamptz', date: 'date', time: 'time',
-      uuid: 'uuid', json: 'json', jsonb: 'jsonb', bytea: 'bytea', serial: 'serial'
+      int4: 'integer',
+      int8: 'bigint',
+      int2: 'smallint',
+      float4: 'real',
+      float8: 'double precision',
+      bool: 'boolean',
+      varchar: 'varchar',
+      bpchar: 'char',
+      text: 'text',
+      numeric: 'numeric',
+      timestamp: 'timestamp',
+      timestamptz: 'timestamptz',
+      date: 'date',
+      time: 'time',
+      uuid: 'uuid',
+      json: 'json',
+      jsonb: 'jsonb',
+      bytea: 'bytea',
+      serial: 'serial'
     }
     return typeMap[udtName] ?? udtName
   }
@@ -254,11 +289,12 @@ class SchemaService {
     `)
 
     const colMap = this.groupBy(columnsResult.rows, (r) => String(r.TABLE_NAME))
-    const fkMap = this.groupByFk(
-      fkResult.rows,
-      (r) => String(r.TABLE_NAME),
-      { colKey: 'COLUMN_NAME', refTable: 'REFERENCED_TABLE_NAME', refCol: 'REFERENCED_COLUMN_NAME', name: 'CONSTRAINT_NAME' }
-    )
+    const fkMap = this.groupByFk(fkResult.rows, (r) => String(r.TABLE_NAME), {
+      colKey: 'COLUMN_NAME',
+      refTable: 'REFERENCED_TABLE_NAME',
+      refCol: 'REFERENCED_COLUMN_NAME',
+      name: 'CONSTRAINT_NAME'
+    })
 
     const tables: TableInfo[] = []
     const views: TableInfo[] = []
@@ -437,12 +473,16 @@ class SchemaService {
 
     const pkMap = this.groupBy(pkResult.rows, (r) => `${r.TABLE_SCHEMA}.${r.TABLE_NAME}`)
     const colMap = this.groupBy(columnsResult.rows, (r) => `${r.TABLE_SCHEMA}.${r.TABLE_NAME}`)
-    const fkMap = this.groupByFk(
-      fkResult.rows,
-      (r) => `${r.table_schema}.${r.table_name}`,
-      { colKey: 'column_name', refTable: 'referenced_table', refCol: 'referenced_column', refSchema: 'referenced_schema', name: 'constraint_name' }
+    const fkMap = this.groupByFk(fkResult.rows, (r) => `${r.table_schema}.${r.table_name}`, {
+      colKey: 'column_name',
+      refTable: 'referenced_table',
+      refCol: 'referenced_column',
+      refSchema: 'referenced_schema',
+      name: 'constraint_name'
+    })
+    const rowMap = new Map(
+      rowCountResult.rows.map((r) => [`${r.schema_name}.${r.table_name}`, Number(r.row_count)])
     )
-    const rowMap = new Map(rowCountResult.rows.map((r) => [`${r.schema_name}.${r.table_name}`, Number(r.row_count)]))
 
     const tables: TableInfo[] = []
     const views: TableInfo[] = []
@@ -503,7 +543,9 @@ class SchemaService {
         if (!col.nullable && !col.isPrimaryKey) def += ' NOT NULL'
         if (col.defaultValue) def += ` DEFAULT ${col.defaultValue}`
 
-        const fk = table.foreignKeys.find((f) => f.columns.length === 1 && f.columns[0] === col.name)
+        const fk = table.foreignKeys.find(
+          (f) => f.columns.length === 1 && f.columns[0] === col.name
+        )
         if (fk) {
           const refTarget = fk.referencedSchema
             ? `${fk.referencedSchema}.${fk.referencedTable}`
@@ -545,7 +587,13 @@ class SchemaService {
   private groupByFk(
     rows: Record<string, unknown>[],
     keyFn: (r: Record<string, unknown>) => string,
-    fieldMap?: { colKey: string; refTable: string; refCol: string; refSchema?: string; name?: string }
+    fieldMap?: {
+      colKey: string
+      refTable: string
+      refCol: string
+      refSchema?: string
+      name?: string
+    }
   ): Map<string, ForeignKeyInfo[]> {
     const colKey = fieldMap?.colKey ?? 'column_name'
     const refTableKey = fieldMap?.refTable ?? 'referenced_table'
@@ -553,7 +601,10 @@ class SchemaService {
     const refSchemaKey = fieldMap?.refSchema ?? 'referenced_schema'
     const nameKey = fieldMap?.name ?? 'constraint_name'
 
-    const grouped = new Map<string, Map<string, { cols: string[]; refCols: string[]; refTable: string; refSchema?: string }>>()
+    const grouped = new Map<
+      string,
+      Map<string, { cols: string[]; refCols: string[]; refTable: string; refSchema?: string }>
+    >()
 
     for (const row of rows) {
       const tableKey = keyFn(row)

@@ -80,12 +80,7 @@ function confirm(): void {
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
           <Label for="report-title">Report title</Label>
-          <Input
-            id="report-title"
-            v-model="title"
-            placeholder="Report"
-            maxlength="200"
-          />
+          <Input id="report-title" v-model="title" placeholder="Report" maxlength="200" />
         </div>
         <div class="grid gap-2">
           <Label>Logo (optional)</Label>
@@ -105,7 +100,7 @@ function confirm(): void {
             type="checkbox"
             :disabled="!canIncludeChart"
             class="size-4 rounded border-input"
-          >
+          />
           <Label for="include-chart" :class="{ 'opacity-50': !canIncludeChart }">
             Include chart
           </Label>
@@ -116,9 +111,7 @@ function confirm(): void {
       </div>
       <AlertDialogFooter>
         <AlertDialogCancel @click="cancel">Cancel</AlertDialogCancel>
-        <AlertDialogAction @click="confirm">
-          Export Report
-        </AlertDialogAction>
+        <AlertDialogAction @click="confirm"> Export Report </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
