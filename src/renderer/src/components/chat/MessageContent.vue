@@ -127,7 +127,7 @@ function isProseExpanded(index: number): boolean {
       <template v-for="(seg, i) in segments" :key="i">
         <div
           v-if="seg.type === 'text'"
-          class="rounded-md border-l-2 border-muted bg-muted/5 pl-3 py-2"
+          class="mb-4 rounded-md border-l-2 border-muted bg-muted/5 pl-4 py-3"
         >
           <div
             class="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted-foreground/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_p]:mb-4"
@@ -143,7 +143,13 @@ function isProseExpanded(index: number): boolean {
           </button>
         </div>
         <template v-else>
-          <div class="mt-4">
+          <div
+            :class="
+              segments.slice(0, i).some((s) => s.type === 'text')
+                ? 'mt-6'
+                : 'mt-4'
+            "
+          >
             <SqlCodeBlock
               :code="seg.content"
               :block-index="i"
@@ -153,8 +159,13 @@ function isProseExpanded(index: number): boolean {
               @run="(code) => onRun(code, i)"
             />
           </div>
-          <div v-if="resultsStore.getResult(messageIndex, i)">
-            <span class="text-xs font-medium text-muted-foreground">Results</span>
+          <div
+            v-if="resultsStore.getResult(messageIndex, i)"
+            class="mt-4"
+          >
+            <span class="mb-2 block text-xs font-medium text-muted-foreground"
+              >Results</span
+            >
             <ResultsPanel
               :message-index="messageIndex"
               :block-index="i"
@@ -163,7 +174,11 @@ function isProseExpanded(index: number): boolean {
           </div>
         </template>
       </template>
-      <span v-if="isStreaming" class="animate-pulse">▌</span>
+      <span
+        v-if="isStreaming"
+        class="animate-pulse"
+        aria-hidden="true"
+      >▌</span>
     </div>
   </template>
 </template>
