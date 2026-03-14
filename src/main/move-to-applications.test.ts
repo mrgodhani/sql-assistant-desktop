@@ -135,21 +135,23 @@ describe('promptMoveToApplicationsIfNeeded', () => {
       value: '/Volumes/SQL Assist 1.0.0/SQL Assist.app/Contents/MacOS/SQL Assist',
       configurable: true
     })
-    mockIsInApplicationsFolder.mockReturnValue(false)
-    mockShowMessageBox.mockResolvedValue({ response: 0, checkboxChecked: false })
+    try {
+      mockIsInApplicationsFolder.mockReturnValue(false)
 
-    const result = await ensureMoveToApplicationsPrompt()
+      const result = await ensureMoveToApplicationsPrompt()
 
-    expect(mockMoveToApplicationsFolder).not.toHaveBeenCalled()
-    expect(mockShowMessageBox).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        type: 'info',
-        title: 'Manual Move Required',
-        message: expect.stringContaining('drag SQL Assist to your Applications folder')
-      })
-    )
-    expect(result).toBe(false)
-    Object.defineProperty(process, 'execPath', { value: originalExecPath, configurable: true })
+      expect(mockMoveToApplicationsFolder).not.toHaveBeenCalled()
+      expect(mockShowMessageBox).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          type: 'info',
+          title: 'Manual Move Required',
+          message: expect.stringContaining('drag SQL Assist to your Applications folder')
+        })
+      )
+      expect(result).toBe(false)
+    } finally {
+      Object.defineProperty(process, 'execPath', { value: originalExecPath, configurable: true })
+    }
   })
 
   it('shows error when move returns false', async () => {

@@ -11,6 +11,17 @@ export async function ensureMoveToApplicationsPrompt(): Promise<boolean> {
   const optedOut = await settingsService.get(SKIP_KEY)
   if (optedOut === 'true') return false
 
+  const isFromDmg = process.execPath.includes('/Volumes/')
+  if (isFromDmg) {
+    await dialog.showMessageBox({
+      type: 'info',
+      title: 'Manual Move Required',
+      message:
+        'Please drag SQL Assist to your Applications folder manually, then reopen it from there.'
+    })
+    return false
+  }
+
   const { response, checkboxChecked } = await dialog.showMessageBox({
     type: 'question',
     title: 'Move to Applications?',
@@ -27,17 +38,6 @@ export async function ensureMoveToApplicationsPrompt(): Promise<boolean> {
     if (checkboxChecked) {
       await settingsService.set(SKIP_KEY, 'true')
     }
-    return false
-  }
-
-  const isFromDmg = process.execPath.includes('/Volumes/')
-  if (isFromDmg) {
-    await dialog.showMessageBox({
-      type: 'info',
-      title: 'Manual Move Required',
-      message:
-        'Please drag SQL Assist to your Applications folder manually, then reopen it from there.'
-    })
     return false
   }
 
