@@ -9,6 +9,7 @@ export function enforceSingleInstance(): boolean {
   }
 
   app.on('second-instance', () => {
+    // getAllWindows returns windows in creation order; index 0 is the main window
     const mainWindow = BrowserWindow.getAllWindows()[0]
     if (!mainWindow) return
     if (mainWindow.isMinimized()) mainWindow.restore()

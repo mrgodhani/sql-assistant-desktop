@@ -26,7 +26,7 @@ vi.mock('electron', () => ({
   app: {
     requestSingleInstanceLock: () => mockRequestSingleInstanceLock(),
     quit: () => mockQuit(),
-    on: (...args: unknown[]) => mockOn(...args)
+    on: mockOn as unknown as typeof import('electron').app.on
   },
   BrowserWindow: {
     getAllWindows: () => mockGetAllWindows()
@@ -72,7 +72,7 @@ describe('enforceSingleInstance', () => {
 
     const handler = mockOn.mock.calls.find(([event]) => event === 'second-instance')?.[1]
     expect(handler).toBeDefined()
-    handler()
+    handler({} as unknown as Electron.Event, [], '')
 
     expect(mockRestore).toHaveBeenCalled()
     expect(mockFocus).toHaveBeenCalled()
@@ -92,7 +92,7 @@ describe('enforceSingleInstance', () => {
     enforceSingleInstance()
 
     const handler = mockOn.mock.calls.find(([event]) => event === 'second-instance')?.[1]
-    handler()
+    handler({} as unknown as Electron.Event, [], '')
 
     expect(mockRestore).not.toHaveBeenCalled()
     expect(mockFocus).toHaveBeenCalled()
@@ -105,7 +105,7 @@ describe('enforceSingleInstance', () => {
     enforceSingleInstance()
 
     const handler = mockOn.mock.calls.find(([event]) => event === 'second-instance')?.[1]
-    expect(() => handler()).not.toThrow()
+    expect(() => handler({} as unknown as Electron.Event, [], '')).not.toThrow()
     expect(mockFocus).not.toHaveBeenCalled()
   })
 })
