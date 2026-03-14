@@ -55,6 +55,18 @@ Platform-specific builds:
 
 Building for macOS with notarization requires Apple Developer credentials. See the [README](README.md#building-for-macos-universal--notarized) for setup instructions (`.env.example`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`).
 
+## Release Workflow
+
+The release workflow (`.github/workflows/release.yml`) runs on tag push (`v*.*.*`) and produces a signed, notarized macOS DMG. It requires these GitHub repository secrets:
+
+| Secret | Purpose |
+|--------|---------|
+| `MACOS_CERTIFICATE` | Base64-encoded .p12 code signing certificate |
+| `MACOS_CERTIFICATE_PWD` | Password for the .p12 file |
+| `APPLE_ID` | Apple ID email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
+| `APPLE_TEAM_ID` | Apple Developer Team ID |
+
 ## Project Structure
 
 - `src/main/` — Electron main process (services, IPC handlers, database)
