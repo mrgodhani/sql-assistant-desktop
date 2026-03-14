@@ -13,6 +13,7 @@ import { settingsService } from './services/settings.service'
 import { schemaService } from './services/schema.service'
 import { aiService } from './services/ai.service'
 import { ensureMoveToApplicationsPrompt } from './move-to-applications'
+import { enforceSingleInstance } from './enforce-single-instance'
 
 process.on('uncaughtException', (error) => {
   log.error('[Main] Uncaught Exception:', error.message)
@@ -62,6 +63,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  if (!enforceSingleInstance()) return
+
   electronApp.setAppUserModelId('com.sql-assist')
 
   app.on('browser-window-created', (_, window) => {
@@ -80,7 +83,8 @@ app.whenReady().then(async () => {
     )
   }
 
-  await ensureMoveToApplicationsPrompt()
+  const quittingForRelaunch = await ensureMoveToApplicationsPrompt()
+  if (quittingForRelaunch) return
 
   registerAllIpc()
 
