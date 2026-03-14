@@ -4,12 +4,12 @@ import { settingsService } from './services/settings.service'
 
 const SKIP_KEY = 'skipMoveToApplicationsPrompt'
 
-export async function ensureMoveToApplicationsPrompt(): Promise<void> {
-  if (process.platform !== 'darwin' || is.dev) return
-  if (app.isInApplicationsFolder()) return
+export async function ensureMoveToApplicationsPrompt(): Promise<boolean> {
+  if (process.platform !== 'darwin' || is.dev) return false
+  if (app.isInApplicationsFolder()) return false
 
   const optedOut = await settingsService.get(SKIP_KEY)
-  if (optedOut === 'true') return
+  if (optedOut === 'true') return false
 
   const { response, checkboxChecked } = await dialog.showMessageBox({
     type: 'question',
@@ -27,7 +27,18 @@ export async function ensureMoveToApplicationsPrompt(): Promise<void> {
     if (checkboxChecked) {
       await settingsService.set(SKIP_KEY, 'true')
     }
-    return
+    return false
+  }
+
+  const isFromDmg = process.execPath.includes('/Volumes/')
+  if (isFromDmg) {
+    await dialog.showMessageBox({
+      type: 'info',
+      title: 'Manual Move Required',
+      message:
+        'Please drag SQL Assist to your Applications folder manually, then reopen it from there.'
+    })
+    return false
   }
 
   const moved = app.moveToApplicationsFolder()
@@ -38,5 +49,10 @@ export async function ensureMoveToApplicationsPrompt(): Promise<void> {
       message:
         'Could not move SQL Assist to Applications. You can continue using it from its current location.'
     })
+    return false
   }
+
+  app.relaunch()
+  app.exit(0)
+  return true
 }

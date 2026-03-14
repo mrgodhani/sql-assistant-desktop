@@ -4,18 +4,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ensureMoveToApplicationsPrompt } from './move-to-applications'
 
-const { mockShowMessageBox, mockMoveToApplicationsFolder, mockIsInApplicationsFolder, isMock } =
-  vi.hoisted(() => ({
-    mockShowMessageBox: vi.fn(),
-    mockMoveToApplicationsFolder: vi.fn(),
-    mockIsInApplicationsFolder: vi.fn(),
-    isMock: { dev: false }
-  }))
+const {
+  mockShowMessageBox,
+  mockMoveToApplicationsFolder,
+  mockIsInApplicationsFolder,
+  mockRelaunch,
+  mockExit,
+  isMock
+} = vi.hoisted(() => ({
+  mockShowMessageBox: vi.fn(),
+  mockMoveToApplicationsFolder: vi.fn(),
+  mockIsInApplicationsFolder: vi.fn(),
+  mockRelaunch: vi.fn(),
+  mockExit: vi.fn(),
+  isMock: { dev: false }
+}))
 
 vi.mock('electron', () => ({
   app: {
     isInApplicationsFolder: () => mockIsInApplicationsFolder(),
-    moveToApplicationsFolder: () => mockMoveToApplicationsFolder()
+    moveToApplicationsFolder: () => mockMoveToApplicationsFolder(),
+    relaunch: () => mockRelaunch(),
+    exit: (code?: number) => mockExit(code)
   },
   dialog: {
     showMessageBox: (...args: unknown[]) => mockShowMessageBox(...args)
@@ -111,9 +121,35 @@ describe('promptMoveToApplicationsIfNeeded', () => {
     mockShowMessageBox.mockResolvedValue({ response: 0, checkboxChecked: false })
     mockMoveToApplicationsFolder.mockReturnValue(true)
 
-    await ensureMoveToApplicationsPrompt()
+    const result = await ensureMoveToApplicationsPrompt()
 
     expect(mockMoveToApplicationsFolder).toHaveBeenCalled()
+    expect(mockRelaunch).toHaveBeenCalled()
+    expect(mockExit).toHaveBeenCalledWith(0)
+    expect(result).toBe(true)
+  })
+
+  it('shows manual move message when running from volume (DMG)', async () => {
+    const originalExecPath = process.execPath
+    Object.defineProperty(process, 'execPath', {
+      value: '/Volumes/SQL Assist 1.0.0/SQL Assist.app/Contents/MacOS/SQL Assist',
+      configurable: true
+    })
+    mockIsInApplicationsFolder.mockReturnValue(false)
+    mockShowMessageBox.mockResolvedValue({ response: 0, checkboxChecked: false })
+
+    const result = await ensureMoveToApplicationsPrompt()
+
+    expect(mockMoveToApplicationsFolder).not.toHaveBeenCalled()
+    expect(mockShowMessageBox).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        type: 'info',
+        title: 'Manual Move Required',
+        message: expect.stringContaining('drag SQL Assist to your Applications folder')
+      })
+    )
+    expect(result).toBe(false)
+    Object.defineProperty(process, 'execPath', { value: originalExecPath, configurable: true })
   })
 
   it('shows error when move returns false', async () => {
