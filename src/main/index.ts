@@ -62,41 +62,41 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(async () => {
-  if (!enforceSingleInstance()) return
+if (enforceSingleInstance()) {
+  app.whenReady().then(async () => {
+    electronApp.setAppUserModelId('com.sql-assist')
 
-  electronApp.setAppUserModelId('com.sql-assist')
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
 
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+    const quittingForRelaunch = await ensureMoveToApplicationsPrompt()
+    if (quittingForRelaunch) return
+
+    try {
+      initializeDatabase()
+      createMigrationTables()
+      log.info('[Main] Database initialized at', app.getPath('userData'))
+    } catch (error) {
+      log.error('[Main] Database initialization failed:', error)
+      dialog.showErrorBox(
+        'Database Error',
+        'Failed to initialize the local database. The application may not function correctly.'
+      )
+    }
+
+    registerAllIpc()
+
+    const storedTheme = await settingsService.getTheme()
+    nativeTheme.themeSource = storedTheme === 'system' ? 'system' : storedTheme
+
+    createWindow()
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
   })
-
-  try {
-    initializeDatabase()
-    createMigrationTables()
-    log.info('[Main] Database initialized at', app.getPath('userData'))
-  } catch (error) {
-    log.error('[Main] Database initialization failed:', error)
-    dialog.showErrorBox(
-      'Database Error',
-      'Failed to initialize the local database. The application may not function correctly.'
-    )
-  }
-
-  const quittingForRelaunch = await ensureMoveToApplicationsPrompt()
-  if (quittingForRelaunch) return
-
-  registerAllIpc()
-
-  const storedTheme = await settingsService.getTheme()
-  nativeTheme.themeSource = storedTheme === 'system' ? 'system' : storedTheme
-
-  createWindow()
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
