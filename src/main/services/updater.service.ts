@@ -28,14 +28,16 @@ export function initAutoUpdater(): void {
   })
 
   autoUpdater.on('download-progress', (progress) => {
-    log.info(`[Updater] Download progress: ${Math.round(progress.percent)}%`)
+    log.info(`[Updater] Download progress: ${Math.round(progress.percent ?? 0)}%`)
   })
 
   autoUpdater.on('update-downloaded', (info) => {
     log.info(`[Updater] Update downloaded: v${info.version}`)
     const windows = BrowserWindow.getAllWindows()
     for (const win of windows) {
-      win.webContents.send('app-update-downloaded', info.version)
+      if (!win.webContents.isDestroyed()) {
+        win.webContents.send('app-update-downloaded', info.version)
+      }
     }
   })
 
