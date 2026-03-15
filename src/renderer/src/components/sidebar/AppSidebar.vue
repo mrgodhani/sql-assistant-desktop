@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { MessageSquare, Database, Settings, Plus } from 'lucide-vue-next'
+import { MessageSquare, Network, Database, Settings, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -31,6 +31,7 @@ async function onNewChat(): Promise<void> {
 
 const navItems = [
   { to: '/chat', label: 'Chat', icon: MessageSquare },
+  { to: '/schema', label: 'Schema', icon: Network },
   { to: '/connections', label: 'Connections', icon: Database },
   { to: '/settings', label: 'Settings', icon: Settings }
 ]

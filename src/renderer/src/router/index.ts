@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import ChatView from '@renderer/views/ChatView.vue'
 import ConnectionsView from '@renderer/views/ConnectionsView.vue'
+import SchemaView from '@renderer/views/SchemaView.vue'
 import SettingsView from '@renderer/views/SettingsView.vue'
 
 const routes: RouteRecordRaw[] = [
@@ -19,6 +20,18 @@ const routes: RouteRecordRaw[] = [
     name: 'chat-conversation',
     component: ChatView,
     meta: { title: 'Chat' }
+  },
+  {
+    path: '/schema',
+    name: 'schema',
+    component: SchemaView,
+    meta: { title: 'Schema' }
+  },
+  {
+    path: '/schema/:connectionId',
+    name: 'schema-connection',
+    component: SchemaView,
+    meta: { title: 'Schema' }
   },
   {
     path: '/connections',
