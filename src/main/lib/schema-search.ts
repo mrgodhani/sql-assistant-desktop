@@ -22,7 +22,7 @@ export function searchSchema(schema: SearchableSchema, query: string): SearchRes
   if (!q) return []
   const results: SearchResult[] = []
 
-  const searchIn = (items: SearchableSchema['tables']) => {
+  const searchIn = (items: SearchableSchema['tables']): void => {
     for (const table of items) {
       const tableName = qualifiedTableName(table)
       const tableMatches = tableName.toLowerCase().includes(q)

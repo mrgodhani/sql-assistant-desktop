@@ -24,9 +24,7 @@ const defaultEdgeOptions = {
 }
 
 function resolveColor(cssVar: string): string {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(cssVar)
-    .trim()
+  return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim()
 }
 
 const styledEdges = computed(() => {
@@ -38,9 +36,7 @@ const styledEdges = computed(() => {
   const bgColor = `hsl(${resolveColor('--background')})`
 
   return visibleEdges.map((edge) => {
-    const isHighlighted = selected
-      ? edge.source === selected || edge.target === selected
-      : false
+    const isHighlighted = selected ? edge.source === selected || edge.target === selected : false
 
     return {
       ...edge,
@@ -107,8 +103,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 <template>
   <VueFlow
     :nodes="store.visibleNodes"
-    :edges="(styledEdges as any)"
-    :node-types="(nodeTypes as any)"
+    :edges="styledEdges as any"
+    :node-types="nodeTypes as any"
     :default-edge-options="defaultEdgeOptions"
     :fit-view-on-init="true"
     class="h-full w-full"

@@ -49,7 +49,7 @@ function generateColumnDef(col: ColumnDesign, dialect: DatabaseType): string {
 }
 
 function generateCreateTable(table: TableDesign, dialect: DatabaseType): string {
-  const q = (name: string) => quoteId(name, dialect)
+  const q = (name: string): string => quoteId(name, dialect)
   const lines: string[] = []
 
   for (const col of table.columns) {
@@ -76,7 +76,7 @@ function generateCreateTable(table: TableDesign, dialect: DatabaseType): string 
 function generateIndexes(table: TableDesign, dialect: DatabaseType): string[] {
   if (!table.indexes?.length) return []
 
-  const q = (name: string) => quoteId(name, dialect)
+  const q = (name: string): string => quoteId(name, dialect)
   return table.indexes.map((idx) => {
     const unique = idx.unique ? 'UNIQUE ' : ''
     const cols = idx.columns.map((c) => q(c)).join(', ')
@@ -108,7 +108,7 @@ function generateCreate(schema: SchemaDesign): string[] {
 }
 
 function generateMigrate(target: SchemaDesign, base: SchemaDesign): string[] {
-  const q = (name: string) => quoteId(name, target.dialect)
+  const q = (name: string): string => quoteId(name, target.dialect)
   const statements: string[] = []
 
   const baseTableMap = new Map(base.tables.map((t) => [t.name, t]))

@@ -31,7 +31,13 @@ describe('databaseSchemaToDesign', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'int', nullable: false, isPrimaryKey: true, isAutoIncrement: true },
-            { name: 'email', type: 'varchar(255)', nullable: false, isPrimaryKey: false, isAutoIncrement: false }
+            {
+              name: 'email',
+              type: 'varchar(255)',
+              nullable: false,
+              isPrimaryKey: false,
+              isAutoIncrement: false
+            }
           ],
           primaryKey: ['id'],
           indexes: [{ name: 'idx_email', columns: ['email'], isUnique: true }]
@@ -62,7 +68,13 @@ describe('databaseSchemaToDesign', () => {
           name: 'posts',
           columns: [
             { name: 'id', type: 'int', nullable: false, isPrimaryKey: true, isAutoIncrement: true },
-            { name: 'author_id', type: 'int', nullable: false, isPrimaryKey: false, isAutoIncrement: false }
+            {
+              name: 'author_id',
+              type: 'int',
+              nullable: false,
+              isPrimaryKey: false,
+              isAutoIncrement: false
+            }
           ],
           primaryKey: ['id'],
           foreignKeys: [
@@ -88,8 +100,20 @@ describe('databaseSchemaToDesign', () => {
         makeTable({
           name: 'order_items',
           columns: [
-            { name: 'order_id', type: 'int', nullable: false, isPrimaryKey: false, isAutoIncrement: false },
-            { name: 'product_id', type: 'int', nullable: false, isPrimaryKey: false, isAutoIncrement: false }
+            {
+              name: 'order_id',
+              type: 'int',
+              nullable: false,
+              isPrimaryKey: false,
+              isAutoIncrement: false
+            },
+            {
+              name: 'product_id',
+              type: 'int',
+              nullable: false,
+              isPrimaryKey: false,
+              isAutoIncrement: false
+            }
           ],
           primaryKey: ['order_id', 'product_id'],
           foreignKeys: [
@@ -130,8 +154,21 @@ describe('databaseSchemaToDesign', () => {
         makeTable({
           name: 'settings',
           columns: [
-            { name: 'key', type: 'varchar(100)', nullable: false, isPrimaryKey: true, isAutoIncrement: false },
-            { name: 'value', type: 'text', nullable: true, defaultValue: "''", isPrimaryKey: false, isAutoIncrement: false }
+            {
+              name: 'key',
+              type: 'varchar(100)',
+              nullable: false,
+              isPrimaryKey: true,
+              isAutoIncrement: false
+            },
+            {
+              name: 'value',
+              type: 'text',
+              nullable: true,
+              defaultValue: "''",
+              isPrimaryKey: false,
+              isAutoIncrement: false
+            }
           ],
           primaryKey: ['key']
         })
@@ -162,10 +199,7 @@ describe('databaseSchemaToDesign', () => {
   })
 
   it('omits schema when not present', () => {
-    const result = databaseSchemaToDesign(
-      makeDbSchema([makeTable({ name: 'users' })]),
-      'mysql'
-    )
+    const result = databaseSchemaToDesign(makeDbSchema([makeTable({ name: 'users' })]), 'mysql')
 
     expect(result.tables[0].schema).toBeUndefined()
   })

@@ -25,40 +25,39 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
   const messages = ref<DesignerMessage[]>([])
   const schema = ref<SchemaDesign | null>(null)
   const previousSchema = ref<SchemaDesign | null>(null)
+  const filteredTables = ref<string[] | null>(null)
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
 
   const hasSession = computed(() => session.value !== null)
   const hasSchema = computed(() => schema.value !== null)
-  const canUndo = computed(
-    () => session.value !== null && (session.value.history?.length ?? 0) > 1
-  )
+  const hasFilter = computed(() => filteredTables.value !== null && filteredTables.value.length > 0)
+  const canUndo = computed(() => session.value !== null && (session.value.history?.length ?? 0) > 1)
 
   let cleanupListener: (() => void) | null = null
 
-  async function startSession(dialect: DatabaseType, connectionId?: string) {
+  async function startSession(dialect: DatabaseType, connectionId?: string): Promise<void> {
     const newSession = await window.schemaAgentApi.createSession(dialect, connectionId)
     session.value = newSession
     messages.value = []
     schema.value = null
     previousSchema.value = null
+    filteredTables.value = null
     error.value = null
 
     setupStreamListener()
   }
 
-  function setupStreamListener() {
+  function setupStreamListener(): void {
     if (cleanupListener) cleanupListener()
 
-    cleanupListener = window.schemaAgentApi.onStreamChunk(
-      (chunk: SchemaAgentStreamChunk) => {
-        if (chunk.sessionId !== session.value?.id) return
-        handleStreamChunk(chunk)
-      }
-    )
+    cleanupListener = window.schemaAgentApi.onStreamChunk((chunk: SchemaAgentStreamChunk) => {
+      if (chunk.sessionId !== session.value?.id) return
+      handleStreamChunk(chunk)
+    })
   }
 
-  function handleStreamChunk(chunk: SchemaAgentStreamChunk) {
+  function handleStreamChunk(chunk: SchemaAgentStreamChunk): void {
     switch (chunk.type) {
       case 'text': {
         const lastMsg = messages.value[messages.value.length - 1]
@@ -80,7 +79,8 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
           validate_schema: 'Validating schema...',
           propose_schema: 'Updating schema design...',
           generate_ddl: 'Generating DDL...',
-          execute_ddl: 'Preparing to execute DDL...'
+          execute_ddl: 'Preparing to execute DDL...',
+          filter_view: 'Filtering diagram...'
         }
         const lastMsg = messages.value[messages.value.length - 1]
         if (lastMsg?.role === 'assistant') {
@@ -111,6 +111,15 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
         break
       }
 
+      case 'filter_changed': {
+        filteredTables.value = chunk.filteredTables ?? null
+        const lastMsg = messages.value[messages.value.length - 1]
+        if (lastMsg?.role === 'assistant') {
+          lastMsg.toolIndicator = undefined
+        }
+        break
+      }
+
       case 'ddl_approval': {
         messages.value.push({
           id: crypto.randomUUID(),
@@ -133,7 +142,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     }
   }
 
-  async function sendMessage(message: string) {
+  async function sendMessage(message: string): Promise<void> {
     if (!session.value) return
     if (!message.trim()) return
     error.value = null
@@ -154,7 +163,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     })
   }
 
-  async function approveExecution(approved: boolean) {
+  async function approveExecution(approved: boolean): Promise<void> {
     if (!session.value) return
     await window.schemaAgentApi.resolveApproval(session.value.id, approved)
 
@@ -165,7 +174,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     }
   }
 
-  async function undo() {
+  async function undo(): Promise<void> {
     if (!session.value) return
     const result = await window.schemaAgentApi.undo(session.value.id)
     if (result) {
@@ -174,14 +183,18 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     }
   }
 
-  function cancel() {
+  function clearFilter(): void {
+    filteredTables.value = null
+  }
+
+  function cancel(): void {
     if (session.value) {
       window.schemaAgentApi.cancel(session.value.id)
       isStreaming.value = false
     }
   }
 
-  async function endSession() {
+  async function endSession(): Promise<void> {
     if (session.value) {
       await window.schemaAgentApi.deleteSession(session.value.id)
     }
@@ -193,6 +206,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     messages.value = []
     schema.value = null
     previousSchema.value = null
+    filteredTables.value = null
     error.value = null
   }
 
@@ -201,14 +215,17 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     messages,
     schema,
     previousSchema,
+    filteredTables,
     isStreaming,
     error,
     hasSession,
     hasSchema,
+    hasFilter,
     canUndo,
     startSession,
     sendMessage,
     approveExecution,
+    clearFilter,
     undo,
     cancel,
     endSession

@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Copy, Pencil, RotateCw } from 'lucide-vue-next'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     role: 'user' | 'assistant'
     isStreaming?: boolean

@@ -7,17 +7,17 @@ export const useConnectionsViewStore = defineStore('connectionsView', () => {
   const mode = ref<ConnectionsViewMode>('list')
   const editingConnectionId = ref<string | null>(null)
 
-  function setListMode() {
+  function setListMode(): void {
     mode.value = 'list'
     editingConnectionId.value = null
   }
 
-  function setCreateMode() {
+  function setCreateMode(): void {
     mode.value = 'create'
     editingConnectionId.value = null
   }
 
-  function setEditMode(connectionId: string) {
+  function setEditMode(connectionId: string): void {
     mode.value = 'edit'
     editingConnectionId.value = connectionId
   }

@@ -2,11 +2,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest'
-import {
-  postgresJsonToMermaid,
-  mysqlJsonToMermaid,
-  sqliteTextToMermaid
-} from './explain-parser'
+import { postgresJsonToMermaid, mysqlJsonToMermaid, sqliteTextToMermaid } from './explain-parser'
 
 describe('postgresJsonToMermaid', () => {
   it('converts a simple PostgreSQL EXPLAIN JSON plan to Mermaid flowchart', () => {

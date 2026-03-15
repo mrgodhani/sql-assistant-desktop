@@ -3,6 +3,7 @@ import { databaseService } from './database.service'
 import type {
   DatabaseType,
   DatabaseSchema,
+  QueryResult,
   TableInfo,
   ColumnInfo,
   ForeignKeyInfo,
@@ -135,7 +136,7 @@ class SchemaService {
   // ─── PostgreSQL ─────────────────────────────────────────────────────────────
 
   private async introspectPostgresql(connectionId: string): Promise<DatabaseSchema> {
-    const q = (sql: string) =>
+    const q = (sql: string): Promise<QueryResult> =>
       withTimeout(databaseService.executeQuery(connectionId, sql), QUERY_TIMEOUT_MS, 'PG query')
 
     const tablesResult = await q(`
@@ -261,7 +262,7 @@ class SchemaService {
   // ─── MySQL ──────────────────────────────────────────────────────────────────
 
   private async introspectMysql(connectionId: string): Promise<DatabaseSchema> {
-    const q = (sql: string) =>
+    const q = (sql: string): Promise<QueryResult> =>
       withTimeout(databaseService.executeQuery(connectionId, sql), QUERY_TIMEOUT_MS, 'MySQL query')
 
     const tablesResult = await q(`
@@ -335,7 +336,7 @@ class SchemaService {
   // ─── SQLite ─────────────────────────────────────────────────────────────────
 
   private async introspectSqlite(connectionId: string): Promise<DatabaseSchema> {
-    const q = (sql: string) =>
+    const q = (sql: string): Promise<QueryResult> =>
       withTimeout(databaseService.executeQuery(connectionId, sql), QUERY_TIMEOUT_MS, 'SQLite query')
 
     const masterResult = await q(`
@@ -425,7 +426,7 @@ class SchemaService {
   // ─── SQL Server ─────────────────────────────────────────────────────────────
 
   private async introspectSqlServer(connectionId: string): Promise<DatabaseSchema> {
-    const q = (sql: string) =>
+    const q = (sql: string): Promise<QueryResult> =>
       withTimeout(databaseService.executeQuery(connectionId, sql), QUERY_TIMEOUT_MS, 'MSSQL query')
 
     const tablesResult = await q(`

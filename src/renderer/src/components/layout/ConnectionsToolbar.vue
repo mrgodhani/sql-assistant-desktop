@@ -5,12 +5,12 @@ import { useConnectionsViewStore } from '@renderer/stores/useConnectionsViewStor
 
 const connectionsViewStore = useConnectionsViewStore()
 
-function onNewConnection() {
+function onNewConnection(): void {
   if (connectionsViewStore.mode !== 'list') return
   connectionsViewStore.setCreateMode()
 }
 
-function onCancel() {
+function onCancel(): void {
   connectionsViewStore.setListMode()
 }
 </script>

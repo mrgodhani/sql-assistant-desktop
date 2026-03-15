@@ -11,7 +11,7 @@ import { DEFAULT_PROVIDER_CONFIGS } from '../../shared/types'
 import { settingsService } from './settings.service'
 import { schemaService } from './schema.service'
 import { databaseService } from './database.service'
-import { validateSchemaDesign } from '../lib/schema-validator'
+import { validateSchemaDesign, normalizeSchemaDesign } from '../lib/schema-validator'
 import { databaseSchemaToDesign } from '../lib/schema-converter'
 import { generateDDL } from './ddl-generator'
 import {
@@ -148,10 +148,10 @@ class SchemaAgentService {
         signal
       )
 
-      if (response.content) {
+      if (response.content || (response.toolCalls && response.toolCalls.length > 0)) {
         messages.push({
           role: 'assistant',
-          content: response.content,
+          content: response.content || '',
           tool_calls: response.toolCalls?.map((tc) => ({
             id: tc.id,
             type: 'function' as const,
@@ -207,8 +207,12 @@ class SchemaAgentService {
   ): Promise<unknown> {
     switch (toolName) {
       case 'introspect_database': {
-        const connectionId = (args.connectionId as string) || session.connectionId
-        if (!connectionId) return { error: 'No connection ID provided' }
+        const connectionId = session.connectionId
+        if (!connectionId)
+          return {
+            error:
+              'No database connection. Start a session from an existing database to use introspection.'
+          }
         try {
           const result = await schemaService.introspect(connectionId)
           if (!result.success || !result.schema) {
@@ -230,12 +234,12 @@ class SchemaAgentService {
       }
 
       case 'validate_schema': {
-        const schema = args.schema as SchemaDesign
+        const schema = normalizeSchemaDesign(args.schema)
         return validateSchemaDesign(schema)
       }
 
       case 'propose_schema': {
-        const schema = args.schema as SchemaDesign
+        const schema = normalizeSchemaDesign(args.schema)
         const changelog = (args.changelog as string[]) ?? []
         const validation = validateSchemaDesign(schema)
         if (!validation.valid) {
@@ -290,6 +294,24 @@ class SchemaAgentService {
           }
         }
         return { results, allSucceeded: results.every((r) => r.success) }
+      }
+
+      case 'filter_view': {
+        const tableNames = args.tableNames as string[] | null
+        const filter = tableNames && tableNames.length > 0 ? tableNames : null
+        sendChunk({
+          sessionId: params.sessionId,
+          type: 'filter_changed',
+          filteredTables: filter
+        })
+        if (filter) {
+          return {
+            success: true,
+            showing: filter,
+            message: `Showing ${filter.length} tables: ${filter.join(', ')}`
+          }
+        }
+        return { success: true, message: 'Filter cleared — showing all tables' }
       }
 
       default:

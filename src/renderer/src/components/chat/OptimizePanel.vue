@@ -21,10 +21,9 @@ async function fetchOptimize(): Promise<void> {
     content.value = await window.aiApi.optimizeQuery(props.connectionId, props.sql)
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to optimize query'
-    error.value =
-      /connection|not active|reconnect|ECONNREFUSED|ETIMEDOUT/i.test(msg)
-        ? 'Connection lost. Please reconnect.'
-        : msg
+    error.value = /connection|not active|reconnect|ECONNREFUSED|ETIMEDOUT/i.test(msg)
+      ? 'Connection lost. Please reconnect.'
+      : msg
   } finally {
     loading.value = false
   }

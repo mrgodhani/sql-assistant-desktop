@@ -202,9 +202,7 @@ describe('generateDDL', () => {
       }
 
       const result = generateDDL(target, 'migrate', base)
-      expect(result.statements).toContain(
-        'ALTER TABLE "users" ADD COLUMN "name" VARCHAR(100);'
-      )
+      expect(result.statements).toContain('ALTER TABLE "users" ADD COLUMN "name" VARCHAR(100);')
     })
 
     it('generates DROP TABLE for removed tables', () => {

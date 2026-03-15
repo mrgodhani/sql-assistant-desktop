@@ -73,7 +73,9 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
   <div class="flex items-center gap-3 px-4 py-2 border-b border-border bg-background">
     <!-- Search -->
     <div class="relative w-56">
-      <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      <Search
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none"
+      />
       <Input
         v-model="localSearch"
         placeholder="Search tables..."
@@ -132,12 +134,8 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        <DropdownMenuItem @click="() => store.exportImage('png')">
-          Export PNG
-        </DropdownMenuItem>
-        <DropdownMenuItem @click="() => store.exportImage('svg')">
-          Export SVG
-        </DropdownMenuItem>
+        <DropdownMenuItem @click="() => store.exportImage('png')"> Export PNG </DropdownMenuItem>
+        <DropdownMenuItem @click="() => store.exportImage('svg')"> Export SVG </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
 

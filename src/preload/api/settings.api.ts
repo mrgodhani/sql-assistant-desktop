@@ -13,9 +13,11 @@ export const settingsApi = {
   setTheme: (theme: ThemeMode): Promise<void> => ipcRenderer.invoke('settings:setTheme', theme),
   getSystemTheme: (): Promise<'dark' | 'light'> => ipcRenderer.invoke('settings:getSystemTheme'),
   onSystemThemeChange: (callback: (theme: 'dark' | 'light') => void): (() => void) => {
-    const handler = (_: Electron.IpcRendererEvent, theme: 'dark' | 'light') => callback(theme)
+    const handler = (_: Electron.IpcRendererEvent, theme: 'dark' | 'light'): void => callback(theme)
     ipcRenderer.on('settings:systemThemeChanged', handler)
-    return () => ipcRenderer.removeListener('settings:systemThemeChanged', handler)
+    return (): void => {
+      ipcRenderer.removeListener('settings:systemThemeChanged', handler)
+    }
   },
   get: (key: string): Promise<string | null> => ipcRenderer.invoke('settings:get', key),
   set: (key: string, value: string): Promise<void> =>

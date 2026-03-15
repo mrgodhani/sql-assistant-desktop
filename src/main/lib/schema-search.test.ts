@@ -16,12 +16,12 @@ describe('searchSchema', () => {
   it('returns matches for partial table name', () => {
     const result = searchSchema(schema, 'customer')
     expect(result.length).toBeGreaterThan(0)
-    expect(result.some(r => r.table === 'customers')).toBe(true)
+    expect(result.some((r) => r.table === 'customers')).toBe(true)
   })
 
   it('returns matches for partial column name', () => {
     const result = searchSchema(schema, 'customer_id')
-    expect(result.some(r => r.column === 'customer_id')).toBe(true)
+    expect(result.some((r) => r.column === 'customer_id')).toBe(true)
   })
 
   it('returns empty array for no matches', () => {

@@ -51,7 +51,9 @@ watch(
   }
 )
 
-async function onConnectionChange(connId: string | number | bigint | Record<string, unknown> | null): Promise<void> {
+async function onConnectionChange(
+  connId: string | number | bigint | Record<string, unknown> | null
+): Promise<void> {
   if (typeof connId !== 'string') return
   selectedConnectionId.value = connId
   const status = connectionStore.getStatus(connId)
@@ -79,9 +81,7 @@ function retryLoad(): void {
       >
         <template #default>
           <router-link to="/connections">
-            <Button variant="outline" size="sm" class="mt-3">
-              Add Connection
-            </Button>
+            <Button variant="outline" size="sm" class="mt-3"> Add Connection </Button>
           </router-link>
         </template>
       </EmptyState>
@@ -103,11 +103,7 @@ function retryLoad(): void {
             <SelectValue placeholder="Select a connection..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem
-              v-for="conn in connectionStore.connections"
-              :key="conn.id"
-              :value="conn.id"
-            >
+            <SelectItem v-for="conn in connectionStore.connections" :key="conn.id" :value="conn.id">
               {{ conn.name }}
               <span
                 v-if="connectionStore.getStatus(conn.id).status === 'connected'"
@@ -144,7 +140,10 @@ function retryLoad(): void {
       </div>
 
       <!-- No tables -->
-      <div v-else-if="store.tableCount === 0 && !store.loading" class="flex flex-1 items-center justify-center">
+      <div
+        v-else-if="store.tableCount === 0 && !store.loading"
+        class="flex flex-1 items-center justify-center"
+      >
         <EmptyState
           :icon="Network"
           title="No tables found"

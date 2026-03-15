@@ -95,9 +95,9 @@ async function refreshModels(): Promise<void> {
       <Label>API Key</Label>
       <div class="flex gap-2">
         <Input
+          v-model="apiKeyInput"
           type="password"
           :placeholder="showMasked ? maskedKey : 'Enter your API key'"
-          v-model="apiKeyInput"
           :data-testid="`${provider}-api-key-input`"
           @blur="onApiKeyBlur"
         />

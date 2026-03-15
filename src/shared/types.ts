@@ -359,6 +359,7 @@ export type SchemaAgentTool =
   | 'generate_ddl'
   | 'execute_ddl'
   | 'validate_schema'
+  | 'filter_view'
 
 export interface SchemaAgentMessage {
   role: 'user' | 'assistant' | 'system' | 'tool'
@@ -375,13 +376,22 @@ export interface SchemaAgentToolCall {
 
 export interface SchemaAgentStreamChunk {
   sessionId: string
-  type: 'text' | 'tool_call' | 'tool_result' | 'schema_updated' | 'ddl_approval' | 'done' | 'error'
+  type:
+    | 'text'
+    | 'tool_call'
+    | 'tool_result'
+    | 'schema_updated'
+    | 'ddl_approval'
+    | 'filter_changed'
+    | 'done'
+    | 'error'
   content?: string
   toolCall?: SchemaAgentToolCall
   toolResult?: unknown
   schema?: SchemaDesign
   changelog?: string[]
   ddlStatements?: string[]
+  filteredTables?: string[] | null
   error?: string
 }
 

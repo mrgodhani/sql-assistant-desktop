@@ -90,8 +90,8 @@ function setAsActive(): void {
       <Label>Server URL</Label>
       <div class="flex gap-2">
         <Input
-          :placeholder="config.baseUrl || 'http://localhost:11434'"
           v-model="baseUrlInput"
+          :placeholder="config.baseUrl || 'http://localhost:11434'"
           data-testid="ollama-base-url-input"
           @blur="onBaseUrlBlur"
         />

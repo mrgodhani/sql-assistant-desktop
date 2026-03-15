@@ -35,7 +35,11 @@ async function onStart(config: {
           <DesignerChat />
         </div>
         <div class="flex-1">
-          <DesignerCanvas :schema="store.schema" :previous-schema="store.previousSchema" />
+          <DesignerCanvas
+            :schema="store.schema"
+            :previous-schema="store.previousSchema"
+            :filtered-tables="store.filteredTables"
+          />
         </div>
       </div>
     </template>

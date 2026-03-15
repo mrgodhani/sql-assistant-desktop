@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { ref, onMounted, watch, nextTick } from 'vue'
+import Prism from 'prismjs'
+import 'prismjs/components/prism-sql'
+import 'prismjs/themes/prism-tomorrow.css'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertTriangle, Play, X } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   statements: string[]
   awaitingApproval: boolean
 }>()
@@ -11,6 +15,17 @@ defineProps<{
 const emit = defineEmits<{
   approve: [approved: boolean]
 }>()
+
+const codeRef = ref<HTMLElement | null>(null)
+
+function highlight(): void {
+  nextTick(() => {
+    if (codeRef.value) Prism.highlightElement(codeRef.value)
+  })
+}
+
+onMounted(highlight)
+watch(() => props.statements, highlight)
 </script>
 
 <template>
@@ -20,8 +35,10 @@ const emit = defineEmits<{
         <AlertTriangle class="size-4" />
         <span class="text-sm font-medium">DDL Execution Review</span>
       </div>
-      <div class="rounded bg-muted p-3 max-h-60 overflow-auto">
-        <pre class="text-xs font-mono whitespace-pre-wrap text-foreground">{{ statements.join('\n\n') }}</pre>
+      <div class="rounded bg-muted/40 max-h-60 overflow-auto">
+        <pre
+          class="p-3 text-xs"
+        ><code ref="codeRef" class="language-sql">{{ statements.join('\n\n') }}</code></pre>
       </div>
       <div v-if="awaitingApproval" class="flex gap-2 mt-3">
         <Button

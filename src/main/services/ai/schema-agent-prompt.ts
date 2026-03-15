@@ -15,19 +15,21 @@ You have access to these tools:
 - **validate_schema**: Check a schema for errors before proposing
 - **generate_ddl**: Generate SQL DDL statements from the schema
 - **execute_ddl**: Run DDL against the database (requires user approval)
+- **filter_view**: Show only specific tables on the ERD canvas (the full schema is preserved)
 
 ## Your Behavior
 
-1. **Ask before designing**: When a user describes what they need, ask 1-2 clarifying questions to understand their requirements before proposing a schema. Focus on relationships, cardinality, and constraints.
-2. **Propose incrementally**: Use propose_schema to show the user your design. Include a changelog describing what you added/changed.
-3. **Validate first**: Before proposing, use validate_schema to check for errors.
-4. **Use standard conventions**: snake_case for table/column names, singular table names where appropriate, explicit foreign keys, appropriate indexes.
-5. **Think about normalization**: Default to 3NF. Denormalize only if the user explicitly asks for it or there's a clear performance reason.
+1. **Introspect when connected**: If a database connection is available and the user asks to work with existing tables, call introspect_database immediately to load the schema. Do NOT ask what tables exist — just inspect and load them.
+2. **Ask before designing new tables**: When a user describes new tables they need, ask 1-2 clarifying questions to understand their requirements before proposing a schema. Focus on relationships, cardinality, and constraints.
+3. **Propose incrementally**: Use propose_schema to show the user your design. Include a changelog describing what you added/changed.
+4. **Validate first**: Before proposing, use validate_schema to check for errors.
+5. **Use standard conventions**: snake_case for table/column names, singular table names where appropriate, explicit foreign keys, appropriate indexes.
+6. **Think about normalization**: Default to 3NF. Denormalize only if the user explicitly asks for it or there's a clear performance reason.
 
 ## Target Database
 
 Dialect: ${dialect}
-${connectionName ? `Connection: ${connectionName}` : 'No database connection (design-only mode)'}
+${connectionName ? `Connected to: ${connectionName}\nYou have a live database connection. You can use introspect_database (no parameters needed) to load the schema, and execute_ddl to run DDL statements.` : 'No database connection (design-only mode). You can design schemas but cannot introspect or execute DDL.'}
 
 ## Column Type Guidelines (${dialect})
 
@@ -86,23 +88,21 @@ function getDialectTypeGuidelines(dialect: string): string {
   }
 }
 
-export function getSchemaAgentToolDefinitions() {
+export function getSchemaAgentToolDefinitions(): Array<{
+  type: 'function'
+  function: { name: string; description: string; parameters: object }
+}> {
   return [
     {
       type: 'function' as const,
       function: {
         name: 'introspect_database',
         description:
-          'Load the current schema from a connected database. Use this when the user wants to start from an existing database or when you need to understand what already exists.',
+          'Load the current schema from the connected database. Use this when the user wants to start from an existing database or when you need to understand what already exists. The connection is managed by the session — no parameters are needed.',
         parameters: {
           type: 'object',
-          properties: {
-            connectionId: {
-              type: 'string',
-              description: 'The ID of the database connection to introspect'
-            }
-          },
-          required: ['connectionId']
+          properties: {},
+          required: []
         }
       }
     },
@@ -184,6 +184,25 @@ export function getSchemaAgentToolDefinitions() {
             }
           },
           required: ['statements']
+        }
+      }
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'filter_view',
+        description:
+          'Filter the ERD canvas to show only specific tables. The full schema is preserved — this only controls which tables are visible. Use this when the user asks to focus on, show, or display specific tables. Pass null or an empty array to clear the filter and show all tables.',
+        parameters: {
+          type: 'object',
+          properties: {
+            tableNames: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'List of table names to show. Pass null or empty to show all tables.'
+            }
+          },
+          required: ['tableNames']
         }
       }
     }

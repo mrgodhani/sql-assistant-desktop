@@ -236,7 +236,7 @@ function onTypeChange(value: AcceptableValue): void {
               class="flex-1"
               data-testid="connection-form-filepath"
             />
-            <Button variant="outline" @click="pickFile" data-testid="connection-form-browse">
+            <Button variant="outline" data-testid="connection-form-browse" @click="pickFile">
               Browse
             </Button>
           </div>

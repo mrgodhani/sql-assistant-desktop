@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { Table2, Eye, KeyRound, Link2, Minus } from 'lucide-vue-next'
 import type { TableNodeData } from '@renderer/stores/useSchemaVisualizationStore'
@@ -12,6 +12,7 @@ const props = defineProps<{
 }>()
 
 const store = useSchemaVisualizationStore()
+const injectedToggle = inject<((nodeId: string) => void) | null>('toggleColumns', null)
 
 const COLLAPSED_MAX_OTHER = 3
 
@@ -24,15 +25,11 @@ const pkColumns = computed(() => {
 })
 
 const fkColumns = computed(() => {
-  return props.data.table.columns.filter(
-    (c) => fkColumnNames.value.has(c.name) && !c.isPrimaryKey
-  )
+  return props.data.table.columns.filter((c) => fkColumnNames.value.has(c.name) && !c.isPrimaryKey)
 })
 
 const otherColumns = computed(() => {
-  return props.data.table.columns.filter(
-    (c) => !c.isPrimaryKey && !fkColumnNames.value.has(c.name)
-  )
+  return props.data.table.columns.filter((c) => !c.isPrimaryKey && !fkColumnNames.value.has(c.name))
 })
 
 const needsCollapsing = computed(() => {
@@ -101,25 +98,16 @@ function formatType(column: ColumnInfo): string {
         <!-- Target handle on PK columns -->
         <Handle
           v-if="column.isPrimaryKey"
+          :id="`target-${column.name}`"
           type="target"
           :position="Position.Left"
-          :id="`target-${column.name}`"
           class="absolute! left-0! w-2! h-2! bg-primary! border-2! border-background! -translate-x-1/2!"
         />
 
         <!-- Column icon -->
-        <KeyRound
-          v-if="columnIcon(column) === 'pk'"
-          class="h-3 w-3 shrink-0 text-amber-500"
-        />
-        <Link2
-          v-else-if="columnIcon(column) === 'fk'"
-          class="h-3 w-3 shrink-0 text-blue-500"
-        />
-        <Minus
-          v-else
-          class="h-3 w-3 shrink-0 text-muted-foreground/50"
-        />
+        <KeyRound v-if="columnIcon(column) === 'pk'" class="h-3 w-3 shrink-0 text-amber-500" />
+        <Link2 v-else-if="columnIcon(column) === 'fk'" class="h-3 w-3 shrink-0 text-blue-500" />
+        <Minus v-else class="h-3 w-3 shrink-0 text-muted-foreground/50" />
 
         <!-- Column name -->
         <span class="flex-1 truncate">{{ column.name }}</span>
@@ -130,9 +118,9 @@ function formatType(column: ColumnInfo): string {
         <!-- Source handle on FK columns -->
         <Handle
           v-if="isFK(column.name)"
+          :id="`source-${column.name}`"
           type="source"
           :position="Position.Right"
-          :id="`source-${column.name}`"
           class="absolute! right-0! w-2! h-2! bg-primary! border-2! border-background! translate-x-1/2!"
         />
       </div>
@@ -142,7 +130,7 @@ function formatType(column: ColumnInfo): string {
     <div v-if="needsCollapsing" class="border-t border-border">
       <button
         class="w-full px-3 py-1.5 text-xs text-primary cursor-pointer hover:underline text-left"
-        @click.stop="store.toggleColumns(id)"
+        @click.stop="injectedToggle ? injectedToggle(id) : store.toggleColumns(id)"
       >
         {{ data.isExpanded ? 'Collapse' : `Show all ${data.table.columns.length} columns` }}
       </button>

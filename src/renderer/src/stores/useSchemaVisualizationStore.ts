@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import dagre from 'dagre'
-import { toPng, toSvg } from 'html-to-image'
+import { exportDiagram } from '@/lib/export-diagram'
 export type RelationshipType = '1:1' | '1:N' | 'N:M'
 
 export interface SchemaEdge {
@@ -57,9 +57,7 @@ function buildNodeId(table: TableInfo): string {
 }
 
 function buildFkTargetId(fk: ForeignKeyInfo): string {
-  return fk.referencedSchema
-    ? `${fk.referencedSchema}.${fk.referencedTable}`
-    : fk.referencedTable
+  return fk.referencedSchema ? `${fk.referencedSchema}.${fk.referencedTable}` : fk.referencedTable
 }
 
 function hasFkUniqueIndex(table: TableInfo, fkColumns: string[]): boolean {
@@ -129,12 +127,8 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
 
     const pkColumns = table.columns.filter((c) => c.isPrimaryKey)
     const fkColumnNames = new Set(table.foreignKeys.flatMap((fk) => fk.columns))
-    const fkColumns = table.columns.filter(
-      (c) => fkColumnNames.has(c.name) && !c.isPrimaryKey
-    )
-    const otherColumns = table.columns.filter(
-      (c) => !c.isPrimaryKey && !fkColumnNames.has(c.name)
-    )
+    const fkColumns = table.columns.filter((c) => fkColumnNames.has(c.name) && !c.isPrimaryKey)
+    const otherColumns = table.columns.filter((c) => !c.isPrimaryKey && !fkColumnNames.has(c.name))
 
     const priorityCount = pkColumns.length + fkColumns.length
     const othersToShow = Math.min(COLLAPSED_OTHER_COLUMNS, otherColumns.length)
@@ -337,71 +331,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   }
 
   async function exportImage(format: 'png' | 'svg'): Promise<void> {
-    const viewport = document.querySelector('.vue-flow__viewport') as HTMLElement
-    if (!viewport) return
-
-    const nodeEls = viewport.querySelectorAll('.vue-flow__node')
-    if (!nodeEls.length) return
-
-    let minX = Infinity
-    let minY = Infinity
-    let maxX = -Infinity
-    let maxY = -Infinity
-
-    const viewportRect = viewport.getBoundingClientRect()
-    const transformStyle = getComputedStyle(viewport).transform
-    let scale = 1
-    if (transformStyle && transformStyle !== 'none') {
-      const matrix = new DOMMatrix(transformStyle)
-      scale = matrix.a
-    }
-
-    for (const nodeEl of nodeEls) {
-      const rect = (nodeEl as HTMLElement).getBoundingClientRect()
-      const x = (rect.left - viewportRect.left) / scale
-      const y = (rect.top - viewportRect.top) / scale
-      const w = rect.width / scale
-      const h = rect.height / scale
-
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x + w)
-      maxY = Math.max(maxY, y + h)
-    }
-
-    const padding = 40
-    minX -= padding
-    minY -= padding
-    maxX += padding
-    maxY += padding
-
-    const width = maxX - minX
-    const height = maxY - minY
-
-    const bgColor = getComputedStyle(document.documentElement)
-      .getPropertyValue('--background')
-      .trim()
-
-    const options = {
-      backgroundColor: bgColor ? `hsl(${bgColor})` : '#09090b',
-      pixelRatio: 2,
-      width: width * scale,
-      height: height * scale,
-      style: {
-        width: `${width}px`,
-        height: `${height}px`,
-        transform: `translate(${-minX}px, ${-minY}px) scale(1)`
-      }
-    }
-
-    const dataUrl = format === 'png'
-      ? await toPng(viewport, options)
-      : await toSvg(viewport, options)
-
-    const link = document.createElement('a')
-    link.download = `schema.${format}`
-    link.href = dataUrl
-    link.click()
+    await exportDiagram(format, 'schema')
   }
 
   const connectedNodeIds = computed((): Set<string> => {
@@ -422,9 +352,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
       case 'connected':
         if (selectedNodeId.value) {
           const connected = connectedNodeIds.value
-          filtered = filtered.filter(
-            (n) => n.id === selectedNodeId.value || connected.has(n.id)
-          )
+          filtered = filtered.filter((n) => n.id === selectedNodeId.value || connected.has(n.id))
         }
         break
       case 'with-relationships': {
@@ -448,9 +376,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
 
   const visibleEdges = computed(() => {
     const visibleIds = new Set(visibleNodes.value.map((n) => n.id))
-    return edges.value.filter(
-      (e) => visibleIds.has(e.source) && visibleIds.has(e.target)
-    )
+    return edges.value.filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
   })
 
   const groups = computed((): Map<string, TableInfo[]> => {

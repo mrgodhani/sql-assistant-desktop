@@ -18,7 +18,11 @@ export interface PostgresExplainEntry {
  * Mermaid node IDs must be alphanumeric + underscore (no spaces, special chars).
  */
 function sanitizeNodeId(str: string, suffix?: string): string {
-  const base = str.replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'node'
+  const base =
+    str
+      .replace(/[^a-zA-Z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '') || 'node'
   return suffix !== undefined ? `${base}_${suffix}` : base
 }
 
@@ -240,7 +244,9 @@ function parseSqliteLines(text: string): SqlitePlanLine[] {
       result.push({ depth, content })
       continue
     }
-    const simple = trimmed.match(/^(SCAN|SEARCH|USE TEMP|MULTI-INDEX|CO-ROUTINE|MATERIALIZE|COMPOUND|MERGE|LEFT|RIGHT|LEFT-MOST|UNION|SCALAR|CORRELATED|COVERING|TABLE)(.*)$/i)
+    const simple = trimmed.match(
+      /^(SCAN|SEARCH|USE TEMP|MULTI-INDEX|CO-ROUTINE|MATERIALIZE|COMPOUND|MERGE|LEFT|RIGHT|LEFT-MOST|UNION|SCALAR|CORRELATED|COVERING|TABLE)(.*)$/i
+    )
     if (simple) {
       result.push({ depth: 0, content: trimmed })
     }
@@ -263,7 +269,7 @@ export function sqliteTextToMermaid(text: string): string {
   if (parsed.length === 0) return mermaidLines.join('\n')
 
   const stack: { nodeId: string; depth: number }[] = []
-  let lastSiblingAtDepth: Map<number, string> = new Map()
+  const lastSiblingAtDepth: Map<number, string> = new Map()
   for (const { depth, content } of parsed) {
     const label = content || 'step'
     const nodeId = sanitizeNodeId(label, String(idCounter.value++))

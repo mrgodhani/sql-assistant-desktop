@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { createRouter, createMemoryHistory, type Router } from 'vue-router'
 import AppTopBar from '../AppTopBar.vue'
 
 vi.mock('@renderer/components/chat/ChatToolbar.vue', () => ({
@@ -21,12 +21,11 @@ const routes = [
   { path: '/settings', component: Placeholder }
 ]
 
-function createTestRouter(_initialPath: string) {
-  const router = createRouter({
+function createTestRouter(): Router {
+  return createRouter({
     history: createMemoryHistory(),
     routes
   })
-  return router
 }
 
 describe('AppTopBar', () => {
@@ -36,7 +35,7 @@ describe('AppTopBar', () => {
 
   it('renders traffic lights region when platform is darwin', async () => {
     vi.stubGlobal('platformApi', { getPlatform: () => 'darwin' })
-    const router = createTestRouter('/chat')
+    const router = createTestRouter()
     await router.push('/chat')
     const wrapper = mount(AppTopBar, {
       global: {
@@ -48,7 +47,7 @@ describe('AppTopBar', () => {
 
   it('does not render traffic lights region when platform is win32', async () => {
     vi.stubGlobal('platformApi', { getPlatform: () => 'win32' })
-    const router = createTestRouter('/chat')
+    const router = createTestRouter()
     await router.push('/chat')
     const wrapper = mount(AppTopBar, {
       global: {
@@ -59,7 +58,7 @@ describe('AppTopBar', () => {
   })
 
   it('renders app top bar', async () => {
-    const router = createTestRouter('/chat')
+    const router = createTestRouter()
     await router.push('/chat')
     const wrapper = mount(AppTopBar, {
       global: {

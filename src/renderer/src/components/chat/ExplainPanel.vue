@@ -35,10 +35,9 @@ async function fetchExplain(): Promise<void> {
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to run EXPLAIN'
-    error.value =
-      /connection|not active|reconnect|ECONNREFUSED|ETIMEDOUT/i.test(msg)
-        ? 'Connection lost. Please reconnect.'
-        : msg
+    error.value = /connection|not active|reconnect|ECONNREFUSED|ETIMEDOUT/i.test(msg)
+      ? 'Connection lost. Please reconnect.'
+      : msg
   } finally {
     loading.value = false
   }
@@ -79,18 +78,14 @@ onMounted(() => {
           class="overflow-auto rounded-md bg-white p-4 dark:bg-muted/30"
           v-html="mermaidSvg"
         />
-        <div
-          v-else-if="raw"
-          class="text-sm text-muted-foreground"
-        >
+        <div v-else-if="raw" class="text-sm text-muted-foreground">
           No diagram available (raw format only)
         </div>
       </TabsContent>
       <TabsContent value="raw" class="mt-0">
-        <pre
-          v-if="raw"
-          class="max-h-64 overflow-auto rounded-md bg-muted/40 p-3 text-xs"
-        >{{ raw }}</pre>
+        <pre v-if="raw" class="max-h-64 overflow-auto rounded-md bg-muted/40 p-3 text-xs">{{
+          raw
+        }}</pre>
       </TabsContent>
     </Tabs>
   </div>

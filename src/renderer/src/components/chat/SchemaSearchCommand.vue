@@ -22,15 +22,12 @@ const selectedIndex = ref(0)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const connectionId = computed(
-  () =>
-    chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
+  () => chatStore.activeConnectionId ?? chatStore.currentConversation?.connectionId ?? null
 )
 
 const hasConnection = computed(() => Boolean(connectionId.value))
 
-const flatResults = computed(() =>
-  results.value.map((r) => `${r.table}.${r.column}`)
-)
+const flatResults = computed(() => results.value.map((r) => `${r.table}.${r.column}`))
 
 const groupedResults = computed(() => {
   const groups = new Map<string, string[]>()
@@ -140,10 +137,7 @@ function getFlatIndex(groupIdx: number, itemIdx: number): number {
       @keydown="onKeydown"
       @click.self="close"
     >
-      <div
-        class="w-full max-w-xl rounded-lg border border-border bg-card shadow-lg"
-        @click.stop
-      >
+      <div class="w-full max-w-xl rounded-lg border border-border bg-card shadow-lg" @click.stop>
         <div class="border-b border-border p-2">
           <Input
             ref="inputRef"
@@ -154,16 +148,10 @@ function getFlatIndex(groupIdx: number, itemIdx: number): number {
           />
         </div>
         <div class="max-h-[min(60vh,400px)] overflow-hidden">
-          <div
-            v-if="!hasConnection"
-            class="px-4 py-8 text-center text-sm text-muted-foreground"
-          >
+          <div v-if="!hasConnection" class="px-4 py-8 text-center text-sm text-muted-foreground">
             Connect to a database first
           </div>
-          <div
-            v-else-if="loading"
-            class="px-4 py-8 text-center text-sm text-muted-foreground"
-          >
+          <div v-else-if="loading" class="px-4 py-8 text-center text-sm text-muted-foreground">
             Searching...
           </div>
           <div
@@ -174,11 +162,7 @@ function getFlatIndex(groupIdx: number, itemIdx: number): number {
           </div>
           <ScrollArea v-else class="h-full">
             <div class="p-2">
-              <div
-                v-for="(group, groupIdx) in groupedResults"
-                :key="group[0]"
-                class="mb-2"
-              >
+              <div v-for="(group, groupIdx) in groupedResults" :key="group[0]" class="mb-2">
                 <div
                   class="mb-1 px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground"
                 >

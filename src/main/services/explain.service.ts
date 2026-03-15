@@ -22,10 +22,7 @@ function getFirstColumnValue(row: Record<string, unknown>): string {
   return String(val ?? '')
 }
 
-export async function runExplain(
-  connectionId: string,
-  sql: string
-): Promise<ExplainResult> {
+export async function runExplain(connectionId: string, sql: string): Promise<ExplainResult> {
   const dbType = databaseService.getConnectionType(connectionId)
   if (!dbType) {
     throw new Error('Connection is not active')
@@ -89,10 +86,7 @@ export async function runExplain(
   return { raw, mermaid }
 }
 
-function formatRawResult(result: {
-  columns: string[]
-  rows: Record<string, unknown>[]
-}): string {
+function formatRawResult(result: { columns: string[]; rows: Record<string, unknown>[] }): string {
   if (result.rows.length === 0) return ''
   const lines: string[] = []
   for (const row of result.rows) {

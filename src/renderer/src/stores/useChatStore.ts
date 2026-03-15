@@ -77,7 +77,7 @@ export const useChatStore = defineStore('chat', () => {
       chunk: string
       done: boolean
       error?: string
-    }) => {
+    }): void => {
       if (chunk.requestId !== requestId) return
 
       const conv = currentConversation.value

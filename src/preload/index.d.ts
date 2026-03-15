@@ -105,12 +105,8 @@ interface SchemaAgentApi {
     dialect: import('../shared/types').DatabaseType,
     connectionId?: string
   ) => Promise<import('../shared/types').SchemaDesignSession>
-  chat: (
-    params: import('../shared/types').SchemaAgentChatParams
-  ) => Promise<{ sessionId: string }>
-  getSession: (
-    sessionId: string
-  ) => Promise<import('../shared/types').SchemaDesignSession | null>
+  chat: (params: import('../shared/types').SchemaAgentChatParams) => Promise<{ sessionId: string }>
+  getSession: (sessionId: string) => Promise<import('../shared/types').SchemaDesignSession | null>
   deleteSession: (sessionId: string) => Promise<void>
   resolveApproval: (sessionId: string, approved: boolean) => Promise<void>
   undo: (sessionId: string) => Promise<import('../shared/types').SchemaDesign | null>

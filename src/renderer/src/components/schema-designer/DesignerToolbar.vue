@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Undo2, Plus } from 'lucide-vue-next'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Undo2, Plus, Filter, X, Download } from 'lucide-vue-next'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import { DATABASE_TYPE_LABELS } from '../../../../shared/types'
+import { exportDiagram } from '@/lib/export-diagram'
 
 const store = useSchemaDesignerStore()
 </script>
@@ -18,8 +25,35 @@ const store = useSchemaDesignerStore()
       {{ store.schema.tables.length }} table{{ store.schema.tables.length !== 1 ? 's' : '' }}
     </span>
 
+    <Badge
+      v-if="store.hasFilter"
+      variant="secondary"
+      class="gap-1.5 pl-2 pr-1 cursor-pointer hover:bg-secondary/80"
+      @click="store.clearFilter"
+    >
+      <Filter class="size-3" />
+      Showing {{ store.filteredTables?.length }} of {{ store.schema?.tables.length }}
+      <X class="size-3 text-muted-foreground hover:text-foreground" />
+    </Badge>
+
     <div class="flex-1" />
 
+    <DropdownMenu v-if="store.hasSchema">
+      <DropdownMenuTrigger as-child>
+        <Button variant="outline" size="sm">
+          <Download class="size-3.5 mr-1" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem @click="() => exportDiagram('png', 'designer-erd')">
+          Export PNG
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="() => exportDiagram('svg', 'designer-erd')">
+          Export SVG
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
     <Button v-if="store.canUndo" variant="outline" size="sm" @click="store.undo">
       <Undo2 class="size-3.5 mr-1" />
       Undo

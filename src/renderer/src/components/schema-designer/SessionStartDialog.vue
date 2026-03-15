@@ -15,9 +15,7 @@ import { DATABASE_TYPES, DATABASE_TYPE_LABELS } from '../../../../shared/types'
 import type { DatabaseType } from '../../../../shared/types'
 
 const emit = defineEmits<{
-  start: [
-    config: { mode: 'scratch' | 'existing'; dialect?: DatabaseType; connectionId?: string }
-  ]
+  start: [config: { mode: 'scratch' | 'existing'; dialect?: DatabaseType; connectionId?: string }]
 }>()
 
 const connectionStore = useConnectionStore()
@@ -96,9 +94,7 @@ const selectedConnectionId = ref<string>('')
           <Button
             class="w-full"
             :disabled="!selectedConnectionId"
-            @click="
-              emit('start', { mode: 'existing', connectionId: selectedConnectionId })
-            "
+            @click="emit('start', { mode: 'existing', connectionId: selectedConnectionId })"
           >
             Load & Evolve
           </Button>
