@@ -73,8 +73,8 @@ watch(
 </script>
 
 <template>
-  <div ref="scrollContainerRef" class="flex-1 overflow-y-auto p-4">
-    <div class="mx-auto max-w-3xl space-y-8">
+  <div ref="scrollContainerRef" class="flex-1 overflow-y-auto px-6 py-4">
+    <div class="space-y-8">
       <template v-if="!useVirtual">
         <div v-for="(pair, pairIdx) in messagePairs" :key="pairIdx" class="space-y-8">
           <ChatMessage
