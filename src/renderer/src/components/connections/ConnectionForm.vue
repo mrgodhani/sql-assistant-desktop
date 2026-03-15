@@ -20,6 +20,7 @@ import { DATABASE_TYPES, DATABASE_TYPE_LABELS, DEFAULT_PORTS } from '../../../..
 
 const props = defineProps<{
   connectionId?: string
+  hideHeader?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -178,7 +179,7 @@ function onTypeChange(value: AcceptableValue): void {
 
 <template>
   <Card data-testid="connection-form">
-    <CardHeader>
+    <CardHeader v-if="!props.hideHeader">
       <CardTitle>{{ isEditing ? 'Edit' : 'New' }} Connection</CardTitle>
     </CardHeader>
     <CardContent class="space-y-4">
