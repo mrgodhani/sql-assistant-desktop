@@ -70,13 +70,12 @@ if (enforceSingleInstance()) {
       optimizer.watchWindowShortcuts(window)
     })
 
-    const quittingForRelaunch = await ensureMoveToApplicationsPrompt()
-    if (quittingForRelaunch) return
-
+    let dbInitialized = false
     try {
       initializeDatabase()
       createMigrationTables()
       log.info('[Main] Database initialized at', app.getPath('userData'))
+      dbInitialized = true
     } catch (error) {
       log.error('[Main] Database initialization failed:', error)
       dialog.showErrorBox(
@@ -85,9 +84,12 @@ if (enforceSingleInstance()) {
       )
     }
 
+    const quittingForRelaunch = await ensureMoveToApplicationsPrompt()
+    if (quittingForRelaunch) return
+
     registerAllIpc()
 
-    const storedTheme = await settingsService.getTheme()
+    const storedTheme = dbInitialized ? await settingsService.getTheme() : 'system'
     nativeTheme.themeSource = storedTheme === 'system' ? 'system' : storedTheme
 
     createWindow()

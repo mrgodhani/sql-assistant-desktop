@@ -61,8 +61,9 @@ The release workflow (`.github/workflows/release.yml`) runs on tag push (`v*.*.*
 
 | Secret | Purpose |
 |--------|---------|
-| `MACOS_CERTIFICATE` | Base64-encoded .p12 code signing certificate |
+| `MACOS_CERTIFICATE` | Base64-encoded .p12 code signing certificate (**Developer ID Application**, not Apple Distribution) |
 | `MACOS_CERTIFICATE_PWD` | Password for the .p12 file |
+| `MACOS_CERTIFICATE_NAME` | Certificate identity, e.g. `Developer ID Application: Your Name (TEAM_ID)` — from Keychain Access, double-click cert → Details |
 | `APPLE_ID` | Apple ID email |
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |

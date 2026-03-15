@@ -21,3 +21,4 @@ Thumbs.db
 # Local overrides
 *.local
 .env.*.local
+.specify/
