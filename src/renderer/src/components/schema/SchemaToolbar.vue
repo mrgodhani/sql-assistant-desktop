@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { Search, X, RotateCcw, Download } from 'lucide-vue-next'
+import { Search, X, RotateCcw, Download, Filter } from 'lucide-vue-next'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
+import { Badge } from '@renderer/components/ui/badge'
+import TableFilterPopover from '@renderer/components/shared/TableFilterPopover.vue'
 import {
   Select,
   SelectContent,
@@ -67,6 +69,10 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
     store.applyLayout(value as LayoutDirection)
   }
 }
+
+function onIndividualFilterChange(value: string[] | null): void {
+  store.setIndividualFilter(value)
+}
 </script>
 
 <template>
@@ -116,8 +122,29 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
       <SelectContent>
         <SelectItem value="TB">Top to Bottom</SelectItem>
         <SelectItem value="LR">Left to Right</SelectItem>
+        <SelectItem value="clustered">Clustered (auto-group)</SelectItem>
       </SelectContent>
     </Select>
+
+    <!-- Individual table filter -->
+    <TableFilterPopover
+      :tables="store.nodes.filter(n => n.type === 'table').map(n => n.id)"
+      :model-value="store.individualFilter"
+      :selected-node-id="store.selectedNodeId"
+      @update:model-value="onIndividualFilterChange"
+    />
+
+    <!-- Active filter badge -->
+    <Badge
+      v-if="store.hasIndividualFilter"
+      variant="secondary"
+      class="gap-1.5 pl-2 pr-1 cursor-pointer hover:bg-secondary/80"
+      @click="store.clearIndividualFilter"
+    >
+      <Filter class="size-3" />
+      Showing {{ store.visibleTableCount }} of {{ store.tableCount }}
+      <X class="size-3 text-muted-foreground hover:text-foreground" />
+    </Badge>
 
     <!-- Re-layout -->
     <Button variant="outline" size="sm" @click="store.applyLayout()">
