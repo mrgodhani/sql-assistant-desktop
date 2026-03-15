@@ -3,6 +3,7 @@ import ChatView from '@renderer/views/ChatView.vue'
 import ConnectionsView from '@renderer/views/ConnectionsView.vue'
 import SchemaView from '@renderer/views/SchemaView.vue'
 import SettingsView from '@renderer/views/SettingsView.vue'
+import SchemaDesignerView from '@renderer/views/SchemaDesignerView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -44,6 +45,12 @@ const routes: RouteRecordRaw[] = [
     name: 'settings',
     component: SettingsView,
     meta: { title: 'Settings' }
+  },
+  {
+    path: '/schema-designer',
+    name: 'schema-designer',
+    component: SchemaDesignerView,
+    meta: { title: 'Schema Designer' }
   },
   {
     path: '/:pathMatch(.*)*',
