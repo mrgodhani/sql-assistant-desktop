@@ -2,7 +2,6 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Network } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -80,9 +79,9 @@ function retryLoad(): void {
         message="Add a database connection to visualize its schema."
       >
         <template #default>
-          <router-link to="/connections">
-            <Button variant="outline" size="sm" class="mt-3"> Add Connection </Button>
-          </router-link>
+          <p class="mt-2 text-xs text-muted-foreground">
+            Use the connection menu in the top bar to add one.
+          </p>
         </template>
       </EmptyState>
     </div>

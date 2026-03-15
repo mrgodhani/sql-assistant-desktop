@@ -3,22 +3,19 @@ import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory, type Router } from 'vue-router'
 import AppTopBar from '../AppTopBar.vue'
 
-vi.mock('@renderer/components/chat/ChatToolbar.vue', () => ({
-  default: { template: '<div data-testid="chat-toolbar">Chat</div>' }
+vi.mock('../ConnectionPopover.vue', () => ({
+  default: { template: '<div data-testid="connection-popover">Connections</div>' }
 }))
-vi.mock('@renderer/components/layout/ConnectionsToolbar.vue', () => ({
-  default: { template: '<div data-testid="connections-toolbar">Connections</div>' }
-}))
-vi.mock('@renderer/components/layout/SettingsToolbar.vue', () => ({
-  default: { template: '<div data-testid="settings-toolbar">Settings</div>' }
+vi.mock('../SettingsSheet.vue', () => ({
+  default: { template: '<div data-testid="settings-sheet">Settings</div>', props: ['open'] }
 }))
 
 const Placeholder = { template: '<div>Placeholder</div>' }
 const routes = [
   { path: '/', redirect: '/chat' },
   { path: '/chat', component: Placeholder },
-  { path: '/connections', component: Placeholder },
-  { path: '/settings', component: Placeholder }
+  { path: '/schema', component: Placeholder },
+  { path: '/schema-designer', component: Placeholder }
 ]
 
 function createTestRouter(): Router {

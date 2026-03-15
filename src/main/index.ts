@@ -1,7 +1,7 @@
 import log from 'electron-log/main'
 log.initialize()
 
-import { app, shell, BrowserWindow, dialog, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, dialog, nativeTheme, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -50,6 +50,24 @@ function createWindow(): void {
     mainWindow.show()
   })
 
+  mainWindow.webContents.on('before-input-event', (_event, input) => {
+    const isZoomKey =
+      input.key === '+' || input.key === '-' || input.key === '=' || input.key === '0'
+    if ((input.control || input.meta) && isZoomKey) {
+      _event.preventDefault()
+      mainWindow.webContents.setZoomLevel(0)
+    }
+  })
+
+  mainWindow.webContents.setZoomLevel(0)
+  mainWindow.webContents.setZoomFactor(1)
+  mainWindow.webContents.setVisualZoomLevelLimits(1, 1)
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.setZoomLevel(0)
+    mainWindow.webContents.setVisualZoomLevelLimits(1, 1)
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -69,6 +87,61 @@ if (enforceSingleInstance()) {
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
+
+    const isMac = process.platform === 'darwin'
+    const template: Electron.MenuItemConstructorOptions[] = [
+      ...(isMac
+        ? [
+            {
+              label: app.name,
+              submenu: [
+                { role: 'about' as const },
+                { type: 'separator' as const },
+                { role: 'services' as const },
+                { type: 'separator' as const },
+                { role: 'hide' as const },
+                { role: 'hideOthers' as const },
+                { role: 'unhide' as const },
+                { type: 'separator' as const },
+                { role: 'quit' as const }
+              ]
+            }
+          ]
+        : []),
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
+          ...(isMac ? [{ role: 'delete' as const }] : [])
+        ]
+      },
+      {
+        label: 'View',
+        submenu: [
+          { role: 'reload' },
+          { role: 'forceReload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' }
+        ]
+      },
+      {
+        label: 'Window',
+        submenu: [
+          { role: 'minimize' },
+          ...(isMac
+            ? [{ type: 'separator' as const }, { role: 'front' as const }]
+            : [{ role: 'close' as const }])
+        ]
+      }
+    ]
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 
     let dbInitialized = false
     try {
