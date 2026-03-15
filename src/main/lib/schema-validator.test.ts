@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import type { SchemaDesign } from '../../shared/types'
 import { validateSchemaDesign } from './schema-validator'
 

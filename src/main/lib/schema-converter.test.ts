@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import type { DatabaseSchema, TableInfo } from '../../shared/types'
 import { databaseSchemaToDesign } from './schema-converter'
 
@@ -140,7 +141,7 @@ describe('databaseSchemaToDesign', () => {
 
     const valCol = result.tables[0].columns.find((c) => c.name === 'value')!
     expect(valCol.default).toBe("''")
-    expect((valCol as Record<string, unknown>)['defaultValue']).toBeUndefined()
+    expect((valCol as unknown as Record<string, unknown>)['defaultValue']).toBeUndefined()
   })
 
   it('returns empty tables for an empty schema', () => {

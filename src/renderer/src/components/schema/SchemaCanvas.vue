@@ -34,6 +34,8 @@ const styledEdges = computed(() => {
   const visibleEdges = store.visibleEdges
   const mutedColor = `hsl(${resolveColor('--muted-foreground')})`
   const primaryColor = `hsl(${resolveColor('--primary')})`
+  const fgColor = `hsl(${resolveColor('--foreground')})`
+  const bgColor = `hsl(${resolveColor('--background')})`
 
   return visibleEdges.map((edge) => {
     const isHighlighted = selected
@@ -46,6 +48,16 @@ const styledEdges = computed(() => {
         stroke: isHighlighted ? primaryColor : mutedColor,
         strokeWidth: isHighlighted ? 2.5 : 1.5,
         opacity: selected ? (isHighlighted ? 1 : 0.25) : 0.6
+      },
+      labelStyle: {
+        fontSize: '10px',
+        fontWeight: 600,
+        fill: isHighlighted ? primaryColor : fgColor,
+        opacity: selected ? (isHighlighted ? 1 : 0.25) : 0.8
+      },
+      labelBgStyle: {
+        fill: bgColor,
+        fillOpacity: 0.85
       }
     }
   })

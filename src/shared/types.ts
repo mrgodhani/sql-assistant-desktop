@@ -285,3 +285,118 @@ export const DEFAULT_PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
     enabled: true
   }
 }
+
+// ─── Schema Designer Types ──────────────────────────────────────────────────
+
+export interface SchemaDesign {
+  version: 1
+  dialect: DatabaseType
+  tables: TableDesign[]
+  enums?: EnumDesign[]
+}
+
+export interface TableDesign {
+  name: string
+  schema?: string
+  columns: ColumnDesign[]
+  primaryKey: string[]
+  indexes?: IndexDesign[]
+  comment?: string
+}
+
+export interface ColumnDesign {
+  name: string
+  type: string
+  nullable: boolean
+  default?: string
+  unique?: boolean
+  foreignKey?: ForeignKeyDesign
+  comment?: string
+}
+
+export interface ForeignKeyDesign {
+  table: string
+  column: string
+  onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
+  onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION'
+}
+
+export interface IndexDesign {
+  name: string
+  columns: string[]
+  unique: boolean
+}
+
+export interface EnumDesign {
+  name: string
+  values: string[]
+}
+
+export interface SchemaDesignChangelog {
+  schema: SchemaDesign
+  changelog: string[]
+}
+
+export interface SchemaValidationResult {
+  valid: boolean
+  errors: string[]
+  warnings: string[]
+}
+
+export interface DDLResult {
+  statements: string[]
+  dialect: DatabaseType
+}
+
+export interface DDLExecutionResult {
+  success: boolean
+  results: Array<{ statement: string; success: boolean; error?: string }>
+}
+
+export type SchemaAgentTool =
+  | 'introspect_database'
+  | 'propose_schema'
+  | 'generate_ddl'
+  | 'execute_ddl'
+  | 'validate_schema'
+
+export interface SchemaAgentMessage {
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  content: string
+  toolCalls?: SchemaAgentToolCall[]
+  toolCallId?: string
+}
+
+export interface SchemaAgentToolCall {
+  id: string
+  name: SchemaAgentTool
+  arguments: Record<string, unknown>
+}
+
+export interface SchemaAgentStreamChunk {
+  sessionId: string
+  type: 'text' | 'tool_call' | 'tool_result' | 'schema_updated' | 'ddl_approval' | 'done' | 'error'
+  content?: string
+  toolCall?: SchemaAgentToolCall
+  toolResult?: unknown
+  schema?: SchemaDesign
+  changelog?: string[]
+  ddlStatements?: string[]
+  error?: string
+}
+
+export interface SchemaAgentChatParams {
+  sessionId: string
+  message: string
+  connectionId?: string
+  provider: AIProvider
+  model: string
+}
+
+export interface SchemaDesignSession {
+  id: string
+  dialect: DatabaseType
+  connectionId?: string
+  schema: SchemaDesign | null
+  history: SchemaDesign[]
+}

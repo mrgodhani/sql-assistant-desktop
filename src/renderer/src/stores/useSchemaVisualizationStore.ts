@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import dagre from 'dagre'
 import { toPng, toSvg } from 'html-to-image'
+export type RelationshipType = '1:1' | '1:N' | 'N:M'
+
 export interface SchemaEdge {
   id: string
   source: string
@@ -11,6 +13,12 @@ export interface SchemaEdge {
   type?: string
   animated?: boolean
   style?: Record<string, unknown>
+  label?: string
+  labelStyle?: Record<string, unknown>
+  labelBgStyle?: Record<string, unknown>
+  labelBgPadding?: [number, number]
+  labelBgBorderRadius?: number
+  data?: { relationshipType: RelationshipType; isComposite: boolean }
   [key: string]: unknown
 }
 import type { DatabaseSchema, TableInfo, ForeignKeyInfo } from '../../../shared/types'
@@ -52,6 +60,51 @@ function buildFkTargetId(fk: ForeignKeyInfo): string {
   return fk.referencedSchema
     ? `${fk.referencedSchema}.${fk.referencedTable}`
     : fk.referencedTable
+}
+
+function hasFkUniqueIndex(table: TableInfo, fkColumns: string[]): boolean {
+  const fkSet = new Set(fkColumns)
+  if (fkSet.size === 1) {
+    const col = fkColumns[0]
+    if (table.primaryKey.length === 1 && table.primaryKey[0] === col) return true
+  }
+  const pkSet = new Set(table.primaryKey)
+  if (fkSet.size === pkSet.size && fkColumns.every((c) => pkSet.has(c))) return true
+  return table.indexes.some(
+    (idx) =>
+      idx.isUnique &&
+      idx.columns.length === fkColumns.length &&
+      fkColumns.every((c) => idx.columns.includes(c))
+  )
+}
+
+function isJunctionTable(table: TableInfo): boolean {
+  if (table.foreignKeys.length < 2) return false
+  const allFkColumns = new Set(table.foreignKeys.flatMap((fk) => fk.columns))
+  return table.primaryKey.length >= 2 && table.primaryKey.every((pk) => allFkColumns.has(pk))
+}
+
+function determineCardinality(
+  sourceTable: TableInfo,
+  fk: ForeignKeyInfo
+): { type: RelationshipType; isComposite: boolean } {
+  const isComposite = fk.columns.length > 1
+  const isJunction = isJunctionTable(sourceTable)
+
+  if (isJunction) {
+    return { type: 'N:M', isComposite }
+  }
+
+  if (hasFkUniqueIndex(sourceTable, fk.columns)) {
+    return { type: '1:1', isComposite }
+  }
+
+  return { type: '1:N', isComposite }
+}
+
+function formatEdgeLabel(type: RelationshipType, isComposite: boolean): string {
+  const label = type === '1:1' ? '1 : 1' : type === '1:N' ? '1 : N' : 'N : M'
+  return isComposite ? `${label} ⚷` : label
 }
 
 export const useSchemaVisualizationStore = defineStore('schemaVisualization', () => {
@@ -162,6 +215,8 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
         const targetId = buildFkTargetId(fk)
         if (!nodeIdSet.has(targetId)) continue
 
+        const cardinality = determineCardinality(table, fk)
+
         newEdges.push({
           id: `${sourceId}.${fk.columns.join(',')}->${targetId}.${fk.referencedColumns.join(',')}`,
           source: sourceId,
@@ -169,7 +224,20 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
           sourceHandle: `source-${fk.columns[0]}`,
           targetHandle: `target-${fk.referencedColumns[0]}`,
           type: 'smoothstep',
-          animated: false
+          animated: false,
+          label: formatEdgeLabel(cardinality.type, cardinality.isComposite),
+          labelStyle: {
+            fontSize: '10px',
+            fontWeight: 600,
+            fill: 'hsl(var(--foreground))'
+          },
+          labelBgStyle: {
+            fill: 'hsl(var(--background))',
+            fillOpacity: 0.85
+          },
+          labelBgPadding: [4, 3] as [number, number],
+          labelBgBorderRadius: 4,
+          data: { relationshipType: cardinality.type, isComposite: cardinality.isComposite }
         })
       }
     }
