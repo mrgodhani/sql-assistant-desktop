@@ -114,7 +114,8 @@ function resolveTargetNodeId(
 
 const visibleTables = computed((): TableDesign[] => {
   if (!props.schema) return []
-  if (!props.filteredTables || props.filteredTables.length === 0) return props.schema.tables
+  if (props.filteredTables === null) return props.schema.tables
+  if (props.filteredTables.length === 0) return []
 
   const filterSet = new Set(props.filteredTables.map((n) => n.toLowerCase()))
   return props.schema.tables.filter(

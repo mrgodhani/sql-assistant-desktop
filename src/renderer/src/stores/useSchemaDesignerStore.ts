@@ -33,7 +33,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
 
   const hasSession = computed(() => session.value !== null)
   const hasSchema = computed(() => schema.value !== null)
-  const hasFilter = computed(() => filteredTables.value !== null && filteredTables.value.length > 0)
+  const hasFilter = computed(() => filteredTables.value !== null)
   const canUndo = computed(() => session.value !== null && (session.value.history?.length ?? 0) > 1)
 
   let cleanupListener: (() => void) | null = null
