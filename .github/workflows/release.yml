@@ -5,6 +5,9 @@ on:
     tags:
       - v*.*.*
 
+permissions:
+  contents: write  # Required for electron-builder to create releases and upload assets
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}

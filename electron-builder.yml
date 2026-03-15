@@ -41,5 +41,5 @@ dmg:
 npmRebuild: true
 publish:
   provider: github
-  owner: meetgodhani
-  repo: sql-assist-desktop
+  owner: mrgodhani
+  repo: sql-assistant-desktop
