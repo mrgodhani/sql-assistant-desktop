@@ -51,7 +51,8 @@ watch(
   }
 )
 
-async function onConnectionChange(connId: string): Promise<void> {
+async function onConnectionChange(connId: string | number | bigint | Record<string, unknown> | null): Promise<void> {
+  if (typeof connId !== 'string') return
   selectedConnectionId.value = connId
   const status = connectionStore.getStatus(connId)
   if (status.status !== 'connected') {

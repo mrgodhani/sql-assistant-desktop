@@ -1,7 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import dagre from 'dagre'
-import type { Node, Edge } from '@vue-flow/core'
+export interface SchemaEdge {
+  id: string
+  source: string
+  target: string
+  sourceHandle?: string
+  targetHandle?: string
+  type?: string
+  animated?: boolean
+  style?: Record<string, unknown>
+  [key: string]: unknown
+}
 import type { DatabaseSchema, TableInfo, ForeignKeyInfo } from '../../../shared/types'
 
 export type SchemaFilter = 'all' | 'tables' | 'views' | 'connected' | 'with-relationships'
@@ -24,7 +34,14 @@ export interface TableNodeData {
   isExpanded: boolean
 }
 
-export type SchemaNode = Node & { data: TableNodeData }
+export interface SchemaNode {
+  id: string
+  type: string
+  position: { x: number; y: number }
+  data: TableNodeData
+  parentNode?: string
+  [key: string]: unknown
+}
 
 function buildNodeId(table: TableInfo): string {
   return table.schema ? `${table.schema}.${table.name}` : table.name
@@ -42,7 +59,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   const loading = ref(false)
   const error = ref<string | null>(null)
   const nodes = ref<SchemaNode[]>([])
-  const edges = ref<Edge[]>([])
+  const edges = ref<SchemaEdge[]>([])
   const selectedNodeId = ref<string | null>(null)
   const expandedGroups = ref(new Set<string>())
   const expandedColumns = ref(new Set<string>())
@@ -98,7 +115,8 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     const query = searchQuery.value.toLowerCase()
     const connected = selected ? getConnectedNodeIdSet(selected) : new Set<string>()
 
-    nodes.value = nodes.value.map((node): SchemaNode => {
+    const updated: SchemaNode[] = []
+    for (const node of nodes.value) {
       const isSelected = node.id === selected
       const isConnected = selected ? connected.has(node.id) : false
       const isExpanded = expandedColumns.value.has(node.id)
@@ -114,18 +132,19 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
         isDimmed = !matchesSearch
       }
 
-      return {
+      updated.push({
         ...node,
         data: { ...node.data, isSelected, isConnected, isDimmed, isExpanded }
-      }
-    })
+      } as SchemaNode)
+    }
+    nodes.value = updated
   }
 
   function buildGraph(): void {
     const allTables = getAllTables()
     const nodeIdSet = new Set(allTables.map(buildNodeId))
 
-    nodes.value = allTables.map((table): SchemaNode => ({
+    nodes.value = allTables.map((table) => ({
       id: buildNodeId(table),
       type: 'table',
       position: { x: 0, y: 0 },
@@ -136,9 +155,9 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
         isDimmed: false,
         isExpanded: expandedColumns.value.has(buildNodeId(table))
       }
-    }))
+    })) as SchemaNode[]
 
-    const newEdges: Edge[] = []
+    const newEdges: SchemaEdge[] = []
     for (const table of allTables) {
       const sourceId = buildNodeId(table)
       for (const fk of table.foreignKeys) {
@@ -185,7 +204,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
 
     dagre.layout(g)
 
-    nodes.value = nodes.value.map((node): SchemaNode => {
+    nodes.value = nodes.value.map((node) => {
       const pos = g.node(node.id)
       return {
         ...node,
@@ -193,7 +212,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
           x: pos.x - NODE_WIDTH / 2,
           y: pos.y - (pos.height as number) / 2
         }
-      }
+      } as SchemaNode
     })
   }
 
@@ -293,7 +312,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     return filtered
   })
 
-  const visibleEdges = computed((): Edge[] => {
+  const visibleEdges = computed(() => {
     const visibleIds = new Set(visibleNodes.value.map((n) => n.id))
     return edges.value.filter(
       (e) => visibleIds.has(e.source) && visibleIds.has(e.target)

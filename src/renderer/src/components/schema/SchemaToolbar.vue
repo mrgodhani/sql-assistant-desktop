@@ -41,12 +41,16 @@ function onSearchKeydown(e: KeyboardEvent): void {
   }
 }
 
-function onFilterChange(value: string): void {
-  store.setFilter(value as SchemaFilter)
+function onFilterChange(value: string | number | bigint | Record<string, unknown> | null): void {
+  if (typeof value === 'string') {
+    store.setFilter(value as SchemaFilter)
+  }
 }
 
-function onLayoutChange(value: string): void {
-  store.applyLayout(value as LayoutDirection)
+function onLayoutChange(value: string | number | bigint | Record<string, unknown> | null): void {
+  if (typeof value === 'string') {
+    store.applyLayout(value as LayoutDirection)
+  }
 }
 </script>
 
