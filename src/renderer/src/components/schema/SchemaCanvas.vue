@@ -23,19 +23,29 @@ const defaultEdgeOptions = {
   animated: false
 }
 
+function resolveColor(cssVar: string): string {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .trim()
+}
+
 const styledEdges = computed(() => {
   const selected = store.selectedNodeId
   const visibleEdges = store.visibleEdges
-  if (!selected) return visibleEdges
+  const mutedColor = `hsl(${resolveColor('--muted-foreground')})`
+  const primaryColor = `hsl(${resolveColor('--primary')})`
 
   return visibleEdges.map((edge) => {
-    const isHighlighted = edge.source === selected || edge.target === selected
+    const isHighlighted = selected
+      ? edge.source === selected || edge.target === selected
+      : false
+
     return {
       ...edge,
       style: {
-        stroke: isHighlighted ? 'hsl(var(--primary))' : undefined,
-        strokeWidth: isHighlighted ? 2 : 1,
-        opacity: isHighlighted ? 1 : 0.3
+        stroke: isHighlighted ? primaryColor : mutedColor,
+        strokeWidth: isHighlighted ? 2.5 : 1.5,
+        opacity: selected ? (isHighlighted ? 1 : 0.25) : 0.6
       }
     }
   })

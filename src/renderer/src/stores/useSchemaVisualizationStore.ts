@@ -269,10 +269,24 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   }
 
   async function exportImage(format: 'png' | 'svg'): Promise<void> {
-    const el = document.querySelector('.vue-flow') as HTMLElement
+    const el = document.querySelector('.vue-flow__viewport') as HTMLElement
     if (!el) return
 
-    const dataUrl = format === 'png' ? await toPng(el) : await toSvg(el)
+    const bgColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--background')
+      .trim()
+
+    const options = {
+      backgroundColor: bgColor ? `hsl(${bgColor})` : '#09090b',
+      pixelRatio: 2,
+      style: {
+        transform: ''
+      }
+    }
+
+    const dataUrl = format === 'png'
+      ? await toPng(el, options)
+      : await toSvg(el, options)
 
     const link = document.createElement('a')
     link.download = `schema.${format}`
