@@ -1,33 +1,49 @@
+<div align="center">
+
 # SQL Assist
+
+**Turn natural language into SQL.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/meetgodhani/sql-assist-desktop/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/meetgodhani/sql-assist-desktop)](https://github.com/meetgodhani/sql-assist-desktop/releases/latest)
 
-**Turn natural language into SQL.** Connect to your database, ask questions in plain English, and get accurate queries powered by AI. Execute, visualize, and export—all from a native desktop app.
+[**⬇ Download for macOS**](https://github.com/meetgodhani/sql-assist-desktop/releases/latest) · [Landing Page](https://meetgodhani.github.io/sql-assist-desktop/) · [Contributing](CONTRIBUTING.md)
+
+---
 
 ![SQL Assist Desktop](screenshot.png)
 
+Connect to your database, ask questions in plain English, and get accurate queries powered by AI. Execute, visualize, and export — all from a native desktop app.
+
+</div>
+
+---
+
 ## Why SQL Assist?
 
-- **No SQL expertise required** — Describe what you need, get working queries
-- **Your schema, your data** — AI sees your tables and relationships for accurate results
-- **Works offline** — Use local Ollama or connect to OpenAI, Anthropic, Google, OpenRouter
-- **One app for everything** — Query, chart, and export without leaving your workflow
+| | |
+|---|---|
+| 🗣 **No SQL expertise required** | Describe what you need, get working queries |
+| 🔒 **Your schema, your data** | AI sees your tables and relationships for accurate results |
+| 🌐 **Works offline** | Use local Ollama or connect to cloud AI providers |
+| ⚡ **One app for everything** | Query, chart, and export without leaving your workflow |
 
 ## Features
 
-| Feature            | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server                  |
-| **AI providers**   | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
-| **Schema-aware**   | AI receives your schema for context-accurate queries   |
-| **Schema search**  | Fuzzy search across tables and columns (`Cmd+K`)        |
-| **EXPLAIN visualizer** | Run EXPLAIN on queries, view plans as Mermaid diagrams |
-| **AI query optimization** | Get index and rewrite suggestions from AI              |
-| **Results**        | Sortable, filterable tables with virtual scrolling     |
-| **Charts**         | Bar, line, pie, scatter, area—from any result set      |
-| **Export**         | Excel, CSV, and Report (headers, footers, logo, chart) |
-| **Conversations**  | Chat history saved locally                             |
+| Feature | Description |
+|---|---|
+| 🗄️ **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server |
+| 🤖 **AI providers** | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
+| 🧠 **Schema-aware** | AI receives your schema for context-accurate queries |
+| 🔍 **Schema search** | Fuzzy search across tables and columns (`Cmd+K`) |
+| 📋 **EXPLAIN visualizer** | Run EXPLAIN on queries, view plans as Mermaid diagrams |
+| ⚡ **Query optimization** | Get index and rewrite suggestions from AI |
+| 📊 **Results** | Sortable, filterable tables with virtual scrolling |
+| 📈 **Charts** | Bar, line, pie, scatter, area — from any result set |
+| 📤 **Export** | Excel, CSV, and branded Reports (headers, footers, logo, chart) |
+| 💬 **Conversations** | Chat history saved locally |
 
 ## Quick Start
 
@@ -38,17 +54,15 @@ npm install
 npm run dev
 ```
 
-## Prerequisites
+**Prerequisites:** Node.js 18+
 
-- **Node.js** 18 or later
-- **npm** or **pnpm**
+## Supported Databases & AI Providers
 
-## Development
+**Databases:**
+`PostgreSQL` · `MySQL` · `SQLite` · `SQL Server`
 
-```bash
-npm install
-npm run dev
-```
+**AI Providers:**
+`OpenAI` · `Anthropic` · `Google` · `OpenRouter` · `Ollama (local)`
 
 ## Building
 
@@ -56,31 +70,7 @@ npm run dev
 npm run build
 ```
 
-### macOS Build (Universal + Notarized)
-
-Produces a universal DMG (Intel + Apple Silicon) and notarizes it for distribution.
-
-**Prerequisites:**
-
-- Xcode Command Line Tools: `xcode-select --install`
-- Apple Developer account
-- App-specific password: [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords
-
-**Setup:**
-
-1. Copy `.env.example` to `.env`
-2. Set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Team ID from [developer.apple.com](https://developer.apple.com/account))
-3. Run `npm run build:mac`
-
-Output: `dist/sql-assist-desktop-1.0.0.dmg`
-
-On first launch from outside Applications (e.g., Downloads), the app will prompt to move to Applications.
-
-## Testing
-
-```bash
-npm run test
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for macOS code signing, notarization setup, and release workflow details.
 
 ## Project Structure
 
