@@ -28,6 +28,8 @@ jobs:
           mkdir -p deploy/assets
           cp -r landing/. deploy/
           cp screenshot.png deploy/assets/screenshot.png
+          cp build/icon.svg deploy/assets/icon.svg
+          cp build/icon.png deploy/assets/icon.png
 
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
