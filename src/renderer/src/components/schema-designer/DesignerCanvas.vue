@@ -6,6 +6,7 @@ import { Controls } from '@vue-flow/controls'
 import type { NodeMouseEvent } from '@vue-flow/core'
 import dagre from 'dagre'
 import TableNode from '@renderer/components/schema/TableNode.vue'
+import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import type { SchemaDesign, TableDesign, ColumnDesign } from '../../../../shared/types'
 import type { TableInfo, ColumnInfo, ForeignKeyInfo, IndexInfo } from '../../../../shared/types'
 import type {
@@ -37,6 +38,7 @@ const defaultEdgeOptions = {
 const selectedNodeId = ref<string | null>(null)
 const expandedNodes = ref(new Set<string>())
 const { fitView, setNodes, setEdges } = useVueFlow()
+const schemaDesignerStore = useSchemaDesignerStore()
 
 function toggleColumns(nodeId: string): void {
   const next = new Set(expandedNodes.value)
@@ -223,6 +225,7 @@ const styledEdges = computed(() => {
 const layoutNodes = computed(() => {
   const nodeList = nodes.value
   const edgeList = edges.value
+  const stored = schemaDesignerStore.nodePositions
   if (nodeList.length === 0) return []
 
   const g = new dagre.graphlib.Graph()
@@ -241,13 +244,15 @@ const layoutNodes = computed(() => {
   dagre.layout(g)
 
   return nodeList.map((node) => {
-    const pos = g.node(node.id)
+    const dagrePos = g.node(node.id)
+    const dagrePosition = {
+      x: dagrePos.x - NODE_WIDTH / 2,
+      y: dagrePos.y - (dagrePos.height as number) / 2
+    }
+    const position = stored[node.id] ?? dagrePosition
     return {
       ...node,
-      position: {
-        x: pos.x - NODE_WIDTH / 2,
-        y: pos.y - (pos.height as number) / 2
-      }
+      position
     } as SchemaNode
   })
 })
@@ -256,6 +261,12 @@ watch(
   layoutNodes,
   (newNodes) => {
     setNodes(newNodes)
+    const stored = schemaDesignerStore.nodePositions
+    for (const n of newNodes) {
+      if (!(n.id in stored)) {
+        schemaDesignerStore.setNodePosition(n.id, n.position)
+      }
+    }
     if (newNodes.length > 0) {
       setTimeout(() => fitView({ padding: 0.2 }), 50)
     }
