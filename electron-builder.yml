@@ -37,7 +37,7 @@ mas:
       arch:
         - universal
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}.${ext}
 npmRebuild: true
 publish:
   provider: generic
