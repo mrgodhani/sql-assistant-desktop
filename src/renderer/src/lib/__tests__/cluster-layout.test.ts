@@ -52,7 +52,7 @@ describe('inferClusterName', () => {
 
   it('falls back to Domain label for unrelated names', () => {
     const result = inferClusterName(['foo', 'bar', 'baz'])
-    expect(result).toMatch(/^Domain \d+$|^Foo$|^Bar$|^Baz$/)
+    expect(result).toBe('Domain')
   })
 
   it('returns name of single-table component', () => {

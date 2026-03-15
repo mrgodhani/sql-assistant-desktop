@@ -3,7 +3,6 @@ import type { SchemaNode, SchemaEdge } from '@renderer/stores/useSchemaVisualiza
 
 const GROUP_PADDING = 48
 const CLUSTER_GAP = 120
-let domainCounter = 0
 
 export interface ClusterLayoutResult {
   tableNodes: SchemaNode[]
@@ -93,8 +92,7 @@ export function inferClusterName(tableIds: string[], fallbackIndex?: number): st
   }
 
   // Rule 3: fallback to "Domain N"
-  domainCounter++
-  return `Domain ${fallbackIndex ?? domainCounter}`
+  return fallbackIndex !== undefined ? `Domain ${fallbackIndex}` : 'Domain'
 }
 
 // --- Intra-cluster dagre layout ---
@@ -140,8 +138,6 @@ export function buildClusteredLayout(
   nodeWidth: number,
   getNodeHeight: (node: SchemaNode) => number
 ): ClusterLayoutResult {
-  domainCounter = 0
-
   const nodeIds = nodes.map((n) => n.id)
   const components = findConnectedComponents(nodeIds, edges)
 
@@ -215,8 +211,9 @@ export function buildClusteredLayout(
     for (const id of cluster.ids) {
       const relPos = cluster.positions.get(id)!
       const node = nodes.find((n) => n.id === id)!
+      const { parentNode: _parentNode, ...rest } = node as SchemaNode & { parentNode?: string }
       tableNodes.push({
-        ...node,
+        ...rest,
         position: {
           x: cursorX + GROUP_PADDING + relPos.x,
           y: cursorY + GROUP_PADDING + 32 + relPos.y
