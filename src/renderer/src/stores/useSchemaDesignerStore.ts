@@ -232,6 +232,26 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     selectedNodeId.value = nodeId
   }
 
+  function getConnectedTableIds(nodeId: string): string[] {
+    if (!schema.value) return []
+    const tables = schema.value.tables
+    const tableIdSet = new Set(tables.map((t) => (t.schema ? `${t.schema}.${t.name}` : t.name)))
+    const nameToId = new Map(tables.map((t) => [t.name, t.schema ? `${t.schema}.${t.name}` : t.name]))
+    const connected = new Set<string>([nodeId])
+    for (const t of tables) {
+      const srcId = t.schema ? `${t.schema}.${t.name}` : t.name
+      for (const col of t.columns ?? []) {
+        if (!col.foreignKey) continue
+        const targetName = col.foreignKey.table
+        const targetId = tableIdSet.has(targetName) ? targetName : (nameToId.get(targetName) ?? null)
+        if (!targetId) continue
+        if (srcId === nodeId) connected.add(targetId)
+        if (targetId === nodeId) connected.add(srcId)
+      }
+    }
+    return Array.from(connected)
+  }
+
   return {
     session,
     messages,
@@ -254,6 +274,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     setNodePosition,
     clearNodePositions,
     setSelectedNode,
+    getConnectedTableIds,
     undo,
     cancel,
     endSession
