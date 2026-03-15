@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, watch, markRaw } from 'vue'
+import { computed, watch, markRaw, onMounted, onUnmounted } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import type { NodeMouseEvent } from '@vue-flow/core'
 import { useSchemaVisualizationStore } from '@renderer/stores/useSchemaVisualizationStore'
 import TableNode from './TableNode.vue'
+import GroupNode from './GroupNode.vue'
 import SchemaControls from './SchemaControls.vue'
 
 import '@vue-flow/core/dist/style.css'
@@ -11,7 +12,10 @@ import '@vue-flow/core/dist/theme-default.css'
 
 const store = useSchemaVisualizationStore()
 
-const nodeTypes = { table: markRaw(TableNode) } as Record<string, unknown>
+const nodeTypes = {
+  table: markRaw(TableNode),
+  group: markRaw(GroupNode)
+} as Record<string, unknown>
 
 const defaultEdgeOptions = {
   type: 'smoothstep' as const,
@@ -53,6 +57,31 @@ watch(
     }
   }
 )
+
+function onKeydown(e: KeyboardEvent): void {
+  const meta = e.metaKey || e.ctrlKey
+
+  if (e.key === '/' || (meta && e.key === 'f')) {
+    e.preventDefault()
+    const searchInput = document.querySelector(
+      '[data-testid="schema-search-input"]'
+    ) as HTMLInputElement
+    searchInput?.focus()
+  }
+
+  if (e.key === 'Escape') {
+    store.selectNode(null)
+    store.setSearch('')
+  }
+
+  if (meta && e.key === '0') {
+    e.preventDefault()
+    fitView({ padding: 0.2 })
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', onKeydown))
+onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>

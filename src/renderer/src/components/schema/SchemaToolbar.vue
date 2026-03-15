@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { Search, X, RotateCcw } from 'lucide-vue-next'
+import { Search, X, RotateCcw, Download } from 'lucide-vue-next'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -11,6 +11,12 @@ import {
   SelectTrigger,
   SelectValue
 } from '@renderer/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@renderer/components/ui/dropdown-menu'
 import {
   useSchemaVisualizationStore,
   type SchemaFilter,
@@ -63,6 +69,7 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
         v-model="localSearch"
         placeholder="Search tables..."
         class="pl-8 pr-8 h-8 text-sm"
+        data-testid="schema-search-input"
         @keydown="onSearchKeydown"
       />
       <button
@@ -106,6 +113,24 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
       <RotateCcw class="h-3.5 w-3.5" />
       Re-layout
     </Button>
+
+    <!-- Export -->
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <Button variant="outline" size="sm">
+          <Download class="h-3.5 w-3.5" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuItem @click="store.exportImage('png')">
+          Export PNG
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="store.exportImage('svg')">
+          Export SVG
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
 
     <!-- Table count -->
     <span class="text-xs text-muted-foreground ml-auto">

@@ -270,6 +270,19 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     expandedGroups.value = new Set(expandedGroups.value)
   }
 
+  async function exportImage(format: 'png' | 'svg'): Promise<void> {
+    const el = document.querySelector('.vue-flow') as HTMLElement
+    if (!el) return
+
+    const { toPng, toSvg } = await import('html-to-image')
+    const dataUrl = format === 'png' ? await toPng(el) : await toSvg(el)
+
+    const link = document.createElement('a')
+    link.download = `schema.${format}`
+    link.href = dataUrl
+    link.click()
+  }
+
   const connectedNodeIds = computed((): Set<string> => {
     if (!selectedNodeId.value) return new Set()
     return getConnectedNodeIdSet(selectedNodeId.value)
@@ -372,6 +385,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     setFilter,
     toggleColumns,
     toggleGroup,
+    exportImage,
     getVisibleColumnCount
   }
 })
