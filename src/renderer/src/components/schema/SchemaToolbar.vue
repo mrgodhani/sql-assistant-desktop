@@ -35,6 +35,15 @@ watch(localSearch, (val) => {
   debouncedSetSearch(val)
 })
 
+watch(
+  () => store.searchQuery,
+  (val) => {
+    if (val !== localSearch.value) {
+      localSearch.value = val
+    }
+  }
+)
+
 function clearSearch(): void {
   localSearch.value = ''
   store.setSearch('')

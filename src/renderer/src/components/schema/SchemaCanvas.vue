@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, markRaw, onMounted, onUnmounted } from 'vue'
-import { VueFlow, useVueFlow } from '@vue-flow/core'
-import type { NodeMouseEvent } from '@vue-flow/core'
+import { computed, ref, markRaw, onMounted, onUnmounted } from 'vue'
+import { VueFlow } from '@vue-flow/core'
+import type { NodeMouseEvent, NodeDragEvent } from '@vue-flow/core'
 import { useSchemaVisualizationStore } from '@renderer/stores/useSchemaVisualizationStore'
 import TableNode from './TableNode.vue'
 import GroupNode from './GroupNode.vue'
@@ -11,6 +11,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
 const store = useSchemaVisualizationStore()
+const controlsRef = ref<InstanceType<typeof SchemaControls> | null>(null)
 
 const nodeTypes = {
   table: markRaw(TableNode),
@@ -22,13 +23,12 @@ const defaultEdgeOptions = {
   animated: false
 }
 
-const { fitView } = useVueFlow()
-
 const styledEdges = computed(() => {
   const selected = store.selectedNodeId
-  if (!selected) return store.edges
+  const visibleEdges = store.visibleEdges
+  if (!selected) return visibleEdges
 
-  return store.edges.map((edge) => {
+  return visibleEdges.map((edge) => {
     const isHighlighted = edge.source === selected || edge.target === selected
     return {
       ...edge,
@@ -49,14 +49,12 @@ function onPaneClick(): void {
   store.selectNode(null)
 }
 
-watch(
-  () => store.nodes.length,
-  (len) => {
-    if (len > 0) {
-      setTimeout(() => fitView({ padding: 0.2 }), 50)
-    }
+function onNodeDragStop(event: NodeDragEvent): void {
+  const node = store.nodes.find((n) => n.id === event.node.id)
+  if (node) {
+    node.position = event.node.position
   }
-)
+}
 
 function onKeydown(e: KeyboardEvent): void {
   const meta = e.metaKey || e.ctrlKey
@@ -76,7 +74,7 @@ function onKeydown(e: KeyboardEvent): void {
 
   if (meta && e.key === '0') {
     e.preventDefault()
-    fitView({ padding: 0.2 })
+    controlsRef.value?.fitView({ padding: 0.2 })
   }
 }
 
@@ -86,7 +84,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
   <VueFlow
-    v-model:nodes="store.nodes"
+    :nodes="store.visibleNodes"
     :edges="(styledEdges as any)"
     :node-types="(nodeTypes as any)"
     :default-edge-options="defaultEdgeOptions"
@@ -94,7 +92,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     class="h-full w-full"
     @node-click="onNodeClick"
     @pane-click="onPaneClick"
+    @node-drag-stop="onNodeDragStop"
   >
-    <SchemaControls />
+    <SchemaControls ref="controlsRef" />
   </VueFlow>
 </template>

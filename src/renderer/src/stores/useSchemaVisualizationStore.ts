@@ -121,16 +121,13 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
       const isConnected = selected ? connected.has(node.id) : false
       const isExpanded = expandedColumns.value.has(node.id)
 
-      let isDimmed = false
-      if (selected) {
-        isDimmed = !isSelected && !isConnected
-      }
-      if (query) {
-        const matchesSearch =
-          node.data.table.name.toLowerCase().includes(query) ||
+      const matchesSearch = query
+        ? node.data.table.name.toLowerCase().includes(query) ||
           node.data.table.columns.some((c) => c.name.toLowerCase().includes(query))
-        isDimmed = !matchesSearch
-      }
+        : true
+      const dimmedBySelection = selected ? !isSelected && !isConnected : false
+      const dimmedBySearch = query ? !matchesSearch : false
+      const isDimmed = dimmedBySelection || dimmedBySearch
 
       updated.push({
         ...node,
