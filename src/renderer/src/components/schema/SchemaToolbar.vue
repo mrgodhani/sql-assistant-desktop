@@ -1,0 +1,111 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import { Search, X, RotateCcw } from 'lucide-vue-next'
+import { Input } from '@renderer/components/ui/input'
+import { Button } from '@renderer/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@renderer/components/ui/select'
+import {
+  useSchemaVisualizationStore,
+  type SchemaFilter,
+  type LayoutDirection
+} from '@renderer/stores/useSchemaVisualizationStore'
+
+const store = useSchemaVisualizationStore()
+
+const localSearch = ref(store.searchQuery)
+
+const debouncedSetSearch = useDebounceFn((query: string) => {
+  store.setSearch(query)
+}, 200)
+
+watch(localSearch, (val) => {
+  debouncedSetSearch(val)
+})
+
+function clearSearch(): void {
+  localSearch.value = ''
+  store.setSearch('')
+}
+
+function onSearchKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape') {
+    clearSearch()
+    ;(e.target as HTMLInputElement).blur()
+  }
+}
+
+function onFilterChange(value: string): void {
+  store.setFilter(value as SchemaFilter)
+}
+
+function onLayoutChange(value: string): void {
+  store.applyLayout(value as LayoutDirection)
+}
+</script>
+
+<template>
+  <div class="flex items-center gap-3 px-4 py-2 border-b border-border bg-background">
+    <!-- Search -->
+    <div class="relative w-56">
+      <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      <Input
+        v-model="localSearch"
+        placeholder="Search tables..."
+        class="pl-8 pr-8 h-8 text-sm"
+        @keydown="onSearchKeydown"
+      />
+      <button
+        v-if="localSearch"
+        class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+        @click="clearSearch"
+      >
+        <X class="h-3.5 w-3.5" />
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <Select :model-value="store.filter" @update:model-value="onFilterChange">
+      <SelectTrigger class="w-[170px]" size="sm">
+        <SelectValue placeholder="Filter..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All</SelectItem>
+        <SelectItem value="tables">Tables only</SelectItem>
+        <SelectItem value="views">Views only</SelectItem>
+        <SelectItem value="connected" :disabled="!store.selectedNodeId">
+          Connected to selected
+        </SelectItem>
+        <SelectItem value="with-relationships">With relationships</SelectItem>
+      </SelectContent>
+    </Select>
+
+    <!-- Layout direction -->
+    <Select :model-value="store.layoutDirection" @update:model-value="onLayoutChange">
+      <SelectTrigger class="w-[160px]" size="sm">
+        <SelectValue placeholder="Layout..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="TB">Top to Bottom</SelectItem>
+        <SelectItem value="LR">Left to Right</SelectItem>
+      </SelectContent>
+    </Select>
+
+    <!-- Re-layout -->
+    <Button variant="outline" size="sm" @click="store.applyLayout()">
+      <RotateCcw class="h-3.5 w-3.5" />
+      Re-layout
+    </Button>
+
+    <!-- Table count -->
+    <span class="text-xs text-muted-foreground ml-auto">
+      {{ store.visibleTableCount }} / {{ store.tableCount }} tables
+    </span>
+  </div>
+</template>
