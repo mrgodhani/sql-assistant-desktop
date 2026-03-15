@@ -15,7 +15,7 @@ import { DEFAULT_PROVIDER_CONFIGS } from '../../shared/types'
 
 const STREAM_INACTIVITY_TIMEOUT = 60_000
 
-function getAdapter(provider: AIProvider): ProviderAdapter {
+export function getAdapter(provider: AIProvider): ProviderAdapter {
   switch (provider) {
     case 'openai':
       return openaiAdapter

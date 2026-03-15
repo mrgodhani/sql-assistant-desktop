@@ -1,5 +1,26 @@
 import type { ChatMessage, AIProvider, AIErrorType } from '../../../shared/types'
 
+export interface ToolCallResponse {
+  content: string
+  toolCalls?: Array<{
+    id: string
+    name: string
+    arguments: Record<string, unknown>
+  }>
+}
+
+export interface ChatWithToolsParams {
+  model: string
+  messages: Array<{
+    role: string
+    content: string
+    tool_call_id?: string
+    tool_calls?: unknown[]
+  }>
+  tools: unknown[]
+  stream: boolean
+}
+
 export interface ProviderAdapter {
   chatStream(
     messages: ChatMessage[],
@@ -12,6 +33,14 @@ export interface ProviderAdapter {
   ): Promise<void>
 
   listModels(apiKey: string, baseUrl: string): Promise<string[]>
+
+  chatWithTools?(
+    params: ChatWithToolsParams,
+    apiKey: string,
+    baseUrl: string,
+    onTextChunk: (text: string) => void,
+    signal: AbortSignal
+  ): Promise<ToolCallResponse>
 }
 
 export class AIServiceError extends Error {
