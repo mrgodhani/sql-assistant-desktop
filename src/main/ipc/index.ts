@@ -7,6 +7,7 @@ import { registerConversationIpc } from './conversation.ipc'
 import { registerExportIpc } from './export.ipc'
 import { registerLogsIpc } from './logs.ipc'
 import { registerExplainIpc } from './explain.ipc'
+import { registerSchemaAgentIpc } from './schema-agent.ipc'
 
 export function registerAllIpc(): void {
   registerSettingsIpc()
@@ -18,4 +19,5 @@ export function registerAllIpc(): void {
   registerExportIpc()
   registerLogsIpc()
   registerExplainIpc()
+  registerSchemaAgentIpc()
 }
