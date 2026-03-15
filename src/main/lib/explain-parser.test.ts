@@ -2,7 +2,12 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest'
-import { postgresJsonToMermaid, mysqlJsonToMermaid, sqliteTextToMermaid } from './explain-parser'
+import {
+  postgresJsonToMermaid,
+  mysqlJsonToMermaid,
+  sqliteTextToMermaid,
+  sqlserverTextToMermaid
+} from './explain-parser'
 
 describe('postgresJsonToMermaid', () => {
   it('converts a simple PostgreSQL EXPLAIN JSON plan to Mermaid flowchart', () => {
@@ -158,5 +163,79 @@ describe('sqliteTextToMermaid', () => {
     expect(sqliteTextToMermaid('')).toBe('flowchart TB')
     expect(sqliteTextToMermaid('   \n  \n')).toBe('flowchart TB')
     expect(sqliteTextToMermaid('QUERY PLAN')).toBe('flowchart TB')
+  })
+})
+
+describe('sqlserverTextToMermaid', () => {
+  it('converts a simple single-table scan', () => {
+    const lines = [
+      'StmtText',
+      '----------------------------------------------------------------',
+      '  |--Clustered Index Scan(OBJECT:([dbo].[users].[PK_users]))'
+    ]
+
+    const result = sqlserverTextToMermaid(lines)
+
+    expect(result).toContain('flowchart TB')
+    expect(result).toContain('Clustered Index Scan')
+    expect(result).toContain('dbo].[users')
+  })
+
+  it('converts a nested join plan', () => {
+    const lines = [
+      'StmtText',
+      '----------------------------------------------------------------',
+      '  |--Sort(ORDER BY:([o].[created_at] ASC))',
+      '       |--Nested Loops(Inner Join)',
+      '            |--Index Scan(OBJECT:([dbo].[orders].[IX_orders_user]))',
+      '            |--Clustered Index Seek(OBJECT:([dbo].[users].[PK_users]))'
+    ]
+
+    const result = sqlserverTextToMermaid(lines)
+
+    expect(result).toContain('Sort')
+    expect(result).toContain('Nested Loops')
+    expect(result).toContain('Index Scan')
+    expect(result).toContain('Clustered Index Seek')
+    expect(result).toContain('-->')
+  })
+
+  it('handles plan with SELECT and query rows mixed in', () => {
+    const lines = [
+      'StmtText',
+      '----------------------------------------------------------------',
+      'SELECT * FROM users WHERE id = 1',
+      '  |--Clustered Index Seek(OBJECT:([dbo].[users].[PK_users]), SEEK:([id]=1))',
+      '(1 row affected)'
+    ]
+
+    const result = sqlserverTextToMermaid(lines)
+
+    expect(result).toContain('flowchart TB')
+    expect(result).toContain('Clustered Index Seek')
+    expect(result).not.toContain('SELECT')
+    expect(result).not.toContain('row affected')
+  })
+
+  it('returns empty flowchart for empty input', () => {
+    expect(sqlserverTextToMermaid([])).toBe('flowchart TB')
+    expect(sqlserverTextToMermaid(['StmtText', '---'])).toBe('flowchart TB')
+  })
+
+  it('handles multiple root operators', () => {
+    const lines = [
+      '  |--Stream Aggregate(GROUP BY:([col]))',
+      '       |--Sort(ORDER BY:([col] ASC))',
+      '            |--Table Scan(OBJECT:([dbo].[events]))'
+    ]
+
+    const result = sqlserverTextToMermaid(lines)
+
+    expect(result).toContain('Stream Aggregate')
+    expect(result).toContain('Sort')
+    expect(result).toContain('Table Scan')
+
+    const arrows = result.match(/-->/g)
+    expect(arrows).toHaveLength(2)
   })
 })

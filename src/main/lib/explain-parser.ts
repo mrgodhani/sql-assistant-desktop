@@ -294,3 +294,62 @@ export function sqliteTextToMermaid(text: string): string {
 
   return mermaidLines.join('\n')
 }
+
+/**
+ * Parse SQL Server SHOWPLAN_TEXT lines into a Mermaid flowchart.
+ *
+ * SHOWPLAN_TEXT output structure:
+ *   |--Sort(ORDER BY:([col] ASC))
+ *        |--Nested Loops(Inner Join)
+ *             |--Index Scan(OBJECT:([dbo].[users]))
+ *
+ * Depth is determined by the character position of `|--`.
+ * Lines without `|--` (headers, SQL text, dashes) are skipped.
+ */
+export function sqlserverTextToMermaid(lines: string[]): string {
+  const mermaidLines: string[] = ['flowchart TB']
+  const idCounter = { value: 0 }
+
+  interface StackEntry {
+    nodeId: string
+    depth: number
+  }
+  const stack: StackEntry[] = []
+
+  for (const line of lines) {
+    const pipeIdx = line.indexOf('|--')
+    if (pipeIdx === -1) continue
+
+    const content = line.substring(pipeIdx + 3).trim()
+    if (!content) continue
+
+    const depth = pipeIdx
+
+    const parenIdx = content.indexOf('(')
+    const operator = parenIdx > 0 ? content.substring(0, parenIdx).trim() : content
+    const details = parenIdx > 0 ? content.substring(parenIdx) : ''
+
+    const labelParts = [operator]
+    if (details) {
+      const shortDetails =
+        details.length > 60 ? details.substring(0, 57) + '...' : details
+      labelParts.push(shortDetails)
+    }
+    const label = labelParts.join(' ')
+
+    const nodeId = sanitizeNodeId(operator, String(idCounter.value++))
+    mermaidLines.push(`${nodeId}["${label.replace(/"/g, '#quot;')}"]`)
+
+    while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
+      stack.pop()
+    }
+
+    if (stack.length > 0) {
+      mermaidLines.push(`${stack[stack.length - 1].nodeId} --> ${nodeId}`)
+    }
+
+    stack.push({ nodeId, depth })
+  }
+
+  return mermaidLines.join('\n')
+}
