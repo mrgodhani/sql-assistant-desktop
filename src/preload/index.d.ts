@@ -116,6 +116,11 @@ interface SchemaAgentApi {
   ) => () => void
 }
 
+interface UpdaterApi {
+  onUpdateDownloaded: (callback: (version: string) => void) => () => void
+  installUpdate: () => Promise<void>
+}
+
 interface AppApi {
   settings: SettingsApi
 }
@@ -139,5 +144,6 @@ declare global {
     platformApi: { getPlatform: () => 'darwin' | 'win32' | 'linux' }
     explainApi: ExplainApi
     schemaAgentApi: SchemaAgentApi
+    updaterApi: UpdaterApi
   }
 }

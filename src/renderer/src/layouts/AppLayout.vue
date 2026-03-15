@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppTopBar from '@renderer/components/layout/AppTopBar.vue'
+import UpdateBanner from '@renderer/components/layout/UpdateBanner.vue'
 import SchemaSearchCommand from '@renderer/components/chat/SchemaSearchCommand.vue'
 
 const schemaSearchOpen = ref(false)
@@ -23,6 +24,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex h-screen flex-col overflow-hidden bg-background" data-testid="app-layout">
+    <UpdateBanner />
     <AppTopBar />
     <main class="flex-1 overflow-hidden">
       <router-view />

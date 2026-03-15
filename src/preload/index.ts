@@ -11,6 +11,7 @@ import { logsApi } from './api/logs.api'
 import { platformApi } from './api/platform.api'
 import { explainApi } from './api/explain.api'
 import { schemaAgentApi } from './api/schema-agent.api'
+import { updaterApi } from './api/updater.api'
 
 const api = {
   settings: settingsApi
@@ -28,6 +29,7 @@ try {
   contextBridge.exposeInMainWorld('platformApi', platformApi)
   contextBridge.exposeInMainWorld('explainApi', explainApi)
   contextBridge.exposeInMainWorld('schemaAgentApi', schemaAgentApi)
+  contextBridge.exposeInMainWorld('updaterApi', updaterApi)
 } catch (error) {
   console.error('[Preload] Failed to expose APIs:', error)
 }
