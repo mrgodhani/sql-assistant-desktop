@@ -3,9 +3,11 @@ import { computed, markRaw, ref, watch, provide } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { MiniMap } from '@vue-flow/minimap'
 import { Controls } from '@vue-flow/controls'
-import type { NodeMouseEvent } from '@vue-flow/core'
+import type { NodeMouseEvent, NodeDragEvent } from '@vue-flow/core'
 import dagre from 'dagre'
 import TableNode from '@renderer/components/schema/TableNode.vue'
+import GroupNode from '@renderer/components/schema/GroupNode.vue'
+import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import type { SchemaDesign, TableDesign, ColumnDesign } from '../../../../shared/types'
 import type { TableInfo, ColumnInfo, ForeignKeyInfo, IndexInfo } from '../../../../shared/types'
 import type {
@@ -13,6 +15,7 @@ import type {
   SchemaEdge,
   TableNodeData
 } from '@renderer/stores/useSchemaVisualizationStore'
+import { buildClusteredLayout } from '@/lib/cluster-layout'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -23,10 +26,12 @@ const props = defineProps<{
   schema: SchemaDesign | null
   previousSchema: SchemaDesign | null
   filteredTables: string[] | null
+  layoutMode?: 'TB' | 'LR' | 'clustered'
 }>()
 
 const nodeTypes = {
-  table: markRaw(TableNode)
+  table: markRaw(TableNode),
+  group: markRaw(GroupNode)
 } as Record<string, unknown>
 
 const defaultEdgeOptions = {
@@ -34,9 +39,9 @@ const defaultEdgeOptions = {
   animated: false
 }
 
-const selectedNodeId = ref<string | null>(null)
 const expandedNodes = ref(new Set<string>())
 const { fitView, setNodes, setEdges } = useVueFlow()
+const schemaDesignerStore = useSchemaDesignerStore()
 
 function toggleColumns(nodeId: string): void {
   const next = new Set(expandedNodes.value)
@@ -113,7 +118,8 @@ function resolveTargetNodeId(
 
 const visibleTables = computed((): TableDesign[] => {
   if (!props.schema) return []
-  if (!props.filteredTables || props.filteredTables.length === 0) return props.schema.tables
+  if (props.filteredTables === null) return props.schema.tables
+  if (props.filteredTables.length === 0) return []
 
   const filterSet = new Set(props.filteredTables.map((n) => n.toLowerCase()))
   return props.schema.tables.filter(
@@ -141,7 +147,7 @@ const nodes = computed((): SchemaNode[] => {
       position: { x: 0, y: 0 },
       data: {
         table: tableInfo,
-        isSelected: selectedNodeId.value === id,
+        isSelected: schemaDesignerStore.selectedNodeId === id,
         isConnected: false,
         isDimmed: false,
         isExpanded: expandedNodes.value.has(id)
@@ -190,7 +196,7 @@ function resolveColor(cssVar: string): string {
 }
 
 const styledEdges = computed(() => {
-  const selected = selectedNodeId.value
+  const selected = schemaDesignerStore.selectedNodeId ?? null
   const mutedColor = `hsl(${resolveColor('--muted-foreground')})`
   const primaryColor = `hsl(${resolveColor('--primary')})`
   const fgColor = `hsl(${resolveColor('--foreground')})`
@@ -223,11 +229,29 @@ const styledEdges = computed(() => {
 const layoutNodes = computed(() => {
   const nodeList = nodes.value
   const edgeList = edges.value
+  const stored = schemaDesignerStore.nodePositions
   if (nodeList.length === 0) return []
+
+  if (props.layoutMode === 'clustered') {
+    const result = buildClusteredLayout(
+      nodeList,
+      edgeList,
+      NODE_WIDTH,
+      (node) => {
+        const colCount = node.data.table.columns.length
+        return NODE_HEADER_HEIGHT + colCount * COLUMN_ROW_HEIGHT + NODE_PADDING
+      }
+    )
+    return [...(result.groupNodes as unknown as SchemaNode[]), ...result.tableNodes]
+  }
 
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 80 })
+  g.setGraph({
+    rankdir: props.layoutMode === 'LR' ? 'LR' : 'TB',
+    nodesep: 60,
+    ranksep: 80
+  })
 
   for (const node of nodeList) {
     const colCount = node.data.table.columns.length
@@ -241,13 +265,15 @@ const layoutNodes = computed(() => {
   dagre.layout(g)
 
   return nodeList.map((node) => {
-    const pos = g.node(node.id)
+    const dagrePos = g.node(node.id)
+    const dagrePosition = {
+      x: dagrePos.x - NODE_WIDTH / 2,
+      y: dagrePos.y - (dagrePos.height as number) / 2
+    }
+    const position = stored[node.id] ?? dagrePosition
     return {
       ...node,
-      position: {
-        x: pos.x - NODE_WIDTH / 2,
-        y: pos.y - (pos.height as number) / 2
-      }
+      position
     } as SchemaNode
   })
 })
@@ -256,6 +282,12 @@ watch(
   layoutNodes,
   (newNodes) => {
     setNodes(newNodes)
+    const stored = schemaDesignerStore.nodePositions
+    for (const n of newNodes) {
+      if (!(n.id in stored)) {
+        schemaDesignerStore.setNodePosition(n.id, n.position)
+      }
+    }
     if (newNodes.length > 0) {
       setTimeout(() => fitView({ padding: 0.2 }), 50)
     }
@@ -272,11 +304,17 @@ watch(
 )
 
 function onNodeClick(event: NodeMouseEvent): void {
-  selectedNodeId.value = event.node.id === selectedNodeId.value ? null : event.node.id
+  schemaDesignerStore.setSelectedNode(
+    event.node.id === schemaDesignerStore.selectedNodeId ? null : event.node.id
+  )
 }
 
 function onPaneClick(): void {
-  selectedNodeId.value = null
+  schemaDesignerStore.setSelectedNode(null)
+}
+
+function onNodeDragStop(event: NodeDragEvent): void {
+  schemaDesignerStore.setNodePosition(event.node.id, event.node.position)
 }
 </script>
 
@@ -289,6 +327,7 @@ function onPaneClick(): void {
       :fit-view-on-init="true"
       class="h-full w-full"
       @node-click="onNodeClick"
+      @node-drag-stop="onNodeDragStop"
       @pane-click="onPaneClick"
     >
       <MiniMap class="bg-muted/50! border-border!" />

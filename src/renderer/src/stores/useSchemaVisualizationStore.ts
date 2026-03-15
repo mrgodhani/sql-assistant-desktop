@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import dagre from 'dagre'
 import type { Styles } from '@vue-flow/core'
 import { exportDiagram } from '@/lib/export-diagram'
+import { buildClusteredLayout } from '@/lib/cluster-layout'
 export type RelationshipType = '1:1' | '1:N' | 'N:M'
 
 export interface SchemaEdge {
@@ -25,7 +26,7 @@ export interface SchemaEdge {
 import type { DatabaseSchema, TableInfo, ForeignKeyInfo } from '../../../shared/types'
 
 export type SchemaFilter = 'all' | 'tables' | 'views' | 'connected' | 'with-relationships'
-export type LayoutDirection = 'TB' | 'LR'
+export type LayoutDirection = 'TB' | 'LR' | 'clustered'
 
 const NODE_WIDTH = 280
 const COLLAPSED_MAX_COLUMNS = 8
@@ -119,6 +120,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   const searchQuery = ref('')
   const filter = ref<SchemaFilter>('all')
   const layoutDirection = ref<LayoutDirection>('TB')
+  const individualFilter = ref<string[] | null>(null)
 
   function getVisibleColumnCount(node: SchemaNode): number {
     const table = node.data.table
@@ -187,6 +189,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   }
 
   function buildGraph(): void {
+    individualFilter.value = null
     const allTables = getAllTables()
     const nodeIdSet = new Set(allTables.map(buildNodeId))
 
@@ -245,6 +248,26 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     if (direction) {
       layoutDirection.value = direction
     }
+
+    if (layoutDirection.value === 'clustered') {
+      // Remove any existing group nodes, keep only table nodes
+      const tableNodesOnly = nodes.value.filter((n) => n.type === 'table')
+      const result = buildClusteredLayout(
+        tableNodesOnly,
+        edges.value,
+        NODE_WIDTH,
+        (node) => {
+          const columnCount = getVisibleColumnCount(node)
+          return NODE_HEADER_HEIGHT + columnCount * COLUMN_ROW_HEIGHT + NODE_PADDING
+        }
+      )
+      // Group nodes first so they render behind table nodes (lower z-index in insertion order)
+      nodes.value = [...(result.groupNodes as unknown as SchemaNode[]), ...result.tableNodes]
+      return
+    }
+
+    // When switching away from clustered: remove group nodes
+    nodes.value = nodes.value.filter((n) => n.type === 'table')
 
     const g = new dagre.graphlib.Graph()
     g.setDefaultEdgeLabel(() => ({}))
@@ -335,6 +358,14 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     await exportDiagram(format, 'schema')
   }
 
+  function setIndividualFilter(tables: string[] | null): void {
+    individualFilter.value = tables
+  }
+
+  function clearIndividualFilter(): void {
+    individualFilter.value = null
+  }
+
   const connectedNodeIds = computed((): Set<string> => {
     if (!selectedNodeId.value) return new Set()
     return getConnectedNodeIdSet(selectedNodeId.value)
@@ -345,20 +376,22 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
 
     switch (filter.value) {
       case 'tables':
-        filtered = filtered.filter((n) => n.data.table.type === 'table')
+        filtered = filtered.filter((n) => n.type !== 'table' || n.data.table.type === 'table')
         break
       case 'views':
-        filtered = filtered.filter((n) => n.data.table.type === 'view')
+        filtered = filtered.filter((n) => n.type !== 'table' || n.data.table.type === 'view')
         break
       case 'connected':
         if (selectedNodeId.value) {
           const connected = connectedNodeIds.value
-          filtered = filtered.filter((n) => n.id === selectedNodeId.value || connected.has(n.id))
+          filtered = filtered.filter(
+            (n) => n.type !== 'table' || n.id === selectedNodeId.value || connected.has(n.id)
+          )
         }
         break
       case 'with-relationships': {
         const withRels = tablesWithRelationships()
-        filtered = filtered.filter((n) => withRels.has(n.id))
+        filtered = filtered.filter((n) => n.type !== 'table' || withRels.has(n.id))
         break
       }
     }
@@ -367,9 +400,15 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
       const query = searchQuery.value.toLowerCase()
       filtered = filtered.filter(
         (n) =>
+          n.type !== 'table' ||
           n.data.table.name.toLowerCase().includes(query) ||
           n.data.table.columns.some((c) => c.name.toLowerCase().includes(query))
       )
+    }
+
+    if (individualFilter.value !== null) {
+      const filterSet = new Set(individualFilter.value.map((id) => id.toLowerCase()))
+      filtered = filtered.filter((n) => filterSet.has(n.id.toLowerCase()))
     }
 
     return filtered
@@ -401,8 +440,10 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
   })
 
   const visibleTableCount = computed((): number => {
-    return visibleNodes.value.length
+    return visibleNodes.value.filter((n) => n.type === 'table').length
   })
+
+  const hasIndividualFilter = computed(() => individualFilter.value !== null)
 
   return {
     connectionId,
@@ -417,6 +458,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     searchQuery,
     filter,
     layoutDirection,
+    individualFilter,
 
     visibleNodes,
     visibleEdges,
@@ -424,6 +466,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     groups,
     tableCount,
     visibleTableCount,
+    hasIndividualFilter,
 
     loadSchema,
     buildGraph,
@@ -434,6 +477,8 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     toggleColumns,
     toggleGroup,
     exportImage,
-    getVisibleColumnCount
+    getVisibleColumnCount,
+    setIndividualFilter,
+    clearIndividualFilter
   }
 })

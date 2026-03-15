@@ -25,3 +25,4 @@ Thumbs.db
 
 # Landing page assets (copied at deploy time, not committed)
 landing/assets/
+specs/
