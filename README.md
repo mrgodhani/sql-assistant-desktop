@@ -74,7 +74,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for macOS code signing, notarization setu
 
 ## Project Structure
 
-```
+```text
 src/
 ├── main/      # Electron main process (services, IPC, database)
 ├── preload/   # Preload scripts (contextBridge APIs)
