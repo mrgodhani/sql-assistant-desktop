@@ -2,7 +2,7 @@
 
 # SQL Assist
 
-**Turn natural language into SQL.**
+**Turn natural language into SQL. Query and design your database with AI.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
@@ -15,7 +15,7 @@
 
 ![SQL Assist Desktop](screenshot.png)
 
-Connect to your database, ask questions in plain English, and get accurate queries powered by AI. Execute, visualize, and export — all from a native desktop app.
+Connect to your database, ask questions in plain English, or design schemas through conversation. Get accurate queries and visual ERDs — execute, visualize, and export from a native desktop app.
 
 </div>
 
@@ -29,6 +29,7 @@ Connect to your database, ask questions in plain English, and get accurate queri
 | 🔒 **Your schema, your data** | AI sees your tables and relationships for accurate results |
 | 🌐 **Works offline** | Use local Ollama or connect to cloud AI providers |
 | ⚡ **One app for everything** | Query, chart, and export without leaving your workflow |
+| ✏️ **Design schemas in plain English** | Describe tables and relationships; AI proposes schemas and visual ERDs |
 
 ## Features
 
@@ -37,6 +38,7 @@ Connect to your database, ask questions in plain English, and get accurate queri
 | 🗄️ **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server |
 | 🤖 **AI providers** | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
 | 🧠 **Schema-aware** | AI receives your schema for context-accurate queries |
+| ✏️ **Schema Designer** | AI-powered schema design via chat. Start from scratch or introspect existing DB. Visual ERD canvas, DDL generation, optional execution. Export ERD as PNG/SVG. |
 | 🔍 **Schema search** | Fuzzy search across tables and columns (`Cmd+K`) |
 | 📋 **EXPLAIN visualizer** | Run EXPLAIN on queries, view plans as Mermaid diagrams |
 | ⚡ **Query optimization** | Get index and rewrite suggestions from AI |
