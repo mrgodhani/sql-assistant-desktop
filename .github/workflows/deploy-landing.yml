@@ -6,6 +6,8 @@ on:
     paths:
       - 'landing/**'
       - 'screenshot.png'
+      - 'build/icon.svg'
+      - 'build/icon.png'
   release:
     types: [published]
 
