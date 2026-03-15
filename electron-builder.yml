@@ -1,4 +1,4 @@
-appId: com.sql-assist.desktop
+appId: com.sql-assistant.sql-assistant
 productName: SQL Assist
 directories:
   buildResources: build

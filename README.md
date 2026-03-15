@@ -6,10 +6,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/meetgodhani/sql-assist-desktop/releases/latest)
-[![Latest Release](https://img.shields.io/github/v/release/meetgodhani/sql-assist-desktop)](https://github.com/meetgodhani/sql-assist-desktop/releases/latest)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/mrgodhani/sql-assistant-desktop/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/mrgodhani/sql-assistant-desktop)](https://github.com/mrgodhani/sql-assistant-desktop/releases/latest)
 
-[**⬇ Download for macOS**](https://github.com/meetgodhani/sql-assist-desktop/releases/latest) · [Landing Page](https://meetgodhani.github.io/sql-assist-desktop/) · [Contributing](CONTRIBUTING.md)
+[**⬇ Download for macOS**](https://github.com/mrgodhani/sql-assistant-desktop/releases/latest) · [Landing Page](https://meetgodhani.github.io/sql-assistant-desktop/) · [Contributing](CONTRIBUTING.md)
 
 ---
 
