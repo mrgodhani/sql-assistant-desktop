@@ -14,6 +14,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/icon.png" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
 
@@ -21,15 +31,11 @@
 <nav>
   <div class="nav-inner">
     <a href="#" class="nav-logo">
-      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="28" height="28" rx="8" fill="#2563EB"/>
-        <path d="M7 10.5C7 9.12 10.13 8 14 8s7 1.12 7 2.5v7C21 18.88 17.87 20 14 20s-7-1.12-7-2.5v-7z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
-        <ellipse cx="14" cy="10.5" rx="7" ry="2.5" stroke="#fff" stroke-width="1.5"/>
-        <path d="M7 14c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5" stroke="#fff" stroke-width="1.5"/>
-      </svg>
+      <img src="assets/icon.svg" alt="SQL Assist logo" width="28" height="28" />
       SQL Assist
     </a>
     <div class="nav-actions">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" title="Toggle dark mode"></button>
       <a href="https://github.com/meetgodhani/sql-assist-desktop" class="star-badge" target="_blank" rel="noopener">
         ⭐ Star on GitHub
       </a>
@@ -187,11 +193,32 @@
 </footer>
 
 <script>
+  // Scroll reveal
   const observer = new IntersectionObserver(
     (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
     { threshold: 0.12 }
   );
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Dark mode toggle
+  const toggle = document.getElementById('theme-toggle');
+  const html = document.documentElement;
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      toggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
+      localStorage.setItem('theme', next);
+    });
+  }
+
+  // Sync with OS preference changes (only if user hasn't manually overridden)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      html.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
 </script>
 
 </body>
