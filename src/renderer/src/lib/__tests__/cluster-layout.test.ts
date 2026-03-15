@@ -4,6 +4,7 @@ import {
   inferClusterName,
   buildClusteredLayout
 } from '../cluster-layout'
+import type { GroupNodeData } from '../cluster-layout'
 import type { SchemaNode, SchemaEdge } from '@renderer/stores/useSchemaVisualizationStore'
 
 // --- findConnectedComponents ---
@@ -56,9 +57,11 @@ describe('inferClusterName', () => {
   })
 
   it('returns name of single-table component', () => {
-    const result = inferClusterName(['invoices'])
-    expect(result).toBeTruthy()
-    expect(typeof result).toBe('string')
+    expect(inferClusterName(['invoices'])).toBe('Invoices')
+  })
+
+  it('uses fallbackIndex when provided', () => {
+    expect(inferClusterName(['foo', 'bar', 'baz'], 3)).toBe('Domain 3')
   })
 })
 
@@ -108,8 +111,18 @@ describe('buildClusteredLayout', () => {
     const nodes = ['a', 'b'].map(makeNode)
     const result = buildClusteredLayout(nodes, [], 280, () => 80)
     for (const g of result.groupNodes) {
-      expect((g.data as Record<string, unknown>).width).toBeGreaterThan(0)
-      expect((g.data as Record<string, unknown>).height).toBeGreaterThan(0)
+      expect(g.data.width).toBeGreaterThan(0)
+      expect(g.data.height).toBeGreaterThan(0)
     }
+  })
+
+  it('puts FK-connected tables in one group and isolated tables in Uncategorized', () => {
+    const nodes = ['orders', 'order_items', 'products'].map(makeNode)
+    const edges = [{ source: 'orders', target: 'order_items' }] as SchemaEdge[]
+    const result = buildClusteredLayout(nodes, edges, 280, () => 80)
+    const labels = result.groupNodes.map((g) => (g.data as GroupNodeData).label)
+    expect(labels).toContain('Uncategorized')
+    expect(result.groupNodes.length).toBe(2)
+    expect(result.tableNodes.length).toBe(3)
   })
 })

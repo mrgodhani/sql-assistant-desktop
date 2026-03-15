@@ -4,9 +4,25 @@ import type { SchemaNode, SchemaEdge } from '@renderer/stores/useSchemaVisualiza
 const GROUP_PADDING = 48
 const CLUSTER_GAP = 120
 
+export interface GroupNodeData {
+  label: string
+  tableCount: number
+  width: number
+  height: number
+  isExpanded: boolean
+}
+
+export interface GroupNode {
+  id: string
+  type: 'group'
+  position: { x: number; y: number }
+  data: GroupNodeData
+  [key: string]: unknown
+}
+
 export interface ClusterLayoutResult {
   tableNodes: SchemaNode[]
-  groupNodes: SchemaNode[]
+  groupNodes: GroupNode[]
 }
 
 // --- Connected Components (BFS, undirected) ---
@@ -196,7 +212,7 @@ export function buildClusteredLayout(
   // Arrange clusters in a grid
   const cols = Math.max(1, Math.ceil(Math.sqrt(clusterLayouts.length)))
   const tableNodes: SchemaNode[] = []
-  const groupNodes: SchemaNode[] = []
+  const groupNodes: GroupNode[] = []
 
   let col = 0
   let rowMaxHeight = 0
@@ -211,7 +227,7 @@ export function buildClusteredLayout(
     for (const id of cluster.ids) {
       const relPos = cluster.positions.get(id)!
       const node = nodes.find((n) => n.id === id)!
-      const { parentNode: _parentNode, ...rest } = node as SchemaNode & { parentNode?: string }
+      const { parentNode: _parentNode, ...rest } = node
       tableNodes.push({
         ...rest,
         position: {
@@ -224,7 +240,7 @@ export function buildClusteredLayout(
     // Create group background node
     groupNodes.push({
       id: `__group__${cluster.name}`,
-      type: 'group',
+      type: 'group' as const,
       position: { x: cursorX, y: cursorY },
       data: {
         label: cluster.name,
@@ -233,7 +249,7 @@ export function buildClusteredLayout(
         height: groupHeight,
         isExpanded: true
       }
-    } as unknown as SchemaNode)
+    })
 
     rowMaxHeight = Math.max(rowMaxHeight, groupHeight)
     cursorX += groupWidth + CLUSTER_GAP
