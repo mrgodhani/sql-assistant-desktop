@@ -22,12 +22,12 @@ const emit = defineEmits<{
 
 <template>
   <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent side="right" class="w-[540px] sm:max-w-[540px]">
-      <SheetHeader class="pb-2">
+    <SheetContent side="right" class="w-[540px] sm:max-w-[540px] px-6 pt-6 pb-6">
+      <SheetHeader class="px-0 pb-4 pt-0">
         <SheetTitle>Settings</SheetTitle>
       </SheetHeader>
-      <ScrollArea class="h-[calc(100vh-5rem)]">
-        <div class="space-y-5 pr-4 pt-2">
+      <ScrollArea class="h-[calc(100vh-6rem)]">
+        <div class="space-y-5 pr-2">
           <ThemeSettings />
           <Separator />
           <ProviderSettings />

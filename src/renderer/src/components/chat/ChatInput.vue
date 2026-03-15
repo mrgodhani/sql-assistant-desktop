@@ -44,8 +44,8 @@ function onKeydown(e: KeyboardEvent): void {
 </script>
 
 <template>
-  <div class="border-t border-border bg-background p-3">
-    <div class="flex gap-2">
+  <div class="border-t border-border bg-background px-4 py-3">
+    <div class="mx-auto max-w-3xl flex gap-2">
       <Textarea
         ref="textareaRef"
         v-model="input"
