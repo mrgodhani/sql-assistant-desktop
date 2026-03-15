@@ -74,10 +74,10 @@ function deselectAll(): void {
 }
 
 function connectedToSelected(): void {
-  const nodeId = store.selectedNodeId
+  const nodeId = store.selectedNodeId?.value ?? null
   if (!nodeId) return
   const ids = store.getConnectedTableIds(nodeId)
-  store.setFilter(ids)
+  store.setFilter(ids.length === allTableIds.value.length ? null : ids)
 }
 </script>
 
