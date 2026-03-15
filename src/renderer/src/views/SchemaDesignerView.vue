@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import { useConnectionStore } from '@renderer/stores/useConnectionStore'
 import SessionStartDialog from '@renderer/components/schema-designer/SessionStartDialog.vue'
@@ -37,6 +37,10 @@ function onRelayout(mode: 'TB' | 'LR' | 'clustered'): void {
   layoutMode.value = mode
   store.clearNodePositions()
 }
+
+onUnmounted(() => {
+  store.cancel()
+})
 </script>
 
 <template>

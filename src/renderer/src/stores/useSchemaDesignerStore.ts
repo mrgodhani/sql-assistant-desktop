@@ -29,6 +29,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
   const nodePositions = ref<Record<string, { x: number; y: number }>>({})
   const selectedNodeId = ref<string | null>(null)
   const isStreaming = ref(false)
+  const streamingMessageId = ref<string | null>(null)
   const error = ref<string | null>(null)
 
   const hasSession = computed(() => session.value !== null)
@@ -61,18 +62,27 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     })
   }
 
+  function getStreamingMessage(): DesignerMessage | undefined {
+    if (streamingMessageId.value) {
+      return messages.value.find((m) => m.id === streamingMessageId.value)
+    }
+    return messages.value.findLast((m) => m.role === 'assistant')
+  }
+
   function handleStreamChunk(chunk: SchemaAgentStreamChunk): void {
     switch (chunk.type) {
       case 'text': {
-        const lastMsg = messages.value[messages.value.length - 1]
-        if (lastMsg?.role === 'assistant' && !lastMsg.awaitingApproval) {
-          lastMsg.content += chunk.content ?? ''
+        if (streamingMessageId.value) {
+          const msg = messages.value.find((m) => m.id === streamingMessageId.value)
+          if (msg) msg.content += chunk.content ?? ''
         } else {
-          messages.value.push({
+          const newMsg: DesignerMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
             content: chunk.content ?? ''
-          })
+          }
+          messages.value.push(newMsg)
+          streamingMessageId.value = newMsg.id
         }
         break
       }
@@ -86,17 +96,17 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
           execute_ddl: 'Preparing to execute DDL...',
           filter_view: 'Filtering diagram...'
         }
-        const lastMsg = messages.value[messages.value.length - 1]
-        if (lastMsg?.role === 'assistant') {
-          lastMsg.toolIndicator = toolNames[chunk.toolCall?.name ?? ''] ?? 'Processing...'
+        const targetMsg = getStreamingMessage()
+        if (targetMsg) {
+          targetMsg.toolIndicator = toolNames[chunk.toolCall?.name ?? ''] ?? 'Processing...'
         }
         break
       }
 
       case 'tool_result': {
-        const lastMsg = messages.value[messages.value.length - 1]
-        if (lastMsg?.role === 'assistant') {
-          lastMsg.toolIndicator = undefined
+        const targetMsg = getStreamingMessage()
+        if (targetMsg) {
+          targetMsg.toolIndicator = undefined
         }
         break
       }
@@ -107,19 +117,19 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
         if (session.value) {
           session.value.schema = chunk.schema ?? null
         }
-        const lastMsg = messages.value[messages.value.length - 1]
-        if (lastMsg?.role === 'assistant') {
-          lastMsg.changelog = chunk.changelog
-          lastMsg.toolIndicator = undefined
+        const targetMsg = getStreamingMessage()
+        if (targetMsg) {
+          targetMsg.changelog = chunk.changelog
+          targetMsg.toolIndicator = undefined
         }
         break
       }
 
       case 'filter_changed': {
         filteredTables.value = chunk.filteredTables ?? null
-        const lastMsg = messages.value[messages.value.length - 1]
-        if (lastMsg?.role === 'assistant') {
-          lastMsg.toolIndicator = undefined
+        const targetMsg = getStreamingMessage()
+        if (targetMsg) {
+          targetMsg.toolIndicator = undefined
         }
         break
       }
@@ -137,10 +147,12 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
 
       case 'done':
         isStreaming.value = false
+        streamingMessageId.value = null
         break
 
       case 'error':
         isStreaming.value = false
+        streamingMessageId.value = null
         error.value = chunk.error ?? 'Unknown error'
         break
     }
@@ -150,6 +162,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     if (!session.value) return
     if (!message.trim()) return
     error.value = null
+    streamingMessageId.value = null
     isStreaming.value = true
 
     messages.value.push({
@@ -195,6 +208,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     if (session.value) {
       window.schemaAgentApi.cancel(session.value.id)
       isStreaming.value = false
+      streamingMessageId.value = null
     }
   }
 
@@ -261,6 +275,7 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     nodePositions,
     selectedNodeId,
     isStreaming,
+    streamingMessageId,
     error,
     hasSession,
     hasSchema,
