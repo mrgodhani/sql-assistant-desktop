@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { TableProperties, BarChart3, GitMerge, DatabaseZap, Gauge } from 'lucide-vue-next'
+import { TableProperties, BarChart3, GitMerge } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useChatStore } from '@renderer/stores/useChatStore'
 
@@ -31,22 +31,6 @@ const categories = [
     prompts: [
       'Find all orders with customer details and product names',
       'Show users who have never placed an order'
-    ]
-  },
-  {
-    label: 'Data Operations',
-    icon: DatabaseZap,
-    prompts: [
-      'Generate INSERT statements for sample test data',
-      'Write an UPDATE to normalize email addresses to lowercase'
-    ]
-  },
-  {
-    label: 'Performance',
-    icon: Gauge,
-    prompts: [
-      'Identify tables missing primary keys or indexes',
-      'Find the largest tables by row count and disk size'
     ]
   }
 ] as const
