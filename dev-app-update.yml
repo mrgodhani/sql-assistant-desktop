@@ -1,3 +1,4 @@
-provider: generic
-url: https://github.com/meetgodhani/sql-assist-desktop/releases
+provider: github
+owner: meetgodhani
+repo: sql-assist-desktop
 updaterCacheDirName: sql-assist-desktop-updater

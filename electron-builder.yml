@@ -40,5 +40,6 @@ dmg:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
 publish:
-  provider: generic
-  url: https://github.com/meetgodhani/sql-assist-desktop/releases
+  provider: github
+  owner: meetgodhani
+  repo: sql-assist-desktop
