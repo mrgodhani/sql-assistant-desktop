@@ -10,10 +10,19 @@ import {
 import { Undo2, Plus, Filter, X, Download, RotateCcw } from 'lucide-vue-next'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import { DATABASE_TYPE_LABELS } from '../../../../shared/types'
+import type { TableDesign } from '../../../../shared/types'
 import { exportDiagram } from '@/lib/export-diagram'
-import DesignerTableFilterPopover from './DesignerTableFilterPopover.vue'
+import TableFilterPopover from '@renderer/components/shared/TableFilterPopover.vue'
 
 const store = useSchemaDesignerStore()
+
+const emit = defineEmits<{
+  relayout: [mode: 'TB' | 'LR' | 'clustered']
+}>()
+
+function buildNodeId(t: TableDesign): string {
+  return t.schema ? `${t.schema}.${t.name}` : t.name
+}
 </script>
 
 <template>
@@ -26,7 +35,14 @@ const store = useSchemaDesignerStore()
       {{ store.schema.tables.length }} table{{ store.schema.tables.length !== 1 ? 's' : '' }}
     </span>
 
-    <DesignerTableFilterPopover />
+    <TableFilterPopover
+      v-if="store.hasSchema"
+      :tables="store.schema?.tables.map(buildNodeId) ?? []"
+      :model-value="store.filteredTables"
+      :selected-node-id="store.selectedNodeId"
+      :get-connected-ids="store.getConnectedTableIds"
+      @update:model-value="store.setFilter"
+    />
 
     <Badge
       v-if="store.hasFilter"
@@ -41,10 +57,19 @@ const store = useSchemaDesignerStore()
 
     <div class="flex-1" />
 
-    <Button v-if="store.hasSchema" variant="outline" size="sm" @click="store.clearNodePositions">
-      <RotateCcw class="size-3.5 mr-1" />
-      Re-layout
-    </Button>
+    <DropdownMenu v-if="store.hasSchema">
+      <DropdownMenuTrigger as-child>
+        <Button variant="outline" size="sm">
+          <RotateCcw class="size-3.5 mr-1" />
+          Re-layout
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem @click="emit('relayout', 'TB')">Top to Bottom</DropdownMenuItem>
+        <DropdownMenuItem @click="emit('relayout', 'LR')">Left to Right</DropdownMenuItem>
+        <DropdownMenuItem @click="emit('relayout', 'clustered')">Clustered (auto-group)</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
     <DropdownMenu v-if="store.hasSchema">
       <DropdownMenuTrigger as-child>
         <Button variant="outline" size="sm">

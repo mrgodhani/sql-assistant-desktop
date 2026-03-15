@@ -6,6 +6,7 @@ import { Controls } from '@vue-flow/controls'
 import type { NodeMouseEvent, NodeDragEvent } from '@vue-flow/core'
 import dagre from 'dagre'
 import TableNode from '@renderer/components/schema/TableNode.vue'
+import GroupNode from '@renderer/components/schema/GroupNode.vue'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import type { SchemaDesign, TableDesign, ColumnDesign } from '../../../../shared/types'
 import type { TableInfo, ColumnInfo, ForeignKeyInfo, IndexInfo } from '../../../../shared/types'
@@ -14,6 +15,7 @@ import type {
   SchemaEdge,
   TableNodeData
 } from '@renderer/stores/useSchemaVisualizationStore'
+import { buildClusteredLayout } from '@/lib/cluster-layout'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -24,10 +26,12 @@ const props = defineProps<{
   schema: SchemaDesign | null
   previousSchema: SchemaDesign | null
   filteredTables: string[] | null
+  layoutMode?: 'TB' | 'LR' | 'clustered'
 }>()
 
 const nodeTypes = {
-  table: markRaw(TableNode)
+  table: markRaw(TableNode),
+  group: markRaw(GroupNode)
 } as Record<string, unknown>
 
 const defaultEdgeOptions = {
@@ -143,7 +147,7 @@ const nodes = computed((): SchemaNode[] => {
       position: { x: 0, y: 0 },
       data: {
         table: tableInfo,
-        isSelected: schemaDesignerStore.selectedNodeId?.value === id,
+        isSelected: schemaDesignerStore.selectedNodeId === id,
         isConnected: false,
         isDimmed: false,
         isExpanded: expandedNodes.value.has(id)
@@ -192,7 +196,7 @@ function resolveColor(cssVar: string): string {
 }
 
 const styledEdges = computed(() => {
-  const selected = schemaDesignerStore.selectedNodeId?.value ?? null
+  const selected = schemaDesignerStore.selectedNodeId ?? null
   const mutedColor = `hsl(${resolveColor('--muted-foreground')})`
   const primaryColor = `hsl(${resolveColor('--primary')})`
   const fgColor = `hsl(${resolveColor('--foreground')})`
@@ -228,9 +232,26 @@ const layoutNodes = computed(() => {
   const stored = schemaDesignerStore.nodePositions
   if (nodeList.length === 0) return []
 
+  if (props.layoutMode === 'clustered') {
+    const result = buildClusteredLayout(
+      nodeList,
+      edgeList,
+      NODE_WIDTH,
+      (node) => {
+        const colCount = node.data.table.columns.length
+        return NODE_HEADER_HEIGHT + colCount * COLUMN_ROW_HEIGHT + NODE_PADDING
+      }
+    )
+    return [...(result.groupNodes as unknown as SchemaNode[]), ...result.tableNodes]
+  }
+
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 80 })
+  g.setGraph({
+    rankdir: props.layoutMode === 'LR' ? 'LR' : 'TB',
+    nodesep: 60,
+    ranksep: 80
+  })
 
   for (const node of nodeList) {
     const colCount = node.data.table.columns.length
@@ -284,7 +305,7 @@ watch(
 
 function onNodeClick(event: NodeMouseEvent): void {
   schemaDesignerStore.setSelectedNode(
-    event.node.id === schemaDesignerStore.selectedNodeId?.value ? null : event.node.id
+    event.node.id === schemaDesignerStore.selectedNodeId ? null : event.node.id
   )
 }
 
