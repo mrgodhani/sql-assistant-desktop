@@ -4,13 +4,196 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SQL Assist — Ask your database anything</title>
-  <meta name="description" content="Turn natural language into SQL. Connect to PostgreSQL, MySQL, SQLite, or SQL Server and query with plain English." />
+  <meta name="description" content="Turn natural language into SQL. Connect to PostgreSQL, MySQL, SQLite, or SQL Server and query with plain English, powered by AI." />
+  <meta property="og:title" content="SQL Assist — Ask your database anything" />
+  <meta property="og:description" content="Turn natural language into SQL. Connect to your database, ask questions in plain English, get working queries powered by AI." />
+  <meta property="og:image" content="https://meetgodhani.github.io/sql-assist-desktop/assets/screenshot.png" />
+  <meta property="og:url" content="https://meetgodhani.github.io/sql-assist-desktop/" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <p>Landing page coming soon</p>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="28" height="28" rx="8" fill="#2563EB"/>
+        <path d="M7 10.5C7 9.12 10.13 8 14 8s7 1.12 7 2.5v7C21 18.88 17.87 20 14 20s-7-1.12-7-2.5v-7z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+        <ellipse cx="14" cy="10.5" rx="7" ry="2.5" stroke="#fff" stroke-width="1.5"/>
+        <path d="M7 14c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+      SQL Assist
+    </a>
+    <div class="nav-actions">
+      <a href="https://github.com/meetgodhani/sql-assist-desktop" class="star-badge" target="_blank" rel="noopener">
+        ⭐ Star on GitHub
+      </a>
+      <a href="https://github.com/meetgodhani/sql-assist-desktop/releases/latest/download/sql-assist-desktop.dmg"
+         class="btn btn-primary" download>
+        ⬇ Download for macOS
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <span class="eyebrow">AI-powered SQL for everyone</span>
+      <h1>Ask your database<br>anything.</h1>
+      <p>Connect to PostgreSQL, MySQL, SQLite, or SQL Server. Type a question in plain English. Get a working SQL query instantly — powered by the AI model of your choice.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/meetgodhani/sql-assist-desktop/releases/latest/download/sql-assist-desktop.dmg"
+           class="btn btn-primary btn-xl" download>
+          ⬇ Download for macOS
+        </a>
+        <a href="https://github.com/meetgodhani/sql-assist-desktop" class="btn btn-ghost btn-xl" target="_blank" rel="noopener">
+          View on GitHub →
+        </a>
+      </div>
+    </div>
+    <div class="hero-screenshot reveal">
+      <img src="assets/screenshot.png" alt="SQL Assist desktop application screenshot showing a natural language query being converted to SQL" />
+    </div>
+  </div>
+</section>
+
+<!-- HOOK STRIP -->
+<div class="hook-strip">
+  <div class="hook-strip-inner">
+    <span class="hook-pill"><span class="dot"></span>No SQL expertise required</span>
+    <span class="hook-pill"><span class="dot"></span>Works offline with Ollama</span>
+    <span class="hook-pill"><span class="dot"></span>Your data stays yours</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>Everything you need to query smarter</h2>
+      <p>A complete SQL workspace powered by AI — no context-switching required.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🗄️</div>
+        <h3>Multi-database</h3>
+        <p>Connect to PostgreSQL, MySQL, SQLite, and SQL Server from a single app.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🤖</div>
+        <h3>Any AI provider</h3>
+        <p>OpenAI, Anthropic, Google, OpenRouter, or local Ollama — you choose what runs your queries.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🧠</div>
+        <h3>Schema-aware queries</h3>
+        <p>AI receives your full schema for context — tables, columns, relationships — producing accurate results every time.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📊</div>
+        <h3>EXPLAIN visualizer</h3>
+        <p>Run EXPLAIN on any query and view the execution plan rendered as an interactive Mermaid diagram.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📈</div>
+        <h3>Charts &amp; export</h3>
+        <p>Turn any result set into bar, line, pie, scatter, or area charts. Export to Excel, CSV, or branded PDF reports.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <h3>Query optimization</h3>
+        <p>Get AI-powered index recommendations and query rewrites to speed up slow queries.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOT SECTION -->
+<section class="screenshot-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>A SQL workspace that thinks with you</h2>
+      <p>Natural language in, precise SQL out — with results, charts, and exports in one place.</p>
+    </div>
+    <div class="screenshot-wrapper reveal">
+      <img src="assets/screenshot.png" alt="SQL Assist showing query results, chart visualization, and AI chat panel side by side" />
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>Up and running in minutes</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-number">1</div>
+        <h3>Connect your database</h3>
+        <p>Add your connection string for any supported database. Your credentials never leave your machine.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-number">2</div>
+        <h3>Ask in plain English</h3>
+        <p>Type what you want to know. SQL Assist uses your schema to generate an accurate query.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-number">3</div>
+        <h3>Review, execute &amp; export</h3>
+        <p>Inspect the generated SQL, run it, chart the results, and export — all without leaving the app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2>Ready to query smarter?</h2>
+    <p>Free, open source, and runs entirely on your machine.</p>
+    <a href="https://github.com/meetgodhani/sql-assist-desktop/releases/latest/download/sql-assist-desktop.dmg"
+       class="btn btn-primary btn-xl" download>
+      ⬇ Download for macOS — Free &amp; Open Source
+    </a>
+    <div class="cta-badges">
+      <span class="badge">🍎 macOS</span>
+      <span class="badge">📄 MIT License</span>
+      <span class="badge">🔒 No telemetry</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="https://github.com/meetgodhani/sql-assist-desktop" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/meetgodhani/sql-assist-desktop/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+        <a href="https://github.com/meetgodhani/sql-assist-desktop/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+        <a href="https://github.com/meetgodhani/sql-assist-desktop/issues" target="_blank" rel="noopener">Issues</a>
+      </div>
+      <span class="footer-copy">© 2026 SQL Assist · MIT License</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.12 }
+  );
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
