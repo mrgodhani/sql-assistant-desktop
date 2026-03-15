@@ -6,8 +6,8 @@ on:
     paths:
       - 'landing/**'
       - 'screenshot.png'
-      - 'build/icon.svg'
       - 'build/icon.png'
+      - 'build/icon.ico'
   release:
     types: [published]
 
@@ -30,8 +30,8 @@ jobs:
           mkdir -p deploy/assets
           cp -r landing/. deploy/
           cp screenshot.png deploy/assets/screenshot.png
-          cp build/icon.svg deploy/assets/icon.svg
           cp build/icon.png deploy/assets/icon.png
+          cp build/icon.ico deploy/assets/icon.ico
 
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
