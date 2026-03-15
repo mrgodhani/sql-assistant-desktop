@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import dagre from 'dagre'
+import type { Styles } from '@vue-flow/core'
 import { exportDiagram } from '@/lib/export-diagram'
 export type RelationshipType = '1:1' | '1:N' | 'N:M'
 
@@ -12,10 +13,10 @@ export interface SchemaEdge {
   targetHandle?: string
   type?: string
   animated?: boolean
-  style?: Record<string, unknown>
+  style?: Styles
   label?: string
-  labelStyle?: Record<string, unknown>
-  labelBgStyle?: Record<string, unknown>
+  labelStyle?: Styles
+  labelBgStyle?: Styles
   labelBgPadding?: [number, number]
   labelBgBorderRadius?: number
   data?: { relationshipType: RelationshipType; isComposite: boolean }
