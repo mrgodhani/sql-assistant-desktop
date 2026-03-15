@@ -8,6 +8,7 @@ import { registerExportIpc } from './export.ipc'
 import { registerLogsIpc } from './logs.ipc'
 import { registerExplainIpc } from './explain.ipc'
 import { registerSchemaAgentIpc } from './schema-agent.ipc'
+import { registerUpdaterIpc } from './updater.ipc'
 
 export function registerAllIpc(): void {
   registerSettingsIpc()
@@ -20,4 +21,5 @@ export function registerAllIpc(): void {
   registerLogsIpc()
   registerExplainIpc()
   registerSchemaAgentIpc()
+  registerUpdaterIpc()
 }

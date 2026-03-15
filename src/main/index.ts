@@ -14,6 +14,7 @@ import { schemaService } from './services/schema.service'
 import { aiService } from './services/ai.service'
 import { ensureMoveToApplicationsPrompt } from './move-to-applications'
 import { enforceSingleInstance } from './enforce-single-instance'
+import { initAutoUpdater } from './services/updater.service'
 
 process.on('uncaughtException', (error) => {
   log.error('[Main] Uncaught Exception:', error.message)
@@ -166,6 +167,8 @@ if (enforceSingleInstance()) {
     nativeTheme.themeSource = storedTheme === 'system' ? 'system' : storedTheme
 
     createWindow()
+
+    initAutoUpdater()
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
