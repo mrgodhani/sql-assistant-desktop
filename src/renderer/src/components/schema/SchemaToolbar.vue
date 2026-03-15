@@ -132,10 +132,10 @@ function onLayoutChange(value: string | number | bigint | Record<string, unknown
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        <DropdownMenuItem @click="store.exportImage('png')">
+        <DropdownMenuItem @click="() => store.exportImage('png')">
           Export PNG
         </DropdownMenuItem>
-        <DropdownMenuItem @click="store.exportImage('svg')">
+        <DropdownMenuItem @click="() => store.exportImage('svg')">
           Export SVG
         </DropdownMenuItem>
       </DropdownMenuContent>

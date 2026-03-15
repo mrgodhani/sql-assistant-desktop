@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import dagre from 'dagre'
+import { toPng, toSvg } from 'html-to-image'
 export interface SchemaEdge {
   id: string
   source: string
@@ -271,7 +272,6 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     const el = document.querySelector('.vue-flow') as HTMLElement
     if (!el) return
 
-    const { toPng, toSvg } = await import('html-to-image')
     const dataUrl = format === 'png' ? await toPng(el) : await toSvg(el)
 
     const link = document.createElement('a')
