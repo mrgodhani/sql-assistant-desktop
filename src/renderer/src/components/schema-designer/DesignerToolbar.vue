@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Undo2, Plus, Filter, X, Download } from 'lucide-vue-next'
+import { Undo2, Plus, Filter, X, Download, RotateCcw } from 'lucide-vue-next'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import { DATABASE_TYPE_LABELS } from '../../../../shared/types'
 import { exportDiagram } from '@/lib/export-diagram'
@@ -38,6 +38,10 @@ const store = useSchemaDesignerStore()
 
     <div class="flex-1" />
 
+    <Button v-if="store.hasSchema" variant="outline" size="sm" @click="store.clearNodePositions">
+      <RotateCcw class="size-3.5 mr-1" />
+      Re-layout
+    </Button>
     <DropdownMenu v-if="store.hasSchema">
       <DropdownMenuTrigger as-child>
         <Button variant="outline" size="sm">
