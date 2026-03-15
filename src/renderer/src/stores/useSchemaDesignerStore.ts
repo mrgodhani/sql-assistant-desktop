@@ -26,6 +26,8 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
   const schema = ref<SchemaDesign | null>(null)
   const previousSchema = ref<SchemaDesign | null>(null)
   const filteredTables = ref<string[] | null>(null)
+  const nodePositions = ref<Record<string, { x: number; y: number }>>({})
+  const selectedNodeId = ref<string | null>(null)
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
 
@@ -43,6 +45,8 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     schema.value = null
     previousSchema.value = null
     filteredTables.value = null
+    nodePositions.value = {}
+    selectedNodeId.value = null
     error.value = null
 
     setupStreamListener()
@@ -207,7 +211,25 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     schema.value = null
     previousSchema.value = null
     filteredTables.value = null
+    nodePositions.value = {}
+    selectedNodeId.value = null
     error.value = null
+  }
+
+  function setFilter(tables: string[] | null): void {
+    filteredTables.value = tables
+  }
+
+  function setNodePosition(nodeId: string, position: { x: number; y: number }): void {
+    nodePositions.value = { ...nodePositions.value, [nodeId]: position }
+  }
+
+  function clearNodePositions(): void {
+    nodePositions.value = {}
+  }
+
+  function setSelectedNode(nodeId: string | null): void {
+    selectedNodeId.value = nodeId
   }
 
   return {
@@ -216,6 +238,8 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     schema,
     previousSchema,
     filteredTables,
+    nodePositions,
+    selectedNodeId,
     isStreaming,
     error,
     hasSession,
@@ -226,6 +250,10 @@ export const useSchemaDesignerStore = defineStore('schemaDesigner', () => {
     sendMessage,
     approveExecution,
     clearFilter,
+    setFilter,
+    setNodePosition,
+    clearNodePositions,
+    setSelectedNode,
     undo,
     cancel,
     endSession
