@@ -22,3 +22,6 @@ Thumbs.db
 *.local
 .env.*.local
 .specify/
+
+# Landing page assets (copied at deploy time, not committed)
+landing/assets/
