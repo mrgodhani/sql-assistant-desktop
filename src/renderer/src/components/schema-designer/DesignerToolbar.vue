@@ -11,6 +11,7 @@ import { Undo2, Plus, Filter, X, Download, RotateCcw } from 'lucide-vue-next'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
 import { DATABASE_TYPE_LABELS } from '../../../../shared/types'
 import { exportDiagram } from '@/lib/export-diagram'
+import DesignerTableFilterPopover from './DesignerTableFilterPopover.vue'
 
 const store = useSchemaDesignerStore()
 </script>
@@ -24,6 +25,8 @@ const store = useSchemaDesignerStore()
     <span v-if="store.schema" class="text-xs text-muted-foreground">
       {{ store.schema.tables.length }} table{{ store.schema.tables.length !== 1 ? 's' : '' }}
     </span>
+
+    <DesignerTableFilterPopover />
 
     <Badge
       v-if="store.hasFilter"
