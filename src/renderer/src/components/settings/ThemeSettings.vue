@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@renderer/stores/useSettingsStore'
 import type { ThemeMode } from '@renderer/stores/useSettingsStore'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -27,24 +26,20 @@ function onThemeChange(value: unknown): void {
 </script>
 
 <template>
-  <Card data-testid="theme-settings">
-    <CardHeader>
-      <CardTitle>Appearance</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div class="flex items-center justify-between">
-        <Label for="theme-select">Theme</Label>
-        <Select :model-value="settingsStore.theme" @update:model-value="onThemeChange">
-          <SelectTrigger id="theme-select" class="w-[140px]" data-testid="theme-select">
-            <SelectValue placeholder="Select theme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="opt in THEME_OPTIONS" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </CardContent>
-  </Card>
+  <div data-testid="theme-settings">
+    <h3 class="text-sm font-medium">Appearance</h3>
+    <div class="mt-3 flex items-center justify-between">
+      <Label for="theme-select">Theme</Label>
+      <Select :model-value="settingsStore.theme" @update:model-value="onThemeChange">
+        <SelectTrigger id="theme-select" class="w-[160px]" data-testid="theme-select">
+          <SelectValue placeholder="Select theme" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="opt in THEME_OPTIONS" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
 </template>

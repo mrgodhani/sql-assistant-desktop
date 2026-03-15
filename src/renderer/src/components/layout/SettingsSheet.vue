@@ -6,6 +6,7 @@ import {
   SheetTitle
 } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 import ThemeSettings from '@renderer/components/settings/ThemeSettings.vue'
 import ProviderSettings from '@renderer/components/settings/ProviderSettings.vue'
 import LogsSettings from '@renderer/components/settings/LogsSettings.vue'
@@ -21,14 +22,16 @@ const emit = defineEmits<{
 
 <template>
   <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent side="right" class="w-[400px] sm:max-w-[400px]">
-      <SheetHeader>
+    <SheetContent side="right" class="w-[540px] sm:max-w-[540px]">
+      <SheetHeader class="pb-2">
         <SheetTitle>Settings</SheetTitle>
       </SheetHeader>
       <ScrollArea class="h-[calc(100vh-5rem)]">
-        <div class="space-y-6 pr-4">
+        <div class="space-y-5 pr-4 pt-2">
           <ThemeSettings />
+          <Separator />
           <ProviderSettings />
+          <Separator />
           <LogsSettings />
         </div>
       </ScrollArea>
