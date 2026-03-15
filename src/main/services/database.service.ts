@@ -456,6 +456,27 @@ class DatabaseService {
     }
   }
 
+  async executeSqlServerShowplan(connectionId: string, sql: string): Promise<string[]> {
+    const handle = this.pools.get(connectionId)
+    if (!handle) throw new Error('Connection is not active')
+    if (handle.type !== 'sqlserver')
+      throw new Error('executeSqlServerShowplan requires a SQL Server connection')
+
+    const batch = `SET SHOWPLAN_TEXT ON; ${sql}; SET SHOWPLAN_TEXT OFF;`
+    const result = await (handle.pool as mssql.ConnectionPool).request().query(batch)
+
+    const lines: string[] = []
+    for (const rs of result.recordsets) {
+      for (const row of rs) {
+        const stmtText = (row as Record<string, unknown>)['StmtText']
+        if (typeof stmtText === 'string') {
+          lines.push(stmtText)
+        }
+      }
+    }
+    return lines
+  }
+
   getConnectionType(connectionId: string): DatabaseType | null {
     const handle = this.pools.get(connectionId)
     if (!handle) return null

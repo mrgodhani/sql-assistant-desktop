@@ -4,6 +4,7 @@ import {
   postgresJsonToMermaid,
   mysqlJsonToMermaid,
   sqliteTextToMermaid,
+  sqlserverTextToMermaid,
   type PostgresExplainEntry
 } from '../lib/explain-parser'
 
@@ -44,8 +45,18 @@ export async function runExplain(connectionId: string, sql: string): Promise<Exp
     case 'sqlite':
       wrapped = `EXPLAIN QUERY PLAN ${trimmed}`
       break
-    case 'sqlserver':
-      throw new Error('EXPLAIN is not yet supported for SQL Server')
+    case 'sqlserver': {
+      const planLines = await databaseService.executeSqlServerShowplan(connectionId, trimmed)
+      const raw = planLines.join('\n')
+      let mermaid: string
+      try {
+        mermaid = sqlserverTextToMermaid(planLines)
+      } catch (error) {
+        log.warn('[Explain] SQL Server Mermaid parse failed:', error)
+        mermaid = 'flowchart TB'
+      }
+      return { raw, mermaid }
+    }
     default:
       throw new Error(`Unsupported database type: ${dbType}`)
   }
