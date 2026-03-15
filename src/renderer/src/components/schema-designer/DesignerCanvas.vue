@@ -36,7 +36,7 @@ const defaultEdgeOptions = {
 
 const selectedNodeId = ref<string | null>(null)
 const expandedNodes = ref(new Set<string>())
-const { fitView } = useVueFlow()
+const { fitView, setNodes, setEdges } = useVueFlow()
 
 function toggleColumns(nodeId: string): void {
   const next = new Set(expandedNodes.value)
@@ -253,12 +253,22 @@ const layoutNodes = computed(() => {
 })
 
 watch(
-  () => layoutNodes.value.length,
-  (len) => {
-    if (len > 0) {
+  layoutNodes,
+  (newNodes) => {
+    setNodes(newNodes)
+    if (newNodes.length > 0) {
       setTimeout(() => fitView({ padding: 0.2 }), 50)
     }
-  }
+  },
+  { deep: true }
+)
+
+watch(
+  styledEdges,
+  (newEdges) => {
+    setEdges(newEdges as SchemaEdge[])
+  },
+  { deep: true }
 )
 
 function onNodeClick(event: NodeMouseEvent): void {
@@ -274,8 +284,6 @@ function onPaneClick(): void {
   <div class="h-full w-full relative">
     <VueFlow
       v-if="schema"
-      :nodes="layoutNodes"
-      :edges="styledEdges as any"
       :node-types="nodeTypes as any"
       :default-edge-options="defaultEdgeOptions"
       :fit-view-on-init="true"

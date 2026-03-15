@@ -5,6 +5,11 @@ import SessionStartDialog from '@renderer/components/schema-designer/SessionStar
 import DesignerToolbar from '@renderer/components/schema-designer/DesignerToolbar.vue'
 import DesignerChat from '@renderer/components/schema-designer/DesignerChat.vue'
 import DesignerCanvas from '@renderer/components/schema-designer/DesignerCanvas.vue'
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle
+} from '@renderer/components/ui/resizable'
 import type { DatabaseType } from '../../../shared/types'
 
 const store = useSchemaDesignerStore()
@@ -30,18 +35,19 @@ async function onStart(config: {
   <div class="flex h-full flex-col">
     <template v-if="store.hasSession">
       <DesignerToolbar />
-      <div class="flex flex-1 overflow-hidden">
-        <div class="w-[400px] min-w-[320px] max-w-[500px] border-r border-border flex flex-col">
+      <ResizablePanelGroup direction="horizontal" class="flex-1 overflow-hidden">
+        <ResizablePanel :default-size="30" :min-size="20" :max-size="50" class="flex flex-col">
           <DesignerChat />
-        </div>
-        <div class="flex-1">
+        </ResizablePanel>
+        <ResizableHandle with-handle />
+        <ResizablePanel :default-size="70" :min-size="40" class="flex flex-col">
           <DesignerCanvas
             :schema="store.schema"
             :previous-schema="store.previousSchema"
             :filtered-tables="store.filteredTables"
           />
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </template>
     <SessionStartDialog v-else @start="onStart" />
   </div>
