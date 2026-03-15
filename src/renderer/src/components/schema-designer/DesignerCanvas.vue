@@ -3,7 +3,7 @@ import { computed, markRaw, ref, watch, provide } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { MiniMap } from '@vue-flow/minimap'
 import { Controls } from '@vue-flow/controls'
-import type { NodeMouseEvent } from '@vue-flow/core'
+import type { NodeMouseEvent, NodeDragEvent } from '@vue-flow/core'
 import dagre from 'dagre'
 import TableNode from '@renderer/components/schema/TableNode.vue'
 import { useSchemaDesignerStore } from '@renderer/stores/useSchemaDesignerStore'
@@ -35,7 +35,6 @@ const defaultEdgeOptions = {
   animated: false
 }
 
-const selectedNodeId = ref<string | null>(null)
 const expandedNodes = ref(new Set<string>())
 const { fitView, setNodes, setEdges } = useVueFlow()
 const schemaDesignerStore = useSchemaDesignerStore()
@@ -143,7 +142,7 @@ const nodes = computed((): SchemaNode[] => {
       position: { x: 0, y: 0 },
       data: {
         table: tableInfo,
-        isSelected: selectedNodeId.value === id,
+        isSelected: schemaDesignerStore.selectedNodeId?.value === id,
         isConnected: false,
         isDimmed: false,
         isExpanded: expandedNodes.value.has(id)
@@ -192,7 +191,7 @@ function resolveColor(cssVar: string): string {
 }
 
 const styledEdges = computed(() => {
-  const selected = selectedNodeId.value
+  const selected = schemaDesignerStore.selectedNodeId?.value ?? null
   const mutedColor = `hsl(${resolveColor('--muted-foreground')})`
   const primaryColor = `hsl(${resolveColor('--primary')})`
   const fgColor = `hsl(${resolveColor('--foreground')})`
@@ -283,11 +282,17 @@ watch(
 )
 
 function onNodeClick(event: NodeMouseEvent): void {
-  selectedNodeId.value = event.node.id === selectedNodeId.value ? null : event.node.id
+  schemaDesignerStore.setSelectedNode(
+    event.node.id === schemaDesignerStore.selectedNodeId?.value ? null : event.node.id
+  )
 }
 
 function onPaneClick(): void {
-  selectedNodeId.value = null
+  schemaDesignerStore.setSelectedNode(null)
+}
+
+function onNodeDragStop(event: NodeDragEvent): void {
+  schemaDesignerStore.setNodePosition(event.node.id, event.node.position)
 }
 </script>
 
@@ -300,6 +305,7 @@ function onPaneClick(): void {
       :fit-view-on-init="true"
       class="h-full w-full"
       @node-click="onNodeClick"
+      @node-drag-stop="onNodeDragStop"
       @pane-click="onPaneClick"
     >
       <MiniMap class="bg-muted/50! border-border!" />
