@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,11 +17,31 @@ const emit = defineEmits<{
   'update:modelValue': [value: string[] | null]
 }>()
 
+const open = ref(false)
 const searchQuery = ref('')
 
+// Local pending state — only committed to the store when Apply is clicked
+const localPending = ref<string[] | null>(props.modelValue)
+
+// Sync external resets (e.g. badge × clear button) back into local state
+watch(
+  () => props.modelValue,
+  (val) => {
+    localPending.value = val
+  }
+)
+
+// Also reset search when popover opens
+watch(open, (isOpen) => {
+  if (isOpen) {
+    searchQuery.value = ''
+    localPending.value = props.modelValue
+  }
+})
+
 const selectedSet = computed(() => {
-  if (props.modelValue === null) return new Set(props.tables.map((id) => id.toLowerCase()))
-  return new Set(props.modelValue.map((id) => id.toLowerCase()))
+  if (localPending.value === null) return new Set(props.tables.map((id) => id.toLowerCase()))
+  return new Set(localPending.value.map((id) => id.toLowerCase()))
 })
 
 const lowerToOriginal = computed(
@@ -41,10 +61,10 @@ function isChecked(tableId: string): boolean {
 function toggle(tableId: string, checked: boolean): void {
   const lower = tableId.toLowerCase()
   let newSet: Set<string>
-  if (props.modelValue === null) {
+  if (localPending.value === null) {
     newSet = new Set(props.tables.map((id) => id.toLowerCase()))
   } else {
-    newSet = new Set(props.modelValue.map((id) => id.toLowerCase()))
+    newSet = new Set(localPending.value.map((id) => id.toLowerCase()))
   }
 
   if (checked) {
@@ -54,33 +74,43 @@ function toggle(tableId: string, checked: boolean): void {
   }
 
   if (newSet.size === 0) {
-    emit('update:modelValue', [])
+    localPending.value = []
     return
   }
   if (newSet.size === props.tables.length) {
-    emit('update:modelValue', null)
+    localPending.value = null
     return
   }
-  emit('update:modelValue', Array.from(newSet).map((l) => lowerToOriginal.value.get(l) ?? l))
+  localPending.value = Array.from(newSet).map((l) => lowerToOriginal.value.get(l) ?? l)
 }
 
 function selectAll(): void {
-  emit('update:modelValue', null)
+  localPending.value = null
 }
 
 function deselectAll(): void {
-  emit('update:modelValue', [])
+  localPending.value = []
 }
 
 function connectedToSelected(): void {
   if (!props.selectedNodeId || !props.getConnectedIds) return
   const ids = props.getConnectedIds(props.selectedNodeId)
-  emit('update:modelValue', ids.length === props.tables.length ? null : ids)
+  localPending.value = ids.length === props.tables.length ? null : ids
+}
+
+function applyFilter(): void {
+  emit('update:modelValue', localPending.value)
+  open.value = false
+}
+
+function clearFilter(): void {
+  emit('update:modelValue', null)
+  open.value = false
 }
 </script>
 
 <template>
-  <Popover>
+  <Popover v-model:open="open">
     <PopoverTrigger as-child>
       <Button variant="outline" size="sm">
         <Filter class="size-3.5 mr-1" />
@@ -106,8 +136,8 @@ function connectedToSelected(): void {
             class="flex items-center gap-2 cursor-pointer rounded px-2 py-1.5 hover:bg-accent text-sm"
           >
             <Checkbox
-              :checked="isChecked(tableId)"
-              @update:checked="(v) => toggle(tableId, v === true)"
+              :model-value="isChecked(tableId)"
+              @update:model-value="(v) => toggle(tableId, v === true)"
             />
             <span class="truncate">{{ tableId }}</span>
           </label>
@@ -130,6 +160,14 @@ function connectedToSelected(): void {
             @click="connectedToSelected"
           >
             Connected to selected
+          </Button>
+        </div>
+        <div class="flex justify-end gap-2 pt-1 border-t border-border">
+          <Button variant="ghost" size="sm" class="h-7 text-xs" @click="clearFilter">
+            Clear filter
+          </Button>
+          <Button variant="default" size="sm" class="h-7 text-xs" @click="applyFilter">
+            Apply
           </Button>
         </div>
       </div>

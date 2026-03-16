@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, nextTick } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
+import type { Node, Edge } from '@vue-flow/core'
 import { MiniMap } from '@vue-flow/minimap'
 import { Controls } from '@vue-flow/controls'
 import { useSchemaVisualizationStore } from '@renderer/stores/useSchemaVisualizationStore'
@@ -8,8 +9,12 @@ import { useSchemaVisualizationStore } from '@renderer/stores/useSchemaVisualiza
 import '@vue-flow/minimap/dist/style.css'
 import '@vue-flow/controls/dist/style.css'
 
+const props = defineProps<{
+  styledEdges: Edge[]
+}>()
+
 const store = useSchemaVisualizationStore()
-const { fitView } = useVueFlow()
+const { fitView, setNodes, setEdges } = useVueFlow()
 
 watch(
   () => store.nodes.length,
@@ -18,6 +23,23 @@ watch(
       setTimeout(() => fitView({ padding: 0.2 }), 50)
     }
   }
+)
+
+watch(
+  () => store.visibleNodes,
+  (nodes) => {
+    setNodes(nodes as Node[])
+    nextTick(() => fitView({ padding: 0.2 }))
+  },
+  { flush: 'post' }
+)
+
+watch(
+  () => props.styledEdges,
+  (edges) => {
+    setEdges(edges)
+  },
+  { flush: 'post' }
 )
 
 defineExpose({ fitView })
