@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, markRaw, onMounted, onUnmounted } from 'vue'
 import { VueFlow } from '@vue-flow/core'
-import type { NodeMouseEvent, NodeDragEvent } from '@vue-flow/core'
+import type { NodeMouseEvent, NodeDragEvent, Edge } from '@vue-flow/core'
 import { useSchemaVisualizationStore } from '@renderer/stores/useSchemaVisualizationStore'
 import TableNode from './TableNode.vue'
 import GroupNode from './GroupNode.vue'
@@ -112,6 +112,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     @pane-click="onPaneClick"
     @node-drag-stop="onNodeDragStop"
   >
-    <SchemaControls ref="controlsRef" />
+    <SchemaControls ref="controlsRef" :styled-edges="styledEdges as Edge[]" />
   </VueFlow>
 </template>

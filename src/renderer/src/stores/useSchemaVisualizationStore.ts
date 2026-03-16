@@ -478,6 +478,7 @@ export const useSchemaVisualizationStore = defineStore('schemaVisualization', ()
     toggleGroup,
     exportImage,
     getVisibleColumnCount,
+    getConnectedNodeIdSet,
     setIndividualFilter,
     clearIndividualFilter
   }

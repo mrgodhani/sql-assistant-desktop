@@ -33,3 +33,21 @@ describe('useSchemaVisualizationStore — individualFilter', () => {
     expect(store.hasIndividualFilter).toBe(false)
   })
 })
+
+describe('useSchemaVisualizationStore — getConnectedNodeIdSet', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('getConnectedNodeIdSet is accessible on the store', () => {
+    const store = useSchemaVisualizationStore()
+    expect(typeof store.getConnectedNodeIdSet).toBe('function')
+  })
+
+  it('getConnectedNodeIdSet returns empty Set when no edges exist', () => {
+    const store = useSchemaVisualizationStore()
+    const result = store.getConnectedNodeIdSet('orders')
+    expect(result).toBeInstanceOf(Set)
+    expect(result.size).toBe(0)
+  })
+})

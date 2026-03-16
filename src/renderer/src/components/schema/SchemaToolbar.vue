@@ -131,6 +131,7 @@ function onIndividualFilterChange(value: string[] | null): void {
       :tables="store.nodes.filter(n => n.type === 'table').map(n => n.id)"
       :model-value="store.individualFilter"
       :selected-node-id="store.selectedNodeId"
+      :get-connected-ids="(id: string) => Array.from(store.getConnectedNodeIdSet(id))"
       @update:model-value="onIndividualFilterChange"
     />
 
