@@ -100,22 +100,6 @@ interface ExportApi {
   exportExcelReport: (payload: string) => Promise<void>
 }
 
-interface SchemaAgentApi {
-  createSession: (
-    dialect: import('../shared/types').DatabaseType,
-    connectionId?: string
-  ) => Promise<import('../shared/types').SchemaDesignSession>
-  chat: (params: import('../shared/types').SchemaAgentChatParams) => Promise<{ sessionId: string }>
-  getSession: (sessionId: string) => Promise<import('../shared/types').SchemaDesignSession | null>
-  deleteSession: (sessionId: string) => Promise<void>
-  resolveApproval: (sessionId: string, approved: boolean) => Promise<void>
-  undo: (sessionId: string) => Promise<import('../shared/types').SchemaDesign | null>
-  cancel: (sessionId: string) => void
-  onStreamChunk: (
-    callback: (chunk: import('../shared/types').SchemaAgentStreamChunk) => void
-  ) => () => void
-}
-
 interface UpdaterApi {
   onUpdateDownloaded: (callback: (version: string) => void) => () => void
   installUpdate: () => Promise<void>
@@ -143,7 +127,6 @@ declare global {
     logsApi: LogsApi
     platformApi: { getPlatform: () => 'darwin' | 'win32' | 'linux' }
     explainApi: ExplainApi
-    schemaAgentApi: SchemaAgentApi
     updaterApi: UpdaterApi
   }
 }
