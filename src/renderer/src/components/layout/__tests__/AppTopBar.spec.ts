@@ -14,8 +14,7 @@ const Placeholder = { template: '<div>Placeholder</div>' }
 const routes = [
   { path: '/', redirect: '/chat' },
   { path: '/chat', component: Placeholder },
-  { path: '/schema', component: Placeholder },
-  { path: '/schema-designer', component: Placeholder }
+  { path: '/schema', component: Placeholder }
 ]
 
 function createTestRouter(): Router {
