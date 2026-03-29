@@ -38,7 +38,6 @@ Connect to your database, ask questions in plain English, or design schemas thro
 | 🗄️ **Multi-database** | PostgreSQL, MySQL, SQLite, SQL Server |
 | 🤖 **AI providers** | OpenAI, Anthropic, Google, OpenRouter, or local Ollama |
 | 🧠 **Schema-aware** | AI receives your schema for context-accurate queries |
-| ✏️ **Schema Designer** | AI-powered schema design via chat. Start from scratch or introspect existing DB. Visual ERD canvas, DDL generation, optional execution. Export ERD as PNG/SVG. |
 | 🔍 **Schema search** | Fuzzy search across tables and columns (`Cmd+K`) |
 | 📋 **EXPLAIN visualizer** | Run EXPLAIN on queries, view plans as Mermaid diagrams |
 | ⚡ **Query optimization** | Get index and rewrite suggestions from AI |
