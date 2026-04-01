@@ -3,7 +3,7 @@ import { assertResponseOk } from './types'
 import { parseSSEStream } from './sse-parser'
 
 export const openaiAdapter: ProviderAdapter = {
-  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk) {
+  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk, temperature) {
     const allMessages: { role: string; content: string }[] = [
       { role: 'system', content: systemPrompt },
       ...messages.map((m) => ({ role: m.role, content: m.content }))
@@ -15,7 +15,7 @@ export const openaiAdapter: ProviderAdapter = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`
       },
-      body: JSON.stringify({ model, messages: allMessages, stream: true }),
+      body: JSON.stringify({ model, messages: allMessages, stream: true, temperature }),
       signal
     })
 
