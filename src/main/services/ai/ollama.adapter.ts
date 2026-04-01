@@ -3,7 +3,7 @@ import { assertResponseOk } from './types'
 import { parseNDJSONStream } from './sse-parser'
 
 export const ollamaAdapter: ProviderAdapter = {
-  async chatStream(messages, model, systemPrompt, _apiKey, baseUrl, signal, onChunk) {
+  async chatStream(messages, model, systemPrompt, _apiKey, baseUrl, signal, onChunk, temperature) {
     const allMessages = [
       { role: 'system', content: systemPrompt },
       ...messages.map((m) => ({ role: m.role, content: m.content }))
@@ -12,7 +12,7 @@ export const ollamaAdapter: ProviderAdapter = {
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, messages: allMessages, stream: true }),
+      body: JSON.stringify({ model, messages: allMessages, stream: true, options: { temperature } }),
       signal
     })
 
