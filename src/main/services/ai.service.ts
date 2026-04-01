@@ -11,7 +11,7 @@ import { ollamaAdapter } from './ai/ollama.adapter'
 import { openrouterAdapter } from './ai/openrouter.adapter'
 import type { ProviderAdapter } from './ai/types'
 import type { AIProvider, AIChatParams, StreamChunk, ChatMessage } from '../../shared/types'
-import { DEFAULT_PROVIDER_CONFIGS } from '../../shared/types'
+import { DEFAULT_PROVIDER_CONFIGS, DEFAULT_TEMPERATURE } from '../../shared/types'
 
 const STREAM_INACTIVITY_TIMEOUT = 60_000
 
@@ -43,6 +43,8 @@ class AIService {
       const config = await settingsService.getProviderConfig(provider)
       const apiKey = config.apiKey ?? ''
       const baseUrl = config.baseUrl ?? DEFAULT_PROVIDER_CONFIGS[provider].baseUrl ?? ''
+      const allSettings = await settingsService.getAll()
+      const temperature = allSettings.temperature ?? DEFAULT_TEMPERATURE
 
       if (provider !== 'ollama' && !apiKey) {
         sendChunk({
@@ -71,7 +73,8 @@ class AIService {
         (text: string) => {
           watchdog.reset()
           sendChunk({ requestId, chunk: text, done: false })
-        }
+        },
+        temperature
       )
 
       watchdog.clear()
