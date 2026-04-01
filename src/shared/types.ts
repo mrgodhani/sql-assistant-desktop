@@ -237,10 +237,13 @@ export interface ValidationResult {
 
 export type ThemeMode = 'system' | 'dark' | 'light'
 
+export const DEFAULT_TEMPERATURE = 0.3
+
 export interface AppSettings {
   theme: ThemeMode
   activeProvider: AIProvider
   activeModel: string
+  temperature: number
   providerConfigs: Record<AIProvider, ProviderConfig>
 }
 
