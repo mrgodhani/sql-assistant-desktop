@@ -9,7 +9,7 @@
 
 Add a global AI temperature setting to sql-assist-desktop so users can control how deterministic or creative the AI's responses are. The default is 0.3 — low enough for reliable SQL generation while leaving slight flexibility for natural-language explanations.
 
-Temperature applies uniformly to all AI providers (OpenAI, Anthropic, Google, OpenRouter, Ollama) and to both the chat assistant and the query optimizer.
+Temperature applies to all `chatStream`-based paths — the chat assistant and the query optimizer — across all five providers (OpenAI, Anthropic, Google, OpenRouter, Ollama).
 
 ---
 
@@ -126,13 +126,14 @@ body: JSON.stringify({ model, messages: allMessages, stream: true, temperature }
 
 **Anthropic:**
 ```typescript
-body: JSON.stringify({ model, messages, system: systemPrompt, stream: true, max_tokens: 8192, temperature })
+// Add temperature only; keep existing max_tokens unchanged (4096 for chatStream)
+body: JSON.stringify({ model, messages, system: systemPrompt, stream: true, max_tokens: 4096, temperature })
 ```
 
 **Google (Gemini):**
 ```typescript
-// temperature goes in generationConfig
-generationConfig: { temperature }
+// Merge temperature into the existing generationConfig — do NOT replace it (maxOutputTokens must be preserved)
+generationConfig: { maxOutputTokens: 4096, temperature }
 ```
 
 **Ollama:**
@@ -146,14 +147,14 @@ body: JSON.stringify({ model, messages: allMessages, stream: true, options: { te
 
 ### Location
 
-A new **"AI Behaviour"** section is added inside the existing settings sheet. The most appropriate component to extend is `src/renderer/src/components/layout/SettingsSheet.vue` or a new `AISettings.vue` component extracted from it — whichever keeps the file size manageable.
+A new **"AI Behavior"** section is added inside the existing settings sheet. The most appropriate component to extend is `src/renderer/src/components/layout/SettingsSheet.vue` or a new `AISettings.vue` component extracted from it — whichever keeps the file size manageable.
 
 ### Controls
 
 - **Label:** "Response Style"
 - **Slider:** range 0.0–1.0, step 0.05
 - **Value display:** current value shown numerically to 2 decimal places (e.g. `0.30`)
-- **Contextual hint** (updates live with slider position):
+- **Contextual hint** — updates live on every `input` event (so it tracks the thumb as the user drags):
 
 | Range | Hint text |
 |-------|-----------|
@@ -161,9 +162,11 @@ A new **"AI Behaviour"** section is added inside the existing settings sheet. Th
 | 0.21–0.50 | "Balanced — reliable with slight flexibility" |
 | 0.51–1.00 | "Creative — more varied, less predictable responses" |
 
+> **Note:** The UI slider is capped at 1.0. Some providers (e.g. Gemini) support higher values in their APIs, but 1.0 is the product-defined maximum for this app.
+
 ### Persistence
 
-Temperature is saved on slider `change` (mouse release / keyboard commit), not on every `input` event, to avoid excessive IPC calls. Uses the existing `window.api.settings.set('temperature', value)` IPC pattern.
+Temperature is saved on slider `change` (mouse release / keyboard commit), not on every `input` event, to avoid excessive IPC calls. The hint label and numeric display update on `input` for immediate feedback; only persistence waits for `change`. Uses the existing `window.api.settings.set('temperature', value)` IPC pattern.
 
 ### Store
 
@@ -173,7 +176,11 @@ Temperature is saved on slider `change` (mouse release / keyboard commit), not o
 
 ## IPC Changes
 
-No new IPC channels required. The existing `settings.get` / `settings.set` generic channel handles temperature reads and writes. The existing `settings.getAll` channel returns the updated `AppSettings` shape including `temperature`.
+No new IPC channels required. The existing `settings.get` / `settings.set` generic channel handles temperature reads and writes. The existing `settings.getAll` channel returns the updated `AppSettings` shape including `temperature`. No changes to `settings.ipc.ts` or the preload `index.d.ts` (both delegate to the `AppSettings` type which already flows through).
+
+### `chatWithTools` (out of scope)
+
+The optional `chatWithTools` method on adapters is not currently called from anywhere in the codebase. Temperature will **not** be applied to tool-call requests under this spec — this is intentional and can be addressed in a future update if `chatWithTools` becomes active.
 
 ---
 
@@ -182,9 +189,11 @@ No new IPC channels required. The existing `settings.get` / `settings.set` gener
 | Case | Handling |
 |------|----------|
 | No temperature in DB (first run) | Falls back to `DEFAULT_TEMPERATURE` (0.3) |
-| Provider ignores temperature | Adapter passes it; provider silently ignores — no error |
-| Value out of range (e.g. corrupted) | Clamped to [0.0, 1.0] in the service before use |
-| Ollama model doesn't support it | Passed in `options`; Ollama ignores unknown options |
+| Corrupt / non-numeric value in DB (e.g. `"abc"`) | `parseFloat` → `NaN`; treated as missing → falls back to `DEFAULT_TEMPERATURE` in `getAll()` |
+| Value out of range (e.g. `1.5`) | Clamped to [0.0, 1.0] in `getAll()` before use |
+| Provider silently ignores temperature | Adapter passes it; no error surfaced |
+| Provider rejects temperature with HTTP 400 (e.g. certain OpenAI reasoning models that don't accept the parameter) | Surfaces as a normal AI error via the existing `classifyError` path — no special handling needed |
+| Ollama model doesn't support it | Passed in `options`; Ollama ignores unknown option keys |
 
 ---
 
