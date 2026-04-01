@@ -85,7 +85,7 @@ function convertToolsForAnthropic(
 }
 
 export const anthropicAdapter: ProviderAdapter = {
-  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk) {
+  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk, temperature) {
     const filteredMessages = messages
       .filter((m) => m.role !== 'system')
       .map((m) => ({ role: m.role, content: m.content }))
@@ -102,7 +102,8 @@ export const anthropicAdapter: ProviderAdapter = {
         system: systemPrompt,
         messages: filteredMessages,
         max_tokens: 4096,
-        stream: true
+        stream: true,
+        temperature
       }),
       signal
     })
