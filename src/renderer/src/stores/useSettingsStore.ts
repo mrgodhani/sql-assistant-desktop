@@ -2,7 +2,12 @@ import log from 'electron-log/renderer'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AIProvider, ProviderConfig, ThemeMode, ValidationResult } from '../../../shared/types'
-import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS, PROVIDER_LABELS } from '../../../shared/types'
+import {
+  DEFAULT_PROVIDER_CONFIGS,
+  AI_PROVIDERS,
+  PROVIDER_LABELS,
+  DEFAULT_TEMPERATURE
+} from '../../../shared/types'
 
 export { AI_PROVIDERS, PROVIDER_LABELS }
 export type { AIProvider, ProviderConfig, ThemeMode, ValidationResult }
@@ -14,6 +19,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const providerConfigs = ref<Record<AIProvider, ProviderConfig>>(
     structuredClone(DEFAULT_PROVIDER_CONFIGS)
   )
+  const temperature = ref<number>(DEFAULT_TEMPERATURE)
 
   const activeProviderConfig = computed(() => providerConfigs.value[activeProvider.value])
 
@@ -41,6 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
       activeProvider.value = settings.activeProvider
       activeModel.value = settings.activeModel
       providerConfigs.value = settings.providerConfigs
+      temperature.value = settings.temperature
 
       const effective = await resolveEffectiveTheme()
       applyTheme(effective)
@@ -135,10 +142,20 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  async function setTemperature(value: number): Promise<void> {
+    temperature.value = value
+    try {
+      await window.api.settings.set('temperature', String(value))
+    } catch (error) {
+      log.error('[Settings] Failed to persist temperature:', error)
+    }
+  }
+
   return {
     theme,
     activeProvider,
     activeModel,
+    temperature,
     providerConfigs,
     activeProviderConfig,
     isProviderConfigured,
@@ -146,6 +163,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setTheme,
     setProvider,
     setModel,
+    setTemperature,
     updateProviderConfig,
     validateApiKey,
     refreshModels

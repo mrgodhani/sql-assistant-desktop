@@ -8,6 +8,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import ThemeSettings from '@renderer/components/settings/ThemeSettings.vue'
+import AIBehaviorSettings from '@renderer/components/settings/AIBehaviorSettings.vue'
 import ProviderSettings from '@renderer/components/settings/ProviderSettings.vue'
 import LogsSettings from '@renderer/components/settings/LogsSettings.vue'
 
@@ -29,6 +30,8 @@ const emit = defineEmits<{
       <ScrollArea class="h-[calc(100vh-6rem)]">
         <div class="space-y-5 pr-2">
           <ThemeSettings />
+          <Separator />
+          <AIBehaviorSettings />
           <Separator />
           <ProviderSettings />
           <Separator />

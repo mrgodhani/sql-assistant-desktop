@@ -8,7 +8,7 @@ const OPENROUTER_HEADERS = {
 }
 
 export const openrouterAdapter: ProviderAdapter = {
-  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk) {
+  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk, temperature) {
     const allMessages = [
       { role: 'system', content: systemPrompt },
       ...messages.map((m) => ({ role: m.role, content: m.content }))
@@ -21,7 +21,7 @@ export const openrouterAdapter: ProviderAdapter = {
         Authorization: `Bearer ${apiKey}`,
         ...OPENROUTER_HEADERS
       },
-      body: JSON.stringify({ model, messages: allMessages, stream: true }),
+      body: JSON.stringify({ model, messages: allMessages, stream: true, temperature }),
       signal
     })
 

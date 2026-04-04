@@ -8,6 +8,7 @@ import { registerExportIpc } from './export.ipc'
 import { registerLogsIpc } from './logs.ipc'
 import { registerExplainIpc } from './explain.ipc'
 import { registerUpdaterIpc } from './updater.ipc'
+import { registerDesignerIpc } from './designer.ipc'
 
 export function registerAllIpc(): void {
   registerSettingsIpc()
@@ -20,4 +21,5 @@ export function registerAllIpc(): void {
   registerLogsIpc()
   registerExplainIpc()
   registerUpdaterIpc()
+  registerDesignerIpc()
 }

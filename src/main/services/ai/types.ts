@@ -29,7 +29,8 @@ export interface ProviderAdapter {
     apiKey: string,
     baseUrl: string,
     signal: AbortSignal,
-    onChunk: (text: string) => void
+    onChunk: (text: string) => void,
+    temperature?: number
   ): Promise<void>
 
   listModels(apiKey: string, baseUrl: string): Promise<string[]>

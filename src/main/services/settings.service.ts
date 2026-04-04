@@ -9,7 +9,7 @@ import type {
   ValidationResult,
   AppSettings
 } from '../../shared/types'
-import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS } from '../../shared/types'
+import { DEFAULT_PROVIDER_CONFIGS, AI_PROVIDERS, DEFAULT_TEMPERATURE } from '../../shared/types'
 
 function maskKey(key: string): string {
   if (key.length <= 4) return '****'
@@ -63,12 +63,18 @@ export class SettingsService {
     const activeModel =
       (await this.get('activeModel')) || DEFAULT_PROVIDER_CONFIGS[activeProvider].selectedModel
 
+    const temperatureRaw = await this.get('temperature')
+    const temperatureParsed = temperatureRaw !== null ? parseFloat(temperatureRaw) : NaN
+    const temperature = isNaN(temperatureParsed)
+      ? DEFAULT_TEMPERATURE
+      : Math.min(1, Math.max(0, temperatureParsed))
+
     const providerConfigs = {} as Record<AIProvider, ProviderConfig>
     for (const provider of AI_PROVIDERS) {
       providerConfigs[provider] = await this.getProviderConfig(provider)
     }
 
-    return { theme, activeProvider, activeModel, providerConfigs }
+    return { theme, activeProvider, activeModel, temperature, providerConfigs }
   }
 
   async getProviderConfig(provider: AIProvider): Promise<ProviderConfig> {

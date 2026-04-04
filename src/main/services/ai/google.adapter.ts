@@ -84,7 +84,7 @@ function convertToolsToGemini(tools: unknown[]): Array<{
 }
 
 export const googleAdapter: ProviderAdapter = {
-  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk) {
+  async chatStream(messages, model, systemPrompt, apiKey, baseUrl, signal, onChunk, temperature) {
     const contents = messages
       .filter((m) => m.role !== 'system')
       .map((m) => ({
@@ -100,7 +100,7 @@ export const googleAdapter: ProviderAdapter = {
       body: JSON.stringify({
         contents,
         systemInstruction: { parts: [{ text: systemPrompt }] },
-        generationConfig: { maxOutputTokens: 4096 }
+        generationConfig: { maxOutputTokens: 4096, temperature }
       }),
       signal
     })
