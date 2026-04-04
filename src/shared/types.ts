@@ -239,6 +239,50 @@ export type ThemeMode = 'system' | 'dark' | 'light'
 
 export const DEFAULT_TEMPERATURE = 0.3
 
+// ─── Schema Designer Types ────────────────────────────────────────────────────
+
+export interface DesignerColumn {
+  id: string
+  name: string
+  type: string
+  nullable: boolean
+  isPrimaryKey: boolean
+}
+
+export interface DesignerTable {
+  id: string
+  name: string
+  columns: DesignerColumn[]
+}
+
+export interface DesignerRelationship {
+  id: string
+  fromTableId: string
+  fromColumnId: string
+  toTableId: string
+  toColumnId: string
+  type: '1:1' | '1:N' | 'N:M'
+}
+
+export interface DesignerSchema {
+  tables: DesignerTable[]
+  relationships: DesignerRelationship[]
+}
+
+export interface DesignerGenerateResult {
+  success: boolean
+  schema?: DesignerSchema
+  error?: string
+}
+
+export interface DesignerDDLResult {
+  success: boolean
+  ddl?: string
+  error?: string
+}
+
+// ─── App Settings ─────────────────────────────────────────────────────────────
+
 export interface AppSettings {
   theme: ThemeMode
   activeProvider: AIProvider

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { MessageSquare, Network, Settings } from 'lucide-vue-next'
+import { MessageSquare, Network, Settings, PenTool } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import ConnectionPopover from './ConnectionPopover.vue'
@@ -14,7 +14,8 @@ const settingsOpen = ref(false)
 
 const tabs = [
   { path: '/chat', label: 'Chat', icon: MessageSquare },
-  { path: '/schema', label: 'Schema', icon: Network }
+  { path: '/schema', label: 'Schema', icon: Network },
+  { path: '/schema-designer', label: 'Designer', icon: PenTool }
 ] as const
 
 function isActive(path: string): boolean {

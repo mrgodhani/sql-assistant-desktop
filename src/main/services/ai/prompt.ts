@@ -84,3 +84,28 @@ export function buildOptimizationPrompt(
 
   return parts.join('\n')
 }
+
+export function buildDesignerSystemPrompt(): string {
+  return `You are a database schema designer assistant.
+Respond with ONLY a valid JSON object — no markdown, no prose, no code fences, no explanation.
+The JSON must follow this exact shape:
+{
+  "tables": [
+    {
+      "name": "string",
+      "columns": [
+        { "name": "string", "type": "string", "nullable": boolean, "isPrimaryKey": boolean }
+      ]
+    }
+  ],
+  "relationships": [
+    { "fromTable": "string", "fromColumn": "string", "toTable": "string", "toColumn": "string", "type": "1:1" | "1:N" | "N:M" }
+  ]
+}
+Rules:
+- Use clear, lowercase snake_case column names
+- Always include at least one primary key column per table
+- Use common SQL types: INTEGER, VARCHAR(255), TEXT, BOOLEAN, TIMESTAMP, DECIMAL(10,2), UUID, DATE
+- Relationships must reference valid table and column names from the tables array
+- If no relationships exist, return an empty array for relationships`
+}

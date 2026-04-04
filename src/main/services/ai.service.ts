@@ -2,7 +2,7 @@ import log from 'electron-log/main'
 import { settingsService } from './settings.service'
 import { schemaService } from './schema.service'
 import { databaseService } from './database.service'
-import { buildSystemPrompt, buildOptimizationPrompt } from './ai/prompt'
+import { buildSystemPrompt, buildOptimizationPrompt, buildDesignerSystemPrompt } from './ai/prompt'
 import { classifyError } from './ai/types'
 import { openaiAdapter } from './ai/openai.adapter'
 import { anthropicAdapter } from './ai/anthropic.adapter'
@@ -10,7 +10,17 @@ import { googleAdapter } from './ai/google.adapter'
 import { ollamaAdapter } from './ai/ollama.adapter'
 import { openrouterAdapter } from './ai/openrouter.adapter'
 import type { ProviderAdapter } from './ai/types'
-import type { AIProvider, AIChatParams, StreamChunk, ChatMessage } from '../../shared/types'
+import type {
+  AIProvider,
+  AIChatParams,
+  StreamChunk,
+  ChatMessage,
+  DesignerGenerateResult,
+  DesignerSchema,
+  DesignerTable,
+  DesignerColumn,
+  DesignerRelationship
+} from '../../shared/types'
 import { DEFAULT_PROVIDER_CONFIGS, DEFAULT_TEMPERATURE } from '../../shared/types'
 
 const STREAM_INACTIVITY_TIMEOUT = 60_000
@@ -173,6 +183,121 @@ class AIService {
       return merged
     } catch {
       return defaults
+    }
+  }
+
+  async generateDesignerSchema(prompt: string): Promise<DesignerGenerateResult> {
+    const settings = await settingsService.getAll()
+    const provider = settings.activeProvider
+    const model = settings.activeModel
+    if (!model) {
+      return { success: false, error: 'No AI model selected. Configure a provider in Settings.' }
+    }
+
+    const config = await settingsService.getProviderConfig(provider)
+    if (provider !== 'ollama' && !config.apiKey) {
+      return {
+        success: false,
+        error: `No API key configured for ${provider}. Add one in Settings.`
+      }
+    }
+
+    const systemPrompt = buildDesignerSystemPrompt()
+    const messages: ChatMessage[] = [{ role: 'user', content: prompt }]
+    const requestId = `designer-${Date.now()}`
+
+    let collected = ''
+    let streamError: string | null = null
+
+    await this.chatStream(
+      {
+        provider,
+        model,
+        messages,
+        requestId,
+        systemPromptOverride: systemPrompt
+      },
+      (chunk: StreamChunk) => {
+        if (chunk.chunk) collected += chunk.chunk
+        if (chunk.error) streamError = chunk.error
+      }
+    )
+
+    if (streamError) {
+      return { success: false, error: streamError }
+    }
+
+    try {
+      const cleaned = collected
+        .trim()
+        .replace(/^```+\w*\s*/i, '')
+        .replace(/```+\s*$/, '')
+        .trim()
+      const raw = JSON.parse(cleaned) as {
+        tables?: Array<{
+          name: string
+          columns: Array<{ name: string; type: string; nullable: boolean; isPrimaryKey: boolean }>
+        }>
+        relationships?: Array<{
+          fromTable: string
+          fromColumn: string
+          toTable: string
+          toColumn: string
+          type: string
+        }>
+      }
+
+      const tableNameToId = new Map<string, string>()
+
+      const tables: DesignerTable[] = (raw.tables ?? []).map((t) => {
+        const tableId = crypto.randomUUID()
+        tableNameToId.set(t.name, tableId)
+        const columns: DesignerColumn[] = (t.columns ?? []).map((c) => ({
+          id: crypto.randomUUID(),
+          name: c.name,
+          type: c.type,
+          nullable: Boolean(c.nullable),
+          isPrimaryKey: Boolean(c.isPrimaryKey)
+        }))
+        return { id: tableId, name: t.name, columns }
+      })
+
+      const columnNameToId = new Map<string, string>()
+      for (const t of tables) {
+        for (const c of t.columns) {
+          columnNameToId.set(`${t.name}.${c.name}`, c.id)
+        }
+      }
+
+      const relationships: DesignerRelationship[] = []
+      for (const r of raw.relationships ?? []) {
+        const fromTableId = tableNameToId.get(r.fromTable)
+        const toTableId = tableNameToId.get(r.toTable)
+        const fromColumnId = columnNameToId.get(`${r.fromTable}.${r.fromColumn}`)
+        const toColumnId = columnNameToId.get(`${r.toTable}.${r.toColumn}`)
+        if (!fromTableId || !toTableId || !fromColumnId || !toColumnId) continue
+        const validTypes = ['1:1', '1:N', 'N:M'] as const
+        const relType: '1:1' | '1:N' | 'N:M' = validTypes.includes(r.type as '1:1' | '1:N' | 'N:M')
+          ? (r.type as '1:1' | '1:N' | 'N:M')
+          : '1:N'
+        relationships.push({
+          id: crypto.randomUUID() as string,
+          fromTableId,
+          fromColumnId,
+          toTableId,
+          toColumnId,
+          type: relType
+        })
+      }
+
+      const schema: DesignerSchema = { tables, relationships }
+      return { success: true, schema }
+    } catch (err) {
+      log.error('[AI] generateDesignerSchema parse error:', err)
+      return {
+        success: false,
+        error: `The AI response could not be parsed as valid JSON. Try rephrasing your description.`
+      }
     }
   }
 

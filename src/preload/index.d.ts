@@ -12,7 +12,10 @@ import type {
   AIChatParams,
   StreamChunk,
   ExecutionResult,
-  SqlValidationResult
+  SqlValidationResult,
+  DesignerGenerateResult,
+  DesignerDDLResult,
+  DesignerSchema
 } from '../shared/types'
 
 interface SettingsApi {
@@ -105,6 +108,12 @@ interface UpdaterApi {
   installUpdate: () => Promise<void>
 }
 
+interface DesignerApi {
+  generateSchema: (prompt: string) => Promise<DesignerGenerateResult>
+  generateDDL: (schema: DesignerSchema) => Promise<DesignerDDLResult>
+  writeDDL: (filePath: string, content: string) => Promise<{ success: boolean }>
+}
+
 interface AppApi {
   settings: SettingsApi
 }
@@ -128,5 +137,6 @@ declare global {
     platformApi: { getPlatform: () => 'darwin' | 'win32' | 'linux' }
     explainApi: ExplainApi
     updaterApi: UpdaterApi
+    designerApi: DesignerApi
   }
 }
